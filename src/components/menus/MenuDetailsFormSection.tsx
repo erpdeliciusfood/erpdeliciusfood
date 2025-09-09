@@ -33,7 +33,7 @@ interface MenuDetailsFormSectionProps {
   availableEventTypes: EventType[] | undefined;
 }
 
-const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoading, preselectedDate, initialData: _initialData, availableEventTypes }) => {
+const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoading, preselectedDate, initialData, availableEventTypes }) => {
   const form = useFormContext<MenuFormValues & { menu_type: "daily" | "event" }>();
 
   const menuType = form.watch("menu_type");
@@ -48,7 +48,7 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
         form.setValue("title", formattedDate, { shouldValidate: true });
       }
     }
-    // For 'event' type, the title is manually managed by the user, so no auto-titling here.
+    // No action for 'event' type here, as its title is manually managed.
   }, [menuType, menuDate, form]);
 
   const eventTypePlaceholder = () => {
@@ -70,7 +70,7 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
                 placeholder="Ej. Menú Coffee Break"
                 {...field}
                 className="h-12 text-base"
-                disabled={isLoading || menuType === "daily"}
+                disabled={isLoading || menuType === "daily"} // Disable title input for daily menus
               />
             </FormControl>
             <FormMessage />
@@ -108,16 +108,19 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
                 onValueChange={(value) => {
                   field.onChange(value);
                   if (value === "daily") {
-                    form.setValue("event_type_id", null);
-                    form.setValue("menu_date", preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null);
-                    // If switching to daily, and title is empty, try to auto-generate
-                    if (!form.getValues("title") && preselectedDate) {
-                        const newTitle = format(preselectedDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: es });
+                    form.setValue("event_type_id", null); // Clear event type ID
+                    const newMenuDate = preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null;
+                    form.setValue("menu_date", newMenuDate); // Set menu date
+                    // Auto-generate title if it's a new menu or if the title is currently empty
+                    if (!initialData || !form.getValues("title")) {
+                      if (newMenuDate) {
+                        const newTitle = format(new Date(newMenuDate), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: es });
                         form.setValue("title", newTitle, { shouldValidate: true });
+                      }
                     }
                   } else { // value === "event"
-                    form.setValue("menu_date", null);
-                    form.setValue("title", "", { shouldValidate: true }); // Clear title for event menus
+                    form.setValue("menu_date", null); // Clear menu date
+                    // Do NOT clear title here. It should be manually entered for event menus.
                   }
                 }}
                 defaultValue={field.value}
