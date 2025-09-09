@@ -34,10 +34,45 @@ const formSchema = z.object({
     message: "La cantidad de cambio debe ser mayor a 0.",
   }).max(999999.99, {
     message: "La cantidad de cambio no debe exceder 999999.99.",
-  }),
+  }).optional(), // Made optional as it's conditional
+  total_purchase_amount: z.coerce.number().min(0.01, {
+    message: "El monto total de la compra debe ser mayor a 0.",
+  }).max(9999999.99, {
+    message: "El monto total de la compra no debe exceder 9,999,999.99.",
+  }).optional(), // Optional, conditional
+  total_purchase_quantity: z.coerce.number().min(0.01, {
+    message: "La cantidad comprada debe ser mayor a 0.",
+  }).max(999999.99, {
+    message: "La cantidad comprada no debe exceder 999,999.99.",
+  }).optional(), // Optional, conditional
   notes: z.string().max(500, {
     message: "Las notas no deben exceder los 500 caracteres.",
   }).nullable(),
+}).superRefine((data, ctx) => {
+  if (data.movement_type === "purchase_in") {
+    if (data.total_purchase_amount === undefined || data.total_purchase_amount <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "El monto total de la compra es requerido para entradas por compra.",
+        path: ["total_purchase_amount"],
+      });
+    }
+    if (data.total_purchase_quantity === undefined || data.total_purchase_quantity <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "La cantidad comprada es requerida para entradas por compra.",
+        path: ["total_purchase_quantity"],
+      });
+    }
+  } else {
+    if (data.quantity_change === undefined || data.quantity_change <= 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "La cantidad de cambio es requerida para ajustes.",
+        path: ["quantity_change"],
+      });
+    }
+  }
 });
 
 interface StockMovementFormProps {
@@ -55,22 +90,34 @@ const StockMovementForm: React.FC<StockMovementFormProps> = ({ onSuccess, onCanc
       insumo_id: "",
       movement_type: "purchase_in",
       quantity_change: 0,
+      total_purchase_amount: 0,
+      total_purchase_quantity: 0,
       notes: "",
     },
   });
 
+  const movementType = form.watch("movement_type");
+
   useEffect(() => {
-    // Reset form when it's opened or closed
+    // Reset form fields when it's opened or closed, or when movement type changes
     form.reset({
       insumo_id: "",
-      movement_type: "purchase_in",
+      movement_type: movementType, // Keep current movement type
       quantity_change: 0,
+      total_purchase_amount: 0,
+      total_purchase_quantity: 0,
       notes: "",
     });
-  }, [form]);
+  }, [form, movementType]); // Depend on movementType to reset relevant fields
 
   const onSubmit = async (values: StockMovementFormValues) => {
-    await addMutation.mutateAsync(values);
+    // Ensure quantity_change is correctly set for non-purchase_in movements
+    const submitValues: StockMovementFormValues = {
+      ...values,
+      quantity_change: values.movement_type === "purchase_in" ? values.total_purchase_quantity! : values.quantity_change!,
+    };
+
+    await addMutation.mutateAsync(submitValues);
     onSuccess();
   };
 
@@ -135,27 +182,74 @@ const StockMovementForm: React.FC<StockMovementFormProps> = ({ onSuccess, onCanc
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="quantity_change"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad de Cambio (en Unidad de Compra)</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="Ej. 50"
-                  {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {movementType === "purchase_in" ? (
+          <>
+            <FormField
+              control={form.control}
+              name="total_purchase_amount"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Monto Total de la Compra (S/)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ej. 100.00"
+                      {...field}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      className="h-12 text-base"
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            <FormField
+              control={form.control}
+              name="total_purchase_quantity"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad Comprada (en Unidad de Compra)</FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ej. 20"
+                      {...field}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      className="h-12 text-base"
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </>
+        ) : (
+          <FormField
+            control={form.control}
+            name="quantity_change"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad de Cambio (en Unidad de Compra)</FormLabel>
+                <FormControl>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    placeholder="Ej. 50"
+                    {...field}
+                    onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                    className="h-12 text-base"
+                    disabled={isLoading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
 
         <FormField
           control={form.control}

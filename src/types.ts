@@ -165,6 +165,8 @@ export interface StockMovement {
 export interface StockMovementFormValues {
   insumo_id: string;
   movement_type: 'purchase_in' | 'adjustment_in' | 'adjustment_out'; // Consumption_out is handled by Edge Function
-  quantity_change: number;
+  quantity_change: number; // This will be used for adjustments, or derived for purchase_in
+  total_purchase_amount?: number; // New: Total amount of the purchase
+  total_purchase_quantity?: number; // New: Total quantity purchased
   notes: string | null;
 }
