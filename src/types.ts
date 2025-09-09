@@ -58,6 +58,16 @@ export interface ServiceReport {
   notes: string | null;
   created_at: string;
   meal_services?: MealService; // Optional, for when fetching with relations
+  service_report_platos?: ServiceReportPlato[]; // New: Optional, for when fetching with relations
+}
+
+export interface ServiceReportPlato { // New interface
+  id: string;
+  service_report_id: string;
+  plato_id: string;
+  quantity_sold: number;
+  created_at: string;
+  platos?: Plato; // Optional, for when fetching with relations
 }
 
 export interface ServiceReportFormValues {
@@ -67,6 +77,7 @@ export interface ServiceReportFormValues {
   meals_sold: number;
   additional_services_revenue: number;
   notes: string | null;
+  platos_vendidos: { plato_id: string; quantity_sold: number }[]; // New: For form submission
 }
 
 // New interfaces for Menu Management
