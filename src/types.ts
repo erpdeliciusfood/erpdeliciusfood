@@ -77,7 +77,7 @@ export interface ServiceReportFormValues {
   report_date: string;
   meal_service_id: string;
   tickets_issued: number;
-  meals_sold: number;
+  // meals_sold: number; // Removed: This will be calculated dynamically
   additional_services_revenue: number;
   notes: string | null;
   platos_vendidos: { plato_id: string; quantity_sold: number }[]; // New: array of sold dishes

@@ -4,7 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+import { Textarea } from "@/components/ui/textarea"; // Added missing import
 import {
   Form,
   FormControl,
@@ -36,7 +36,7 @@ const formSchema = z.object({
   report_date: z.string().min(1, { message: "La fecha del reporte es requerida." }),
   meal_service_id: z.string().min(1, { message: "Debe seleccionar un servicio de comida." }),
   tickets_issued: z.coerce.number().min(0, { message: "Los tickets emitidos no pueden ser negativos." }).int({ message: "Los tickets emitidos deben ser un número entero." }),
-  meals_sold: z.coerce.number().min(0, { message: "Las colaciones vendidas no pueden ser negativas." }).int({ message: "La cantidad de colaciones vendidas debe ser un número entero." }),
+  // meals_sold: z.coerce.number().min(0, { message: "Las colaciones vendidas no pueden ser negativas." }).int({ message: "La cantidad de colaciones vendidas debe ser un número entero." }), // Removed from schema
   additional_services_revenue: z.coerce.number().min(0, { message: "Los ingresos adicionales no pueden ser negativos." }).max(999999.99, { message: "Los ingresos adicionales no deben exceder 999999.99." }),
   notes: z.string().max(500, { message: "Las notas no deben exceder los 500 caracteres." }).nullable(),
   platos_vendidos: z.array(
@@ -65,7 +65,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
       report_date: format(new Date(), "yyyy-MM-dd"),
       meal_service_id: "",
       tickets_issued: 0,
-      meals_sold: 0,
+      // meals_sold: 0, // Removed from default values
       additional_services_revenue: 0,
       notes: "",
       platos_vendidos: [{ plato_id: "", quantity_sold: 1 }],
@@ -77,13 +77,16 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
     name: "platos_vendidos",
   });
 
+  // Calculate meals_sold dynamically
+  const calculatedMealsSold = form.watch("platos_vendidos").reduce((sum, item) => sum + item.quantity_sold, 0);
+
   useEffect(() => {
     if (initialData) {
       form.reset({
         report_date: initialData.report_date,
         meal_service_id: initialData.meal_service_id,
         tickets_issued: initialData.tickets_issued,
-        meals_sold: initialData.meals_sold,
+        // meals_sold: initialData.meals_sold, // Removed from reset
         additional_services_revenue: initialData.additional_services_revenue,
         notes: initialData.notes || "",
         platos_vendidos: initialData.platos_vendidos_data?.map(pv => ({
@@ -96,7 +99,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
         report_date: format(new Date(), "yyyy-MM-dd"),
         meal_service_id: "",
         tickets_issued: 0,
-        meals_sold: 0,
+        // meals_sold: 0, // Removed from reset
         additional_services_revenue: 0,
         notes: "",
         platos_vendidos: [{ plato_id: "", quantity_sold: 1 }],
@@ -105,10 +108,15 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
   }, [initialData, form]);
 
   const onSubmit = async (values: ServiceReportFormValues) => {
+    const submitValues = {
+      ...values,
+      meals_sold: calculatedMealsSold, // Add calculated meals_sold to submit values
+    };
+
     if (initialData) {
-      await updateMutation.mutateAsync({ id: initialData.id, report: values });
+      await updateMutation.mutateAsync({ id: initialData.id, report: submitValues });
     } else {
-      await addMutation.mutateAsync(values);
+      await addMutation.mutateAsync(submitValues);
     }
     onSuccess();
   };
@@ -213,27 +221,19 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="meals_sold"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Colaciones Vendidas</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="1"
-                  placeholder="Ej. 120"
-                  {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value))}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
+        {/* Removed meals_sold input field */}
+        <FormItem>
+          <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Colaciones Vendidas (Calculado)</FormLabel>
+          <FormControl>
+            <Input
+              type="number"
+              value={calculatedMealsSold}
+              className="h-12 text-base bg-gray-100 dark:bg-gray-700 cursor-not-allowed"
+              disabled
+            />
+          </FormControl>
+          <FormMessage />
+        </FormItem>
 
         <FormField
           control={form.control}

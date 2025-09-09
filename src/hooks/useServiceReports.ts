@@ -12,7 +12,8 @@ export const useServiceReports = () => {
 
 export const useAddServiceReport = () => {
   const queryClient = useQueryClient();
-  return useMutation<ServiceReport, Error, ServiceReportFormValues, { toastId: string }>({
+  // Update the variables type to include meals_sold, as it's added in the form before mutation
+  return useMutation<ServiceReport, Error, ServiceReportFormValues & { meals_sold: number }, { toastId: string }>({
     mutationFn: createServiceReport,
     onMutate: () => {
       const toastId: string = showLoading("Añadiendo reporte de servicio...");
@@ -34,7 +35,8 @@ export const useAddServiceReport = () => {
 
 export const useUpdateServiceReport = () => {
   const queryClient = useQueryClient();
-  return useMutation<ServiceReport, Error, { id: string; report: ServiceReportFormValues }, { toastId: string }>({
+  // Update the variables type to include meals_sold, as it's added in the form before mutation
+  return useMutation<ServiceReport, Error, { id: string; report: ServiceReportFormValues & { meals_sold: number } }, { toastId: string }>({
     mutationFn: ({ id, report }) => updateServiceReport(id, report),
     onMutate: () => {
       const toastId: string = showLoading("Actualizando reporte de servicio...");

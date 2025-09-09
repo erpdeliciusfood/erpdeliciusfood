@@ -12,13 +12,13 @@ export const getServiceReports = async (): Promise<ServiceReport[]> => {
   return data;
 };
 
-export const createServiceReport = async (reportData: ServiceReportFormValues): Promise<ServiceReport> => {
-  const { platos_vendidos, ...baseReport } = reportData;
+export const createServiceReport = async (reportData: ServiceReportFormValues & { meals_sold: number }): Promise<ServiceReport> => {
+  const { platos_vendidos, meals_sold, ...baseReport } = reportData; // Destructure meals_sold
 
   // Insert the main service report
   const { data: newReport, error: reportError } = await supabase
     .from("service_reports")
-    .insert(baseReport)
+    .insert({ ...baseReport, meals_sold }) // Include meals_sold
     .select("*, meal_services(name)") // Fetch meal_service name on insert
     .single();
 
@@ -54,13 +54,13 @@ export const createServiceReport = async (reportData: ServiceReportFormValues): 
   return completeReport;
 };
 
-export const updateServiceReport = async (id: string, reportData: ServiceReportFormValues): Promise<ServiceReport> => {
-  const { platos_vendidos, ...baseReport } = reportData;
+export const updateServiceReport = async (id: string, reportData: ServiceReportFormValues & { meals_sold: number }): Promise<ServiceReport> => {
+  const { platos_vendidos, meals_sold, ...baseReport } = reportData; // Destructure meals_sold
 
   // Update the main service report
   const { data: updatedReport, error: reportError } = await supabase
     .from("service_reports")
-    .update(baseReport)
+    .update({ ...baseReport, meals_sold }) // Include meals_sold
     .eq("id", id)
     .select("*, meal_services(name)") // Fetch meal_service name on update
     .single();
