@@ -1,3 +1,4 @@
+/// <reference lib="deno.ns" />
 // @ts-ignore
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 // @ts-ignore
@@ -8,14 +9,19 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
+interface DeductStockPayload {
+  service_report_id: string;
+  user_id: string;
+}
+
 // @ts-ignore
-serve(async (req: Request) => { // Explicitly type req as Request
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
 
   try {
-    const { service_report_id, user_id } = await req.json();
+    const { service_report_id, user_id } = await req.json() as DeductStockPayload;
 
     if (!service_report_id || !user_id) {
       return new Response(JSON.stringify({ error: 'Missing service_report_id or user_id' }), {
@@ -24,13 +30,19 @@ serve(async (req: Request) => { // Explicitly type req as Request
       });
     }
 
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+
+    if (!supabaseUrl || !supabaseServiceRoleKey) {
+      console.error('Missing SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY environment variables.');
+      return new Response(JSON.stringify({ error: 'Server configuration error: Supabase environment variables missing.' }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+
     // Create a Supabase client with the service role key to bypass RLS for stock updates
-    const supabaseAdmin = createClient(
-      // @ts-ignore
-      Deno.env.get('SUPABASE_URL') ?? '',
-      // @ts-ignore
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseAdmin = createClient(supabaseUrl, supabaseServiceRoleKey);
 
     // 1. Revert any previous stock deductions for this report (important for updates)
     const { data: previousConsumptionRecords, error: prevConsumptionError } = await supabaseAdmin
@@ -46,7 +58,7 @@ serve(async (req: Request) => { // Explicitly type req as Request
         const insumo = record.insumos;
         if (insumo) {
           reversalUpdates.push({
-            id: record.insumo_id,
+            id: insumo.id,
             stock_quantity: insumo.stock_quantity + record.quantity_consumed, // Add back to stock
           });
         }
@@ -73,7 +85,7 @@ serve(async (req: Request) => { // Explicitly type req as Request
 
     // 2. Fetch the platos sold for the current service report
     const { data: soldPlatos, error: soldPlatosError } = await supabaseAdmin
-      .from('service_report_platos')
+      .from('service_reports')
       .select(`
         quantity_sold,
         platos (
@@ -105,6 +117,7 @@ serve(async (req: Request) => { // Explicitly type req as Request
 
     const insumoUpdates: { [insumoId: string]: { id: string; stock_quantity: number } } = {};
     const consumptionRecordsToInsert = [];
+    const now = new Date().toISOString(); // Get current timestamp for consumption records
 
     for (const soldPlato of soldPlatos) {
       const plato = soldPlato.platos;
@@ -114,7 +127,7 @@ serve(async (req: Request) => { // Explicitly type req as Request
           if (insumo) {
             const totalConsumedQuantity = platoInsumo.cantidad_necesaria * soldPlato.quantity_sold;
 
-            // Update stock quantity
+            // Aggregate stock quantity updates
             if (!insumoUpdates[insumo.id]) {
               insumoUpdates[insumo.id] = { id: insumo.id, stock_quantity: insumo.stock_quantity };
             }
@@ -126,6 +139,7 @@ serve(async (req: Request) => { // Explicitly type req as Request
               service_report_id: service_report_id,
               insumo_id: insumo.id,
               quantity_consumed: totalConsumedQuantity,
+              consumed_at: now, // Add timestamp
             });
           }
         }
