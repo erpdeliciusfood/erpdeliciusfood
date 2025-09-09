@@ -1,11 +1,11 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, Utensils, UserCircle2, Home, ChefHat } from "lucide-react"; // Add ChefHat icon
+import { LogOut, Utensils, UserCircle2, Home, ChefHat, Package } from "lucide-react"; // Add Package icon for orders
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
-import { ModeToggle } from "./ModeToggle"; // Import the ModeToggle component
+import { ModeToggle } from "./ModeToggle";
 
 const Header: React.FC = () => {
   const { session } = useSession();
@@ -37,10 +37,16 @@ const Header: React.FC = () => {
               Insumos
             </Button>
           </Link>
-          <Link to="/platos"> {/* New link for Platos */}
+          <Link to="/platos">
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
-              <ChefHat className="mr-2 h-5 w-5" /> {/* Use ChefHat icon */}
+              <ChefHat className="mr-2 h-5 w-5" />
               Platos
+            </Button>
+          </Link>
+          <Link to="/orders"> {/* New link for Orders */}
+            <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
+              <Package className="mr-2 h-5 w-5" />
+              Pedidos
             </Button>
           </Link>
           <Link to="/profile">
@@ -57,7 +63,7 @@ const Header: React.FC = () => {
             <LogOut className="mr-2 h-5 w-5" />
             Cerrar Sesión
           </Button>
-          <ModeToggle /> {/* Add the ModeToggle here */}
+          <ModeToggle />
         </nav>
       </div>
     </header>

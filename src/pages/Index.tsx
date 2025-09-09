@@ -1,23 +1,26 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Utensils, UserCircle2, LayoutDashboard, ChefHat, Package } from "lucide-react"; // Add Package icon for insumos count
+import { Utensils, UserCircle2, LayoutDashboard, ChefHat, Package, ShoppingCart } from "lucide-react"; // Add ShoppingCart icon for orders
 import { useSession } from "@/contexts/SessionContext";
 import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { useInsumos } from "@/hooks/useInsumos"; // Import useInsumos hook
-import { usePlatos } from "@/hooks/usePlatos"; // Import usePlatos hook
+import { useInsumos } from "@/hooks/useInsumos";
+import { usePlatos } from "@/hooks/usePlatos";
+import { useOrders } from "@/hooks/useOrders"; // Import useOrders hook
 
 const Index = () => {
   const { user } = useSession();
   const { data: profile, isLoading: isProfileLoading } = useProfile();
-  const { data: insumos, isLoading: isLoadingInsumos } = useInsumos(); // Fetch insumos
-  const { data: platos, isLoading: isLoadingPlatos } = usePlatos(); // Fetch platos
+  const { data: insumos, isLoading: isLoadingInsumos } = useInsumos();
+  const { data: platos, isLoading: isLoadingPlatos } = usePlatos();
+  const { data: orders, isLoading: isLoadingOrders } = useOrders(); // Fetch orders
 
   const userName = profile?.first_name || user?.email || "Usuario";
 
   const totalInsumos = insumos?.length || 0;
   const totalPlatos = platos?.length || 0;
+  const totalOrders = orders?.length || 0; // Get total orders
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
@@ -67,23 +70,23 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          {/* Existing Profile Card */}
-          <Link to="/profile">
-            <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-2xl font-bold">Mi Perfil</CardTitle>
-                <UserCircle2 className="h-8 w-8 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-lg text-left">
-                  Actualiza tu información personal y gestiona tu cuenta.
-                </CardDescription>
-              </CardContent>
-              <Button variant="outline" className="w-full mt-4 px-8 py-4 text-lg">
-                Ir a Perfil
-              </Button>
-            </Card>
-          </Link>
+          {/* Card for Total Orders */}
+          <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out h-full flex flex-col justify-between">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-2xl font-bold">Total Pedidos</CardTitle>
+              <ShoppingCart className="h-8 w-8 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {isLoadingOrders ? (
+                <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md" />
+              ) : (
+                <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalOrders}</div>
+              )}
+              <CardDescription className="text-lg text-left mt-2">
+                Pedidos registrados hasta ahora.
+              </CardDescription>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
@@ -121,6 +124,43 @@ const Index = () => {
             </Card>
           </Link>
         </div>
+
+        <div className="grid grid-cols-1 gap-6 mb-8">
+          <Link to="/orders">
+            <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-2xl font-bold">Gestión de Pedidos</CardTitle>
+                <ShoppingCart className="h-8 w-8 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-lg text-left">
+                  Administra los pedidos de tus clientes, su estado y los platos.
+                </CardDescription>
+              </CardContent>
+              <Button className="w-full mt-4 px-8 py-4 text-lg bg-purple-600 hover:bg-purple-700 text-white transition-colors duration-200 ease-in-out">
+                Ir a Pedidos
+              </Button>
+            </Card>
+          </Link>
+        </div>
+
+        {/* Existing Profile Card */}
+        <Link to="/profile">
+            <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-2xl font-bold">Mi Perfil</CardTitle>
+                <UserCircle2 className="h-8 w-8 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-lg text-left">
+                  Actualiza tu información personal y gestiona tu cuenta.
+                </CardDescription>
+              </CardContent>
+              <Button variant="outline" className="w-full mt-4 px-8 py-4 text-lg">
+                Ir a Perfil
+              </Button>
+            </Card>
+          </Link>
 
         <div className="mt-8 text-gray-600 dark:text-gray-400">
           <p className="text-lg">¡Explora las funcionalidades de tu ERP!</p>

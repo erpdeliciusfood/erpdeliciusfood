@@ -8,10 +8,11 @@ import NotFound from "./pages/NotFound";
 import Insumos from "./pages/Insumos";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
-import Platos from "./pages/Platos"; // Import the new Platos page
+import Platos from "./pages/Platos";
+import Orders from "./pages/Orders"; // Import the new Orders page
 import { SessionContextProvider, useSession } from "./contexts/SessionContext";
 import Header from "./components/layout/Header";
-import { ThemeProvider } from "./contexts/ThemeProvider"; // Import ThemeProvider
+import { ThemeProvider } from "./contexts/ThemeProvider";
 
 const queryClient = new QueryClient();
 
@@ -40,7 +41,8 @@ const AppRoutes = () => (
     <Route path="/login" element={<Login />} />
     <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
     <Route path="/insumos" element={<ProtectedRoute><Insumos /></ProtectedRoute>} />
-    <Route path="/platos" element={<ProtectedRoute><Platos /></ProtectedRoute>} /> {/* New protected route for Platos */}
+    <Route path="/platos" element={<ProtectedRoute><Platos /></ProtectedRoute>} />
+    <Route path="/orders" element={<ProtectedRoute><Orders /></ProtectedRoute>} /> {/* New protected route for Orders */}
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
     <Route path="*" element={<NotFound />} />
@@ -49,7 +51,7 @@ const AppRoutes = () => (
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme"> {/* Wrap with ThemeProvider */}
+    <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <TooltipProvider>
         <Toaster />
         <Sonner />
