@@ -1,13 +1,19 @@
 import React, { useMemo } from "react";
 import { useMenus } from "@/hooks/useMenus";
 import { useInsumos } from "@/hooks/useInsumos";
-import { Loader2, ShoppingBag } from "lucide-react"; // Removed AlertCircle
+import { Loader2, ShoppingBag } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Insumo } from "@/types";
+import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "@/components/ui/accordion";
 
 interface PurchaseAnalysisProps {
   startDate: Date;
@@ -20,6 +26,10 @@ interface InsumoNeeded extends Insumo {
   purchase_suggestion: number;
 }
 
+interface GroupedInsumos {
+  [supplierName: string]: InsumoNeeded[];
+}
+
 const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate }) => {
   const { data: menus, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenus();
   const { data: allInsumos, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos();
@@ -28,8 +38,8 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
   const isError = isErrorMenus || isErrorInsumos;
   const error = errorMenus || errorInsumos;
 
-  const insumosForPurchase = useMemo(() => {
-    if (isLoading || isError || !menus || !allInsumos) return [];
+  const groupedInsumosForPurchase = useMemo(() => {
+    if (isLoading || isError || !menus || !allInsumos) return {};
 
     const insumoNeedsMap = new Map<string, number>(); // Map<insumoId, totalQuantityNeeded>
 
@@ -53,14 +63,19 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
       }
     });
 
-    const result: InsumoNeeded[] = [];
+    const groupedResult: GroupedInsumos = {};
+
     allInsumos.forEach(insumo => {
       const quantityNeededForPeriod = insumoNeedsMap.get(insumo.id) || 0;
       const currentStock = insumo.stock_quantity;
       const purchaseSuggestion = Math.max(0, quantityNeededForPeriod - currentStock);
 
-      if (quantityNeededForPeriod > 0 || currentStock < 0) { // Show if needed or if stock is negative (error)
-        result.push({
+      if (purchaseSuggestion > 0 || currentStock < 0) { // Show if needed or if stock is negative (error)
+        const supplierName = insumo.supplier_name || "Sin Proveedor Asignado";
+        if (!groupedResult[supplierName]) {
+          groupedResult[supplierName] = [];
+        }
+        groupedResult[supplierName].push({
           ...insumo,
           quantity_needed_for_period: quantityNeededForPeriod,
           current_stock: currentStock,
@@ -69,7 +84,12 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
       }
     });
 
-    return result.sort((a, b) => b.purchase_suggestion - a.purchase_suggestion); // Sort by highest purchase suggestion
+    // Sort insumos within each group by purchase_suggestion
+    for (const supplier in groupedResult) {
+      groupedResult[supplier].sort((a, b) => b.purchase_suggestion - a.purchase_suggestion);
+    }
+
+    return groupedResult;
   }, [menus, allInsumos, startDate, endDate, isLoading, isError]);
 
   if (isLoading) {
@@ -93,6 +113,8 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
   const formattedStartDate = format(startDate, "PPP", { locale: es });
   const formattedEndDate = format(endDate, "PPP", { locale: es });
 
+  const hasPurchaseSuggestions = Object.keys(groupedInsumosForPurchase).length > 0;
+
   return (
     <Card className="w-full shadow-lg dark:bg-gray-800">
       <CardHeader>
@@ -101,43 +123,54 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
         </CardTitle>
       </CardHeader>
       <CardContent>
-        {insumosForPurchase.length > 0 ? (
-          <div className="overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Insumo</TableHead>
-                  <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Unidad</TableHead>
-                  <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Stock Actual</TableHead>
-                  <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Necesidad Periodo</TableHead>
-                  <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Sugerencia Compra</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {insumosForPurchase.map((insumo) => (
-                  <TableRow key={insumo.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{insumo.nombre}</TableCell>
-                    <TableCell className="text-base text-gray-700 dark:text-gray-300">{insumo.unidad_medida}</TableCell>
-                    <TableCell className="text-right text-base">
-                      <Badge variant={insumo.current_stock <= 0 ? "destructive" : insumo.current_stock < insumo.quantity_needed_for_period ? "secondary" : "outline"}>
-                        {insumo.current_stock}
-                      </Badge>
-                    </TableCell>
-                    <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">{insumo.quantity_needed_for_period.toFixed(2)}</TableCell>
-                    <TableCell className="text-right text-base">
-                      {insumo.purchase_suggestion > 0 ? (
-                        <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white text-lg px-3 py-1">
-                          {insumo.purchase_suggestion.toFixed(2)}
-                        </Badge>
-                      ) : (
-                        <span className="text-gray-500 dark:text-gray-400">0</span>
-                      )}
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
+        {hasPurchaseSuggestions ? (
+          <Accordion type="multiple" className="w-full">
+            {Object.entries(groupedInsumosForPurchase).map(([supplierName, insumos]) => (
+              <AccordionItem key={supplierName} value={supplierName}>
+                <AccordionTrigger className="text-xl font-semibold text-gray-800 dark:text-gray-200 hover:no-underline">
+                  {supplierName} ({insumos.length} insumos)
+                </AccordionTrigger>
+                <AccordionContent>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Insumo</TableHead>
+                          <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Unidad</TableHead>
+                          <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Stock Actual</TableHead>
+                          <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Necesidad Periodo</TableHead>
+                          <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Sugerencia Compra</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {insumos.map((insumo) => (
+                          <TableRow key={insumo.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                            <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{insumo.nombre}</TableCell>
+                            <TableCell className="text-base text-gray-700 dark:text-gray-300">{insumo.unidad_medida}</TableCell>
+                            <TableCell className="text-right text-base">
+                              <Badge variant={insumo.current_stock <= 0 ? "destructive" : insumo.current_stock < insumo.quantity_needed_for_period ? "secondary" : "outline"}>
+                                {insumo.current_stock}
+                              </Badge>
+                            </TableCell>
+                            <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">{insumo.quantity_needed_for_period.toFixed(2)}</TableCell>
+                            <TableCell className="text-right text-base">
+                              {insumo.purchase_suggestion > 0 ? (
+                                <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white text-lg px-3 py-1">
+                                  {insumo.purchase_suggestion.toFixed(2)}
+                                </Badge>
+                              ) : (
+                                <span className="text-gray-500 dark:text-gray-400">0</span>
+                              )}
+                            </TableCell>
+                          </TableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </AccordionContent>
+              </AccordionItem>
+            ))}
+          </Accordion>
         ) : (
           <div className="text-center py-6 text-gray-600 dark:text-gray-400">
             <ShoppingBag className="mx-auto h-12 w-12 mb-3 text-gray-400 dark:text-gray-600" />
