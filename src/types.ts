@@ -133,3 +133,12 @@ export interface MenuFormValues {
     quantity_needed: number;
   }[];
 }
+
+export interface Profile {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+  updated_at: string | null;
+  role: 'user' | 'admin'; // Added role property
+}

@@ -1,16 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
-
-interface Profile {
-  id: string;
-  first_name: string | null;
-  last_name: string | null;
-  avatar_url: string | null;
-  updated_at: string | null;
-}
+import { Profile } from "@/types"; // Import Profile from types
 
 interface ProfileFormValues {
   first_name: string | null;
   last_name: string | null;
+  role?: 'user' | 'admin'; // Role can be updated by admin
 }
 
 export const getProfile = async (userId: string): Promise<Profile | null> => {
@@ -26,6 +20,15 @@ export const getProfile = async (userId: string): Promise<Profile | null> => {
     }
     throw new Error(error.message);
   }
+  return data;
+};
+
+export const getAllProfiles = async (): Promise<Profile[]> => {
+  const { data, error } = await supabase
+    .from("profiles")
+    .select("*")
+    .order("first_name", { ascending: true });
+  if (error) throw new Error(error.message);
   return data;
 };
 
