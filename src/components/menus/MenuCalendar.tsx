@@ -1,15 +1,16 @@
 import React, { useState, useEffect } from "react";
-import { format, startOfMonth, endOfMonth, isSameDay, parseISO } from "date-fns"; // Removed eachDayOfInterval, isToday
+import { format, startOfMonth, endOfMonth, isSameDay, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, PlusCircle, UtensilsCrossed } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"; // Removed DialogTrigger
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useMenus } from "@/hooks/useMenus";
 import { Menu } from "@/types";
-import DailyMenuList from "./DailyMenuList"; // Renamed from MenuList
+import DailyMenuList from "./DailyMenuList";
 import MenuForm from "./MenuForm";
+import { DayModifiers } from "react-day-picker"; // Import DayModifiers type
 
 interface MenuCalendarProps {
   onAddMenu: (date: Date) => void;
@@ -62,16 +63,16 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
     setSelectedDate(undefined); // Clear selected date when month changes
   };
 
-  // Removed handleDailyMenuDialogClose as it was unused.
-
-  const modifiers = {
+  const modifiers: DayModifiers = {
     menus: menusInMonth?.map(menu => menu.menu_date ? parseISO(menu.menu_date) : undefined).filter(Boolean) as Date[],
     today: new Date(),
+    selected: selectedDate ? [selectedDate] : [], // Fix: Ensure 'selected' is Matcher | Matcher[]
   };
 
   const modifiersClassNames = {
     menus: "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 rounded-full",
     today: "bg-primary text-primary-foreground rounded-full",
+    selected: "bg-green-500 text-white dark:bg-green-700 dark:text-white rounded-full", // New class for selected date
   };
 
   if (isLoading) {
