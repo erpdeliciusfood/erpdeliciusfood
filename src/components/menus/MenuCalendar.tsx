@@ -1,17 +1,14 @@
 import React, { useState, useEffect } from "react";
 import { format, startOfMonth, endOfMonth, isSameDay, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar as CalendarIcon, PlusCircle, UtensilsCrossed } from "lucide-react";
+import { Calendar as CalendarIcon, UtensilsCrossed } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"; // Import Sheet components
 import { useMenus } from "@/hooks/useMenus";
 import { Menu } from "@/types";
-import DailyMenuList from "./DailyMenuList";
-import MenuForm from "./MenuForm";
 import { DayModifiers } from "react-day-picker";
+import DailyMenuDialog from "./DailyMenuDialog"; // New import
+import MenuFormSheet from "./MenuFormSheet"; // New import
 
 interface MenuCalendarProps {
   onAddMenu: (date: Date) => void;
@@ -145,57 +142,22 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
         </CardContent>
       </Card>
 
-      <Dialog open={isDailyMenuDialogOpen} onOpenChange={setIsDailyMenuDialogOpen}>
-        <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-3xl p-6 max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              Menús para el {selectedDate ? format(selectedDate, "PPP", { locale: es }) : "día seleccionado"}
-            </DialogTitle>
-          </DialogHeader>
-          <div className="space-y-4">
-            <Button
-              onClick={() => {
-                if (selectedDate) {
-                  onAddMenu(selectedDate);
-                  setIsDailyMenuDialogOpen(false); // Close daily menu list dialog
-                }
-              }}
-              className="w-full px-6 py-3 text-lg bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
-              disabled={!selectedDate}
-            >
-              <PlusCircle className="mr-2 h-5 w-5" />
-              Añadir Menú para este día
-            </Button>
-            <DailyMenuList menus={dailyMenus} onEdit={(menu) => {
-              onEditMenu(menu);
-              setIsDailyMenuDialogOpen(false); // Close daily menu list dialog
-            }} />
-          </div>
-        </DialogContent>
-      </Dialog>
+      <DailyMenuDialog
+        selectedDate={selectedDate}
+        dailyMenus={dailyMenus}
+        isDailyMenuDialogOpen={isDailyMenuDialogOpen}
+        setIsDailyMenuDialogOpen={setIsDailyMenuDialogOpen}
+        onAddMenu={onAddMenu}
+        onEditMenu={onEditMenu}
+      />
 
-      {/* Sheet for Add/Edit Menu Form */}
-      <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <SheetContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-3xl p-6 max-h-screen overflow-y-auto">
-          <SheetHeader>
-            <SheetTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              {editingMenu ? "Editar Menú" : "Crear Nuevo Menú"}
-            </SheetTitle>
-          </SheetHeader>
-          <MenuForm
-            initialData={editingMenu}
-            onSuccess={() => {
-              setIsFormOpen(false);
-              setSelectedDate(undefined); // Clear selected date after form submission
-            }}
-            onCancel={() => {
-              setIsFormOpen(false);
-              setSelectedDate(undefined); // Clear selected date if cancelled
-            }}
-            preselectedDate={selectedDate} // Pass selectedDate to MenuForm
-          />
-        </SheetContent>
-      </Sheet>
+      <MenuFormSheet
+        isFormOpen={isFormOpen}
+        setIsFormOpen={setIsFormOpen}
+        editingMenu={editingMenu}
+        selectedDate={selectedDate}
+        setSelectedDate={setSelectedDate}
+      />
     </div>
   );
 };
