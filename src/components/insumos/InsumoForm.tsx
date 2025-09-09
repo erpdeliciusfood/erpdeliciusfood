@@ -42,12 +42,16 @@ const formSchema = z.object({
   }).max(999999, {
     message: "La cantidad de stock no debe exceder 999999.",
   }),
-  supplier_name: z.string().max(100, {
+  supplier_name: z.string().min(1, { // Made mandatory
+    message: "El nombre del proveedor es requerido.",
+  }).max(100, {
     message: "El nombre del proveedor no debe exceder los 100 caracteres.",
-  }).nullable(),
-  supplier_phone: z.string().max(20, {
+  }),
+  supplier_phone: z.string().min(1, { // Made mandatory
+    message: "El teléfono del proveedor es requerido.",
+  }).max(20, {
     message: "El teléfono del proveedor no debe exceder los 20 caracteres.",
-  }).nullable(),
+  }),
 });
 
 interface InsumoFormProps {
@@ -71,8 +75,8 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
       unidad_medida: "",
       costo_unitario: 0,
       stock_quantity: 0,
-      supplier_name: null,
-      supplier_phone: null,
+      supplier_name: "", // Changed to empty string for mandatory field
+      supplier_phone: "", // Changed to empty string for mandatory field
     },
   });
 
@@ -83,8 +87,8 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         unidad_medida: initialData.unidad_medida,
         costo_unitario: initialData.costo_unitario,
         stock_quantity: initialData.stock_quantity,
-        supplier_name: initialData.supplier_name || null,
-        supplier_phone: initialData.supplier_phone || null,
+        supplier_name: initialData.supplier_name || "", // Ensure it's a string
+        supplier_phone: initialData.supplier_phone || "", // Ensure it's a string
       });
     } else {
       form.reset({
@@ -92,8 +96,8 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         unidad_medida: "",
         costo_unitario: 0,
         stock_quantity: 0,
-        supplier_name: null,
-        supplier_phone: null,
+        supplier_name: "",
+        supplier_phone: "",
       });
     }
   }, [initialData, form]);
@@ -201,7 +205,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
           name="supplier_name"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre del Proveedor (Opcional)</FormLabel>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre del Proveedor</FormLabel>
               <FormControl>
                 <Input
                   placeholder="Ej. Distribuidora La Huerta"
@@ -220,7 +224,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
           name="supplier_phone"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Teléfono del Proveedor (Opcional)</FormLabel>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Teléfono del Proveedor</FormLabel>
               <FormControl>
                 <Input
                   placeholder="Ej. +51 987 654 321"
