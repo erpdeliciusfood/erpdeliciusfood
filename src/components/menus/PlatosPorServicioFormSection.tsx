@@ -39,6 +39,24 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
     name: "platos_por_servicio",
   });
 
+  const platoPlaceholder = () => {
+    if (isLoading) return "Cargando platos...";
+    if (!availablePlatos || availablePlatos.length === 0) return "No hay platos disponibles";
+    return "Selecciona un plato";
+  };
+
+  const mealServicePlaceholder = () => {
+    if (isLoading) return "Cargando servicios...";
+    if (!availableMealServices || availableMealServices.length === 0) return "No hay servicios disponibles";
+    return "Selecciona un servicio";
+  };
+
+  const mealTypePlaceholder = () => {
+    if (isLoading) return "Cargando tipos de plato...";
+    if (!availableMealTypes || availableMealTypes.length === 0) return "No hay tipos de plato disponibles";
+    return "Selecciona tipo de plato";
+  };
+
   return (
     <Card className="mt-8">
       <CardHeader>
@@ -56,11 +74,11 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
                   <Select
                     onValueChange={serviceField.onChange}
                     defaultValue={serviceField.value}
-                    disabled={isLoading || !availableMealServices} // Disable if overall loading or data not yet available
+                    disabled={isLoading || !availableMealServices || availableMealServices.length === 0}
                   >
                     <FormControl>
                       <SelectTrigger className="h-12 text-base">
-                        <SelectValue placeholder={!availableMealServices && isLoading ? "Cargando servicios..." : "Selecciona un servicio"} />
+                        <SelectValue placeholder={mealServicePlaceholder()} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -84,11 +102,11 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
                   <Select
                     onValueChange={platoField.onChange}
                     defaultValue={platoField.value}
-                    disabled={isLoading || !availablePlatos} // Disable if overall loading or data not yet available
+                    disabled={isLoading || !availablePlatos || availablePlatos.length === 0}
                   >
                     <FormControl>
                       <SelectTrigger className="h-12 text-base">
-                        <SelectValue placeholder={!availablePlatos && isLoading ? "Cargando platos..." : "Selecciona un plato"} />
+                        <SelectValue placeholder={platoPlaceholder()} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -112,11 +130,11 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
                   <Select
                     onValueChange={mealTypeField.onChange}
                     defaultValue={mealTypeField.value || ""}
-                    disabled={isLoading || !availableMealTypes} // Disable if overall loading or data not yet available
+                    disabled={isLoading || !availableMealTypes || availableMealTypes.length === 0}
                   >
                     <FormControl>
                       <SelectTrigger className="h-12 text-base">
-                        <SelectValue placeholder={!availableMealTypes && isLoading ? "Cargando tipos de plato..." : "Selecciona tipo de plato"} />
+                        <SelectValue placeholder={mealTypePlaceholder()} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -169,7 +187,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
           variant="outline"
           onClick={() => append({ meal_service_id: "", plato_id: "", meal_type_id: null, quantity_needed: 1 })}
           className="w-full mt-4 px-6 py-3 text-lg"
-          disabled={isLoading}
+          disabled={isLoading || !availablePlatos || availablePlatos.length === 0 || !availableMealServices || availableMealServices.length === 0 || !availableMealTypes || availableMealTypes.length === 0}
         >
           <PlusCircle className="mr-2 h-5 w-5" />
           Añadir Plato a Servicio

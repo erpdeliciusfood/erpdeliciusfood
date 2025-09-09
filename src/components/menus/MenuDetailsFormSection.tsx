@@ -53,6 +53,12 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
     }
   }, [menuType, menuDate, form, initialData]);
 
+  const eventTypePlaceholder = () => {
+    if (isLoading) return "Cargando tipos de evento...";
+    if (!availableEventTypes || availableEventTypes.length === 0) return "No hay tipos de evento disponibles";
+    return "Selecciona un tipo de evento";
+  };
+
   return (
     <>
       <FormField
@@ -189,11 +195,11 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value || ""}
-                disabled={isLoading || !availableEventTypes} // Disable if overall loading or data not yet available
+                disabled={isLoading || !availableEventTypes || availableEventTypes.length === 0}
               >
                 <FormControl>
                   <SelectTrigger className="h-12 text-base">
-                    <SelectValue placeholder={!availableEventTypes && isLoading ? "Cargando tipos de evento..." : "Selecciona un tipo de evento"} />
+                    <SelectValue placeholder={eventTypePlaceholder()} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
