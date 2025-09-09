@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPlatos, getPlatoById, createPlato, updatePlato, deletePlato } from "@/integrations/supabase/platos";
 import { Plato, PlatoFormValues } from "@/types";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
+import { useSession } from "@/contexts/SessionContext";
 
 export const usePlatos = () => {
   return useQuery<Plato[], Error>({
@@ -20,8 +21,13 @@ export const usePlato = (id: string) => {
 
 export const useAddPlato = () => {
   const queryClient = useQueryClient();
+  const { user } = useSession();
+
   return useMutation<Plato, Error, PlatoFormValues, { toastId: string }>({
-    mutationFn: createPlato,
+    mutationFn: async (platoData) => {
+      if (!user?.id) throw new Error("User not authenticated.");
+      return createPlato(platoData, user.id);
+    },
     onMutate: () => {
       const toastId: string = showLoading("Añadiendo plato...");
       return { toastId };
@@ -42,8 +48,13 @@ export const useAddPlato = () => {
 
 export const useUpdatePlato = () => {
   const queryClient = useQueryClient();
+  const { user } = useSession();
+
   return useMutation<Plato, Error, { id: string; plato: PlatoFormValues }, { toastId: string }>({
-    mutationFn: ({ id, plato }) => updatePlato(id, plato),
+    mutationFn: async ({ id, plato }) => {
+      if (!user?.id) throw new Error("User not authenticated.");
+      return updatePlato(id, plato, user.id);
+    },
     onMutate: () => {
       const toastId: string = showLoading("Actualizando plato...");
       return { toastId };
@@ -65,8 +76,13 @@ export const useUpdatePlato = () => {
 
 export const useDeletePlato = () => {
   const queryClient = useQueryClient();
+  const { user } = useSession();
+
   return useMutation<void, Error, string, { toastId: string }>({
-    mutationFn: deletePlato,
+    mutationFn: async (id) => {
+      if (!user?.id) throw new Error("User not authenticated.");
+      return deletePlato(id, user.id);
+    },
     onMutate: () => {
       const toastId: string = showLoading("Eliminando plato...");
       return { toastId };

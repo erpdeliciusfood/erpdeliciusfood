@@ -52,7 +52,7 @@ const calculatePlatoCost = async (insumosData: { insumo_id: string; cantidad_nec
   return totalCost;
 };
 
-export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> => {
+export const createPlato = async (platoData: PlatoFormValues, userId: string): Promise<Plato> => {
   const { nombre, descripcion, markup_percentage, insumos } = platoData;
 
   // Calculate production cost
@@ -64,7 +64,7 @@ export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> =>
   // Insert the main plato
   const { data: newPlato, error: platoError } = await supabase
     .from("platos")
-    .insert({ nombre, descripcion, precio_venta, costo_produccion, markup_percentage })
+    .insert({ nombre, descripcion, precio_venta, costo_produccion, markup_percentage, user_id: userId })
     .select()
     .single();
 
@@ -100,7 +100,7 @@ export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> =>
   return completePlato;
 };
 
-export const updatePlato = async (id: string, platoData: PlatoFormValues): Promise<Plato> => {
+export const updatePlato = async (id: string, platoData: PlatoFormValues, userId: string): Promise<Plato> => {
   const { nombre, descripcion, markup_percentage, insumos } = platoData;
 
   // Calculate production cost
@@ -114,6 +114,7 @@ export const updatePlato = async (id: string, platoData: PlatoFormValues): Promi
     .from("platos")
     .update({ nombre, descripcion, precio_venta, costo_produccion, markup_percentage })
     .eq("id", id)
+    .eq("user_id", userId) // Ensure user owns the plato
     .select()
     .single();
 
@@ -157,7 +158,7 @@ export const updatePlato = async (id: string, platoData: PlatoFormValues): Promi
   return completePlato;
 };
 
-export const deletePlato = async (id: string): Promise<void> => {
-  const { error } = await supabase.from("platos").delete().eq("id", id);
+export const deletePlato = async (id: string, userId: string): Promise<void> => {
+  const { error } = await supabase.from("platos").delete().eq("id", id).eq("user_id", userId);
   if (error) throw new Error(error.message);
 };
