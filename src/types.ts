@@ -153,4 +153,5 @@ export interface Profile {
   avatar_url: string | null;
   updated_at: string | null;
   role: 'user' | 'admin';
+  email?: string; // Added email field
 }

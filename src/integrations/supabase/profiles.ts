@@ -7,6 +7,17 @@ interface ProfileFormValues {
   role?: 'user' | 'admin'; // Role can be updated by admin
 }
 
+// Define the expected structure of the data returned by the Supabase query
+interface SupabaseProfileWithAuth {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+  updated_at: string | null;
+  role: 'user' | 'admin';
+  auth_users: { email: string | null } | null; // The joined auth.users data
+}
+
 export const getProfile = async (userId: string): Promise<Profile | null> => {
   const { data, error } = await supabase
     .from("profiles")
@@ -24,12 +35,32 @@ export const getProfile = async (userId: string): Promise<Profile | null> => {
 };
 
 export const getAllProfiles = async (): Promise<Profile[]> => {
+  // Explicitly type the select method's return data
   const { data, error } = await supabase
     .from("profiles")
-    .select("*")
+    .select<SupabaseProfileWithAuth[]>("*, auth_users:auth.users(email)") // Explicitly tell select what type to expect
     .order("first_name", { ascending: true });
-  if (error) throw new Error(error.message);
-  return data;
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  // At this point, if no error, data is guaranteed to be SupabaseProfileWithAuth[]
+  // We can add a null check for robustness, though TypeScript should now understand its type
+  if (!data) {
+    return []; // Return an empty array if data is unexpectedly null
+  }
+
+  // Map the data to flatten the auth_users object and assign email directly to profile
+  return data.map(profile => ({
+    id: profile.id,
+    first_name: profile.first_name,
+    last_name: profile.last_name,
+    avatar_url: profile.avatar_url,
+    updated_at: profile.updated_at,
+    role: profile.role,
+    email: profile.auth_users?.email || undefined, // Assign email, or undefined if not found
+  }));
 };
 
 export const updateProfile = async (userId: string, profile: ProfileFormValues): Promise<Profile> => {
