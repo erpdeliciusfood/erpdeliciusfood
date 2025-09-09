@@ -171,7 +171,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
               name={`platos_por_servicio.${index}.quantity_needed`}
               render={({ field: quantityField }) => (
                 <FormItem className="w-full md:w-1/4">
-                  <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Cantidad</FormLabel>
+                  <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Cantidad (Raciones por Servicio)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
