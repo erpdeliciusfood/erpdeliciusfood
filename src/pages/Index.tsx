@@ -1,16 +1,23 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Utensils, UserCircle2, LayoutDashboard, ChefHat } from "lucide-react"; // Add ChefHat icon
+import { Utensils, UserCircle2, LayoutDashboard, ChefHat, Package } from "lucide-react"; // Add Package icon for insumos count
 import { useSession } from "@/contexts/SessionContext";
 import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { useInsumos } from "@/hooks/useInsumos"; // Import useInsumos hook
+import { usePlatos } from "@/hooks/usePlatos"; // Import usePlatos hook
 
 const Index = () => {
   const { user } = useSession();
   const { data: profile, isLoading: isProfileLoading } = useProfile();
+  const { data: insumos, isLoading: isLoadingInsumos } = useInsumos(); // Fetch insumos
+  const { data: platos, isLoading: isLoadingPlatos } = usePlatos(); // Fetch platos
 
   const userName = profile?.first_name || user?.email || "Usuario";
+
+  const totalInsumos = insumos?.length || 0;
+  const totalPlatos = platos?.length || 0;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
@@ -22,6 +29,62 @@ const Index = () => {
         <p className="text-xl text-gray-700 dark:text-gray-300 mb-8">
           Gestiona tus operaciones de restaurante de forma eficiente.
         </p>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
+          {/* Card for Total Insumos */}
+          <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out h-full flex flex-col justify-between">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-2xl font-bold">Total Insumos</CardTitle>
+              <Package className="h-8 w-8 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {isLoadingInsumos ? (
+                <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md" />
+              ) : (
+                <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalInsumos}</div>
+              )}
+              <CardDescription className="text-lg text-left mt-2">
+                Insumos registrados en tu inventario.
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          {/* Card for Total Platos */}
+          <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out h-full flex flex-col justify-between">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-2xl font-bold">Total Platos</CardTitle>
+              <ChefHat className="h-8 w-8 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {isLoadingPlatos ? (
+                <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md" />
+              ) : (
+                <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalPlatos}</div>
+              )}
+              <CardDescription className="text-lg text-left mt-2">
+                Platos disponibles en tu menú.
+              </CardDescription>
+            </CardContent>
+          </Card>
+
+          {/* Existing Profile Card */}
+          <Link to="/profile">
+            <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-2xl font-bold">Mi Perfil</CardTitle>
+                <UserCircle2 className="h-8 w-8 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-lg text-left">
+                  Actualiza tu información personal y gestiona tu cuenta.
+                </CardDescription>
+              </CardContent>
+              <Button variant="outline" className="w-full mt-4 px-8 py-4 text-lg">
+                Ir a Perfil
+              </Button>
+            </Card>
+          </Link>
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           <Link to="/insumos">
@@ -41,11 +104,11 @@ const Index = () => {
             </Card>
           </Link>
 
-          <Link to="/platos"> {/* New card for Platos */}
+          <Link to="/platos">
             <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-2xl font-bold">Gestión de Platos</CardTitle>
-                <ChefHat className="h-8 w-8 text-muted-foreground" /> {/* Use ChefHat icon */}
+                <ChefHat className="h-8 w-8 text-muted-foreground" />
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-lg text-left">
@@ -57,26 +120,8 @@ const Index = () => {
               </Button>
             </Card>
           </Link>
-
-          <Link to="/profile">
-            <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-2xl font-bold">Mi Perfil</CardTitle>
-                <UserCircle2 className="h-8 w-8 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-lg text-left">
-                  Actualiza tu información personal y gestiona tu cuenta.
-                </CardDescription>
-              </CardContent>
-              <Button variant="outline" className="w-full mt-4 px-8 py-4 text-lg">
-                Ir a Perfil
-              </Button>
-            </Card>
-          </Link>
         </div>
 
-        {/* Puedes añadir más secciones o estadísticas aquí en el futuro */}
         <div className="mt-8 text-gray-600 dark:text-gray-400">
           <p className="text-lg">¡Explora las funcionalidades de tu ERP!</p>
         </div>
