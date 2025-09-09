@@ -156,7 +156,9 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                           {insumo.current_stock}
                         </Badge>
                       </TableCell>
-                      <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">{insumo.quantity_needed_for_period.toFixed(2)}</TableCell>
+                      <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">
+                        {insumo.quantity_needed_for_period.toFixed(2)} {insumo.purchase_unit}
+                      </TableCell>
                       <TableCell className="text-right text-base">
                         {insumo.purchase_suggestion > 0 ? (
                           <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white text-lg px-3 py-1">
