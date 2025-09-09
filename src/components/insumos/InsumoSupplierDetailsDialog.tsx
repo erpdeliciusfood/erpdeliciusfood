@@ -11,9 +11,9 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Insumo, InsumoSupplierHistory, InsumoPriceHistory } from "@/types"; // Imported new types
+import { Insumo, InsumoSupplierHistory, InsumoPriceHistory } from "@/types";
 import { useUpdateInsumo, useInsumoSupplierHistory, useInsumoPriceHistory } from "@/hooks/useInsumos";
-import { Loader2, Building2, DollarSign, History } from "lucide-react"; // Removed Phone icon
+import { Loader2, Building2, DollarSign, History } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -23,9 +23,13 @@ const supplierFormSchema = z.object({
   supplier_name: z.string().max(100, {
     message: "El nombre del proveedor no debe exceder los 100 caracteres.",
   }).nullable(),
-  supplier_phone: z.string().max(20, {
-    message: "El teléfono del proveedor no debe exceder los 20 caracteres.",
-  }).nullable(),
+  supplier_phone: z.string().nullable().refine((val) => {
+    if (!val) return true; // Allow null or empty string
+    // Regex for +51 followed by 9 digits
+    return /^\+51\d{9}$/.test(val);
+  }, {
+    message: "El teléfono debe empezar con +51 y tener 9 dígitos (ej. +51987654321).",
+  }),
 });
 
 interface InsumoSupplierDetailsDialogProps {
@@ -103,7 +107,7 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
               <Label htmlFor="supplier_phone" className="text-base font-semibold text-gray-800 dark:text-gray-200">Teléfono del Proveedor</Label>
               <Input
                 id="supplier_phone"
-                placeholder="Teléfono del proveedor"
+                placeholder="Ej. +51987654321"
                 {...form.register("supplier_phone")}
                 className="h-10 text-base mt-1"
                 disabled={isUpdating}

@@ -59,9 +59,13 @@ const formSchema = z.object({
   supplier_name: z.string().max(100, {
     message: "El nombre del proveedor no debe exceder los 100 caracteres.",
   }).nullable(),
-  supplier_phone: z.string().max(20, {
-    message: "El teléfono del proveedor no debe exceder los 20 caracteres.",
-  }).nullable(),
+  supplier_phone: z.string().nullable().refine((val) => {
+    if (!val) return true; // Allow null or empty string
+    // Regex for +51 followed by 9 digits
+    return /^\+51\d{9}$/.test(val);
+  }, {
+    message: "El teléfono debe empezar con +51 y tener 9 dígitos (ej. +51987654321).",
+  }),
   category: z.string().min(1, {
     message: "Debe seleccionar una categoría.",
   }), // Added category to schema
@@ -448,7 +452,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
               <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Teléfono del Proveedor (Opcional)</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Ej. 987654321"
+                  placeholder="Ej. +51987654321"
                   {...field}
                   value={field.value || ""}
                   className="h-12 text-base"
