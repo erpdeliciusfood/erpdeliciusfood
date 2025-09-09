@@ -54,13 +54,17 @@ export const getPlatoById = async (id: string): Promise<Plato | null> => {
 export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> => {
   const { nombre, descripcion, insumos } = platoData;
 
+  // Get authenticated user ID
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) throw new Error("User not authenticated.");
+
   // Calculate production cost
   const { costo_produccion } = await calculatePlatoCosts(insumos);
 
-  // Insert the main plato with calculated costs
+  // Insert the main plato with calculated costs and user_id
   const { data: newPlato, error: platoError } = await supabase
     .from("platos")
-    .insert({ nombre, descripcion, costo_produccion }) // Removed precio_venta and markup_percentage
+    .insert({ nombre, descripcion, costo_produccion, user_id: user.id }) // Added user.id here
     .select()
     .single();
 
