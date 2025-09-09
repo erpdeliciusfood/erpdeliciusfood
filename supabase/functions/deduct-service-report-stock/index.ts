@@ -1,8 +1,3 @@
-/// <reference lib="deno.ns" />
-/// <reference lib="deno.window" />
-/// <reference types="https://deno.land/std@0.190.0/http/server.d.ts" />
-/// <reference types="https://esm.sh/@supabase/supabase-js@2.45.0/dist/main/index.d.ts" />
-
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
@@ -11,7 +6,7 @@ const corsHeaders = {
   'Access-Control-Allow-Headers': 'authorization, x-client-info, apikey, content-type',
 };
 
-serve(async (req: Request) => { // Added explicit type 'Request' for 'req'
+serve(async (req: Request) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
   }
@@ -26,13 +21,11 @@ serve(async (req: Request) => { // Added explicit type 'Request' for 'req'
       });
     }
 
-    // Create a Supabase client with the service role key to bypass RLS
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // Fetch service report platos with nested plato_insumos and insumos
     const { data: serviceReportPlatos, error: srpError } = await supabaseAdmin
       .from('service_report_platos')
       .select(`
@@ -67,7 +60,7 @@ serve(async (req: Request) => { // Added explicit type 'Request' for 'req'
       });
     }
 
-    const insumoStockUpdates = new Map<string, { new_stock: number, quantity_consumed: number, base_unit: string }>();
+    const insumoStockUpdates = new Map<string, { new_stock: number, quantity_consumed_base_unit: number, quantity_deducted_purchase_unit: number, base_unit: string, current_stock_before_deduction: number }>();
     const consumptionRecords = [];
 
     for (const srp of serviceReportPlatos) {
@@ -76,42 +69,55 @@ serve(async (req: Request) => { // Added explicit type 'Request' for 'req'
         for (const pi of platos.plato_insumos) {
           const insumo = pi.insumos;
           if (insumo) {
-            // Calculate total quantity consumed in base_unit for this insumo from this plato
             const quantityConsumedInBaseUnit = pi.cantidad_necesaria * srp.quantity_sold;
+            const quantityDeductedInPurchaseUnit = quantityConsumedInBaseUnit / insumo.conversion_factor;
 
-            // Update stock calculation
-            const currentStockInfo = insumoStockUpdates.get(insumo.id) || {
-              new_stock: insumo.stock_quantity,
-              quantity_consumed: 0,
-              base_unit: insumo.base_unit
+            const currentData = insumoStockUpdates.get(insumo.id) || {
+              new_stock: insumo.stock_quantity, // Initial stock from DB in purchase_unit
+              quantity_consumed_base_unit: 0,
+              quantity_deducted_purchase_unit: 0,
+              base_unit: insumo.base_unit,
+              current_stock_before_deduction: insumo.stock_quantity, // Store initial stock for stock_movements
             };
             
-            // Convert current stock (in purchase_unit) to base_unit for accurate deduction
-            const currentStockInBaseUnit = currentStockInfo.new_stock * insumo.conversion_factor;
-            const updatedStockInBaseUnit = currentStockInBaseUnit - quantityConsumedInBaseUnit;
+            currentData.new_stock -= quantityDeductedInPurchaseUnit;
+            currentData.quantity_consumed_base_unit += quantityConsumedInBaseUnit;
+            currentData.quantity_deducted_purchase_unit += quantityDeductedInPurchaseUnit;
             
-            // Convert back to purchase_unit for storage
-            currentStockInfo.new_stock = updatedStockInBaseUnit / insumo.conversion_factor;
-            currentStockInfo.quantity_consumed += quantityConsumedInBaseUnit;
-            
-            insumoStockUpdates.set(insumo.id, currentStockInfo);
+            insumoStockUpdates.set(insumo.id, currentData);
           }
         }
       }
     }
 
     const updates = [];
+    const stockMovements = [];
+
     for (const [insumoId, data] of insumoStockUpdates.entries()) {
+      const finalStock = parseFloat(data.new_stock.toFixed(2));
       updates.push({
         id: insumoId,
-        stock_quantity: parseFloat(data.new_stock.toFixed(2)), // Round to 2 decimal places
+        stock_quantity: finalStock,
       });
 
+      // Record in stock_movements
+      stockMovements.push({
+        user_id: user_id,
+        insumo_id: insumoId,
+        movement_type: 'consumption_out',
+        quantity_change: -parseFloat(data.quantity_deducted_purchase_unit.toFixed(2)), // Negative for deduction
+        new_stock_quantity: finalStock,
+        source_document_id: service_report_id,
+        notes: `Deducción por reporte de servicio ${service_report_id}`,
+        created_at: new Date().toISOString(),
+      });
+
+      // Record in consumption_records (already existing logic, slightly adjusted for clarity)
       consumptionRecords.push({
         user_id: user_id,
         service_report_id: service_report_id,
         insumo_id: insumoId,
-        quantity_consumed: parseFloat(data.quantity_consumed.toFixed(2)), // Round to 2 decimal places
+        quantity_consumed: parseFloat(data.quantity_consumed_base_unit.toFixed(2)),
         consumed_at: new Date().toISOString(),
       });
     }
@@ -124,6 +130,20 @@ serve(async (req: Request) => { // Added explicit type 'Request' for 'req'
       if (updateError) {
         console.error('Error updating insumo stock:', updateError);
         return new Response(JSON.stringify({ error: updateError.message }), {
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+          status: 500,
+        });
+      }
+    }
+
+    if (stockMovements.length > 0) {
+      const { error: stockMovementError } = await supabaseAdmin
+        .from('stock_movements')
+        .insert(stockMovements);
+
+      if (stockMovementError) {
+        console.error('Error inserting stock movements:', stockMovementError);
+        return new Response(JSON.stringify({ error: stockMovementError.message }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 500,
         });
@@ -149,7 +169,7 @@ serve(async (req: Request) => { // Added explicit type 'Request' for 'req'
       status: 200,
     });
 
-  } catch (error: unknown) { // Asserted 'error' as 'unknown' and then handled
+  } catch (error: unknown) {
     console.error('Error in deduct-service-report-stock function:', error);
     return new Response(JSON.stringify({ error: (error as Error).message }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
