@@ -1,14 +1,17 @@
-import React, { useMemo } from "react";
+import React, { useMemo, useState } from "react";
 import { useMenus } from "@/hooks/useMenus";
 import { useInsumos } from "@/hooks/useInsumos";
-import { Loader2, ShoppingBag, DollarSign, Info } from "lucide-react"; // Added Info icon
+import { Loader2, ShoppingBag, DollarSign, Info, Building2 } from "lucide-react"; // Removed Phone icon
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Insumo } from "@/types";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Added Tooltip components
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Button } from "@/components/ui/button";
+import { Dialog } from "@/components/ui/dialog"; // Removed DialogTrigger and DialogContent
+import InsumoSupplierDetailsDialog from "@/components/insumos/InsumoSupplierDetailsDialog"; // New import
 
 interface PurchaseAnalysisProps {
   startDate: Date;
@@ -29,6 +32,9 @@ interface InsumoNeeded extends Insumo {
 const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate }) => {
   const { data: menus, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenus();
   const { data: allInsumos, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos();
+
+  const [isSupplierDetailsDialogOpen, setIsSupplierDetailsDialogOpen] = useState(false);
+  const [selectedInsumoForDetails, setSelectedInsumoForDetails] = useState<Insumo | null>(null);
 
   const isLoading = isLoadingMenus || isLoadingInsumos;
   const isError = isErrorMenus || isErrorInsumos;
@@ -107,6 +113,16 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
     };
   }, [menus, allInsumos, startDate, endDate, isLoading, isError]);
 
+  const handleOpenSupplierDetails = (insumo: Insumo) => {
+    setSelectedInsumoForDetails(insumo);
+    setIsSupplierDetailsDialogOpen(true);
+  };
+
+  const handleCloseSupplierDetails = () => {
+    setIsSupplierDetailsDialogOpen(false);
+    setSelectedInsumoForDetails(null);
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-10">
@@ -166,6 +182,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Necesidad Periodo</TableHead>
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Sugerencia Compra</TableHead>
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Costo Estimado (S/)</TableHead>
+                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Proveedor</TableHead> {/* New Column */}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -224,6 +241,16 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                       <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">
                         S/ {insumo.estimated_purchase_cost.toFixed(2)}
                       </TableCell>
+                      <TableCell className="text-center py-3 px-6">
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleOpenSupplierDetails(insumo)}
+                          className="h-10 w-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out"
+                        >
+                          <Building2 className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                        </Button>
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -238,6 +265,15 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={isSupplierDetailsDialogOpen} onOpenChange={setIsSupplierDetailsDialogOpen}>
+        {selectedInsumoForDetails && (
+          <InsumoSupplierDetailsDialog
+            insumo={selectedInsumoForDetails}
+            onClose={handleCloseSupplierDetails}
+          />
+        )}
+      </Dialog>
     </div>
   );
 };

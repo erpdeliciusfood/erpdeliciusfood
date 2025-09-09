@@ -174,3 +174,22 @@ export interface StockMovementFormValues {
   total_purchase_quantity?: number; // New: Total quantity purchased
   notes: string | null;
 }
+
+// New interfaces for Insumo History
+export interface InsumoSupplierHistory {
+  id: string;
+  insumo_id: string;
+  old_supplier_name: string | null;
+  new_supplier_name: string | null;
+  old_supplier_phone: string | null;
+  new_supplier_phone: string | null;
+  changed_at: string;
+}
+
+export interface InsumoPriceHistory {
+  id: string;
+  insumo_id: string;
+  old_costo_unitario: number;
+  new_costo_unitario: number;
+  changed_at: string;
+}

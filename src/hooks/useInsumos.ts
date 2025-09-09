@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getInsumos, createInsumo, updateInsumo, deleteInsumo } from "@/integrations/supabase/insumos";
-import { Insumo, InsumoFormValues } from "@/types";
+import { getInsumos, createInsumo, updateInsumo, deleteInsumo, getInsumoSupplierHistory, getInsumoPriceHistory } from "@/integrations/supabase/insumos";
+import { Insumo, InsumoFormValues, InsumoSupplierHistory, InsumoPriceHistory } from "@/types";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
 export const useInsumos = (searchTerm?: string, category?: string) => {
@@ -40,9 +40,11 @@ export const useUpdateInsumo = () => {
       const toastId: string = showLoading("Actualizando insumo...");
       return { toastId };
     },
-    onSuccess: (_, __, context) => {
+    onSuccess: (_, { id }, context) => { // Added id to destructuring
       dismissToast(context.toastId);
       queryClient.invalidateQueries({ queryKey: ["insumos"] });
+      queryClient.invalidateQueries({ queryKey: ["insumoSupplierHistory", id] }); // Invalidate supplier history
+      queryClient.invalidateQueries({ queryKey: ["insumoPriceHistory", id] }); // Invalidate price history
       showSuccess("Insumo actualizado exitosamente.");
     },
     onError: (error, __, context) => {
@@ -73,5 +75,21 @@ export const useDeleteInsumo = () => {
       }
       showError(`Error al eliminar insumo: ${error.message}`);
     },
+  });
+};
+
+export const useInsumoSupplierHistory = (insumoId: string) => {
+  return useQuery<InsumoSupplierHistory[], Error>({
+    queryKey: ["insumoSupplierHistory", insumoId],
+    queryFn: () => getInsumoSupplierHistory(insumoId),
+    enabled: !!insumoId,
+  });
+};
+
+export const useInsumoPriceHistory = (insumoId: string) => {
+  return useQuery<InsumoPriceHistory[], Error>({
+    queryKey: ["insumoPriceHistory", insumoId],
+    queryFn: () => getInsumoPriceHistory(insumoId),
+    enabled: !!insumoId,
   });
 };
