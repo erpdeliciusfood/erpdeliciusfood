@@ -10,7 +10,7 @@ import { useMenus } from "@/hooks/useMenus";
 import { Menu } from "@/types";
 import DailyMenuList from "./DailyMenuList";
 import MenuForm from "./MenuForm";
-import { DayModifiers } from "react-day-picker"; // Import DayModifiers type
+import { DayModifiers } from "react-day-picker";
 
 interface MenuCalendarProps {
   onAddMenu: (date: Date) => void;
@@ -66,13 +66,13 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
   const modifiers: DayModifiers = {
     menus: menusInMonth?.map(menu => menu.menu_date ? parseISO(menu.menu_date) : undefined).filter(Boolean) as Date[],
     today: new Date(),
-    selected: selectedDate ? [selectedDate] : [], // Fix: Ensure 'selected' is Matcher | Matcher[]
+    selected: selectedDate ? [selectedDate] : [],
   };
 
   const modifiersClassNames = {
     menus: "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 rounded-full",
     today: "bg-primary text-primary-foreground rounded-full",
-    selected: "bg-green-500 text-white dark:bg-green-700 dark:text-white rounded-full", // New class for selected date
+    selected: "bg-green-500 text-white dark:bg-green-700 dark:text-white rounded-full",
   };
 
   if (isLoading) {
@@ -92,6 +92,8 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
       </div>
     );
   }
+
+  const hasMenusInMonth = menusInMonth && menusInMonth.length > 0;
 
   return (
     <div className="flex flex-col lg:flex-row gap-8 w-full">
@@ -114,6 +116,31 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
             modifiersClassNames={modifiersClassNames}
             className="rounded-md border shadow"
           />
+          <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+            <div className="flex items-center">
+              <span className="h-4 w-4 rounded-full bg-blue-200 dark:bg-blue-800 mr-2 border border-blue-300 dark:border-blue-700"></span>
+              Días con Menús
+            </div>
+            <div className="flex items-center">
+              <span className="h-4 w-4 rounded-full bg-primary dark:bg-primary-foreground mr-2 border border-primary dark:border-primary-foreground"></span>
+              Hoy
+            </div>
+            <div className="flex items-center">
+              <span className="h-4 w-4 rounded-full bg-green-500 dark:bg-green-700 mr-2 border border-green-600 dark:border-green-800"></span>
+              Día Seleccionado
+            </div>
+          </div>
+          {!hasMenusInMonth && (
+            <div className="text-center py-6 mt-6 bg-gray-50 dark:bg-gray-700 rounded-lg border border-dashed border-gray-300 dark:border-gray-600">
+              <UtensilsCrossed className="mx-auto h-12 w-12 mb-3 text-gray-400 dark:text-gray-500" />
+              <p className="text-lg font-semibold text-gray-700 dark:text-gray-300">
+                No hay menús registrados para este mes.
+              </p>
+              <p className="text-md text-gray-600 dark:text-gray-400 mt-2">
+                Selecciona una fecha y haz clic en "Añadir Menú para este día" para empezar.
+              </p>
+            </div>
+          )}
         </CardContent>
       </Card>
 
