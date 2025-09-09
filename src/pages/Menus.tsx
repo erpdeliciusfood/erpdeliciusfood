@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Loader2, BookText } from "lucide-react"; // Added BookText icon
 import { useMenus } from "@/hooks/useMenus";
 import MenuCalendar from "@/components/menus/MenuCalendar";
+import WeeklyMenuOverview from "@/components/menus/WeeklyMenuOverview"; // New import
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Menu } from "@/types";
 
@@ -10,6 +11,8 @@ const Menus = () => {
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
+  // We still need useMenus here for the overall page loading state,
+  // but the calendar and overview components will fetch their own data.
   const { isLoading, isError, error } = useMenus();
 
   const handleAddMenu = (date: Date) => {
@@ -53,6 +56,10 @@ const Menus = () => {
       <p className="text-lg text-gray-700 dark:text-gray-300 mb-8">
         Planifica y organiza tus menús diarios y para eventos especiales. Selecciona una fecha en el calendario para ver o añadir menús.
       </p>
+
+      <div className="mb-8">
+        <WeeklyMenuOverview onAddMenu={handleAddMenu} />
+      </div>
 
       <div className="flex-grow">
         <MenuCalendar

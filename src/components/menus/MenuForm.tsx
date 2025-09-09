@@ -4,7 +4,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -22,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Imported Card components
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format, formatISO } from "date-fns";
 import { es } from "date-fns/locale";
@@ -33,6 +32,7 @@ import { useMealServices } from "@/hooks/useMealServices";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import { Loader2, PlusCircle, Trash2, CalendarIcon } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Textarea } from "@/components/ui/textarea"; // Added Textarea import
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -109,6 +109,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
   });
 
   const menuType = form.watch("menu_type");
+  const menuDate = form.watch("menu_date");
 
   useEffect(() => {
     if (initialData) {
@@ -135,6 +136,23 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       });
     }
   }, [initialData, form, preselectedDate]);
+
+  // Effect for auto-titling daily menus
+  useEffect(() => {
+    if (menuType === "daily" && menuDate) {
+      const formattedDate = format(new Date(menuDate), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: es });
+      form.setValue("title", formattedDate, { shouldValidate: true });
+    } else if (menuType === "event") {
+      // If switching from daily to event, and the initialData was a daily menu, clear the title.
+      // For new event menus, title should be empty by default.
+      if (initialData && initialData.menu_date && !initialData.event_type_id) {
+        form.setValue("title", "", { shouldValidate: true });
+      } else if (!initialData && menuDate) { // If it's a new menu and was previously daily, clear title
+        form.setValue("title", "", { shouldValidate: true });
+      }
+    }
+  }, [menuType, menuDate, form, initialData]);
+
 
   const onSubmit = async (values: MenuFormValues & { menu_type: "daily" | "event" }) => {
     const submitValues: MenuFormValues = {
@@ -166,10 +184,10 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
               <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Título del Menú</FormLabel>
               <FormControl>
                 <Input
-                  placeholder="Ej. Menú del Día / Menú Coffee Break"
+                  placeholder="Ej. Menú Coffee Break"
                   {...field}
                   className="h-12 text-base"
-                  disabled={isLoading}
+                  disabled={isLoading || menuType === "daily"} // Disable if daily menu
                 />
               </FormControl>
               <FormMessage />
