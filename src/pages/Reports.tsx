@@ -1,15 +1,12 @@
 import { Loader2, BarChart3 } from "lucide-react";
-import { useCustomerOrders } from "@/hooks/useOrders"; // Updated hook
 import { useInsumos } from "@/hooks/useInsumos";
-import SalesChart from "@/components/reports/SalesChart";
 import StockOverview from "@/components/reports/StockOverview";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 
 const Reports = () => {
-  const { data: orders, isLoading: isLoadingOrders, isError: isErrorOrders, error: errorOrders } = useCustomerOrders(); // Updated hook
   const { data: insumos, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos();
 
-  if (isLoadingOrders || isLoadingInsumos) {
+  if (isLoadingInsumos) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
         <Loader2 className="h-12 w-12 animate-spin text-primary dark:text-primary-foreground" />
@@ -18,13 +15,13 @@ const Reports = () => {
     );
   }
 
-  if (isErrorOrders || isErrorInsumos) {
+  if (isErrorInsumos) {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 text-red-600 dark:text-red-400">
         <h1 className="text-4xl font-bold mb-4">Error</h1>
         <p className="text-xl">
           No se pudieron cargar los datos para los reportes:{" "}
-          {errorOrders?.message || errorInsumos?.message}
+          {errorInsumos?.message}
         </p>
       </div>
     );
@@ -39,8 +36,7 @@ const Reports = () => {
         </h1>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
-        {orders && <SalesChart orders={orders} />}
+      <div className="grid grid-cols-1 gap-8 mb-8">
         {insumos && <StockOverview insumos={insumos} lowStockThreshold={10} />}
       </div>
 

@@ -9,13 +9,12 @@ import Insumos from "./pages/Insumos";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import Platos from "./pages/Platos";
-import CustomerOrders from "./pages/CustomerOrders";
 import EventTypes from "./pages/EventTypes";
 import Menus from "./pages/Menus";
-import ConsumptionRecords from "./pages/ConsumptionRecords";
+import ServiceReports from "./pages/ServiceReports"; // New import
 import Reports from "./pages/Reports";
 import UserManagement from "./pages/UserManagement";
-import PurchasePlanning from "./pages/PurchasePlanning"; // New import
+import PurchasePlanning from "./pages/PurchasePlanning";
 import { SessionContextProvider, useSession } from "./contexts/SessionContext";
 import Header from "./components/layout/Header";
 import { ThemeProvider } from "./contexts/ThemeProvider";
@@ -48,13 +47,12 @@ const AppRoutes = () => (
     <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
     <Route path="/insumos" element={<ProtectedRoute><Insumos /></ProtectedRoute>} />
     <Route path="/platos" element={<ProtectedRoute><Platos /></ProtectedRoute>} />
-    <Route path="/customer-orders" element={<ProtectedRoute><CustomerOrders /></ProtectedRoute>} />
     <Route path="/event-types" element={<ProtectedRoute><EventTypes /></ProtectedRoute>} />
     <Route path="/menus" element={<ProtectedRoute><Menus /></ProtectedRoute>} />
-    <Route path="/consumption-records" element={<ProtectedRoute><ConsumptionRecords /></ProtectedRoute>} />
+    <Route path="/service-reports" element={<ProtectedRoute><ServiceReports /></ProtectedRoute>} /> {/* New protected route */}
     <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     <Route path="/user-management" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
-    <Route path="/purchase-planning" element={<ProtectedRoute><PurchasePlanning /></ProtectedRoute>} /> {/* New protected route */}
+    <Route path="/purchase-planning" element={<ProtectedRoute><PurchasePlanning /></ProtectedRoute>} />
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
     <Route path="*" element={<NotFound />} />

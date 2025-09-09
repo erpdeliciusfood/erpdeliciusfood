@@ -1,36 +1,33 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Utensils, UserCircle2, LayoutDashboard, ChefHat, ShoppingCart, BookText, CalendarDays, History, BarChart3, Users, ShoppingBag } from "lucide-react"; // Added ShoppingBag icon
+import { Utensils, UserCircle2, LayoutDashboard, ChefHat, BookText, CalendarDays, BarChart3, Users, ShoppingBag, FileText } from "lucide-react"; // Updated icons
 import { useSession } from "@/contexts/SessionContext";
 import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useInsumos } from "@/hooks/useInsumos";
 import { usePlatos } from "@/hooks/usePlatos";
-import { useCustomerOrders } from "@/hooks/useOrders";
 import { useMenus } from "@/hooks/useMenus";
 import { useEventTypes } from "@/hooks/useEventTypes";
-import { useConsumptionRecords } from "@/hooks/useConsumptionRecords";
+import { useServiceReports } from "@/hooks/useServiceReports"; // New import
 
 const Index = () => {
   const { user, session } = useSession();
   const { data: profile } = useProfile();
   const { data: insumos, isLoading: isLoadingInsumos } = useInsumos();
   const { data: platos, isLoading: isLoadingPlatos } = usePlatos();
-  const { data: orders, isLoading: isLoadingOrders } = useCustomerOrders();
   const { data: menus, isLoading: isLoadingMenus } = useMenus();
   const { data: eventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
-  const { data: consumptionRecords, isLoading: isLoadingConsumptionRecords } = useConsumptionRecords();
+  const { data: serviceReports, isLoading: isLoadingServiceReports } = useServiceReports(); // New hook
 
   const userName = profile?.first_name || user?.email || "Usuario";
   const userRole = session?.user?.user_metadata?.role;
 
   const totalInsumos = insumos?.length || 0;
   const totalPlatos = platos?.length || 0;
-  const totalOrders = orders?.length || 0;
   const totalMenus = menus?.length || 0;
   const totalEventTypes = eventTypes?.length || 0;
-  const totalConsumptionRecords = consumptionRecords?.length || 0;
+  const totalServiceReports = serviceReports?.length || 0; // New total
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
@@ -80,24 +77,6 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          {/* Card for Total Orders */}
-          <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out h-full flex flex-col justify-between">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-2xl font-bold">Total Pedidos Clientes</CardTitle>
-              <ShoppingCart className="h-8 w-8 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              {isLoadingOrders ? (
-                <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md" />
-              ) : (
-                <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalOrders}</div>
-              )}
-              <CardDescription className="text-lg text-left mt-2">
-                Pedidos de clientes registrados hasta ahora.
-              </CardDescription>
-            </CardContent>
-          </Card>
-
           {/* Card for Total Menus */}
           <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out h-full flex flex-col justify-between">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -134,20 +113,20 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          {/* Card for Total Consumption Records */}
+          {/* Card for Total Service Reports */}
           <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out h-full flex flex-col justify-between">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-2xl font-bold">Registros de Consumo</CardTitle>
-              <History className="h-8 w-8 text-muted-foreground" />
+              <CardTitle className="text-2xl font-bold">Reportes de Servicio</CardTitle>
+              <FileText className="h-8 w-8 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              {isLoadingConsumptionRecords ? (
+              {isLoadingServiceReports ? (
                 <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md" />
               ) : (
-                <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalConsumptionRecords}</div>
+                <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalServiceReports}</div>
               )}
               <CardDescription className="text-lg text-left mt-2">
-                Insumos consumidos por pedidos completados.
+                Registros de servicios diarios y eventos.
               </CardDescription>
             </CardContent>
           </Card>
@@ -188,23 +167,6 @@ const Index = () => {
             </Card>
           </Link>
 
-          <Link to="/customer-orders">
-            <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-2xl font-bold">Gestión de Pedidos Clientes</CardTitle>
-                <ShoppingCart className="h-8 w-8 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-lg text-left">
-                  Administra los pedidos de tus clientes, su estado y los platos.
-                </CardDescription>
-              </CardContent>
-              <Button className="w-full mt-4 px-8 py-4 text-lg bg-purple-600 hover:bg-purple-700 text-white transition-colors duration-200 ease-in-out">
-                Ir a Pedidos Clientes
-              </Button>
-            </Card>
-          </Link>
-
           <Link to="/event-types">
             <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -239,7 +201,24 @@ const Index = () => {
             </Card>
           </Link>
 
-          <Link to="/purchase-planning"> {/* New card */}
+          <Link to="/service-reports"> {/* New card */}
+            <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-2xl font-bold">Gestión de Reportes de Servicio</CardTitle>
+                <FileText className="h-8 w-8 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-lg text-left">
+                  Registra y consulta los detalles de cada servicio de comida.
+                </CardDescription>
+              </CardContent>
+              <Button className="w-full mt-4 px-8 py-4 text-lg bg-purple-600 hover:bg-purple-700 text-white transition-colors duration-200 ease-in-out">
+                Ir a Reportes de Servicio
+              </Button>
+            </Card>
+          </Link>
+
+          <Link to="/purchase-planning">
             <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-2xl font-bold">Planificación de Compras</CardTitle>
@@ -256,23 +235,6 @@ const Index = () => {
             </Card>
           </Link>
 
-          <Link to="/consumption-records">
-            <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-2xl font-bold">Ver Consumo</CardTitle>
-                <History className="h-8 w-8 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-lg text-left">
-                  Revisa el historial de insumos consumidos por tus pedidos.
-                </CardDescription>
-              </CardContent>
-              <Button className="w-full mt-4 px-8 py-4 text-lg bg-teal-600 hover:bg-teal-700 text-white transition-colors duration-200 ease-in-out">
-                Ir a Consumo
-              </Button>
-            </Card>
-          </Link>
-
           <Link to="/reports">
             <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -281,7 +243,7 @@ const Index = () => {
               </CardHeader>
               <CardContent>
                 <CardDescription className="text-lg text-left">
-                  Visualiza gráficos de ventas y el estado de tu inventario.
+                  Visualiza el estado de tu inventario.
                 </CardDescription>
               </CardContent>
               <Button className="w-full mt-4 px-8 py-4 text-lg bg-yellow-600 hover:bg-yellow-700 text-white transition-colors duration-200 ease-in-out">

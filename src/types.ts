@@ -46,41 +46,27 @@ export interface PlatoInsumo {
   insumos?: Insumo;
 }
 
-export interface Order {
+// New interfaces for Service Reports
+export interface ServiceReport {
   id: string;
   user_id: string;
-  customer_name: string | null;
-  status: 'pending' | 'completed' | 'cancelled';
-  total_amount: number;
+  report_date: string; // Date string (e.g., 'YYYY-MM-DD')
+  meal_service_id: string;
+  tickets_issued: number;
+  meals_sold: number;
+  additional_services_revenue: number;
+  notes: string | null;
   created_at: string;
-  order_items?: OrderItem[];
+  meal_services?: MealService; // Optional, for when fetching with relations
 }
 
-export interface OrderFormValues {
-  customer_name: string | null;
-  status: 'pending' | 'completed' | 'cancelled';
-  items: { plato_id: string; quantity: number; price_at_order: number }[];
-}
-
-export interface OrderItem {
-  id: string;
-  order_id: string;
-  plato_id: string;
-  quantity: number;
-  price_at_order: number;
-  created_at: string;
-  platos?: Plato;
-}
-
-export interface ConsumptionRecord {
-  id: string;
-  user_id: string;
-  order_id: string;
-  insumo_id: string;
-  quantity_consumed: number;
-  consumed_at: string;
-  insumos?: Insumo; // Optional, for when fetching with relations
-  orders?: Order; // Optional, for when fetching with relations
+export interface ServiceReportFormValues {
+  report_date: string;
+  meal_service_id: string;
+  tickets_issued: number;
+  meals_sold: number;
+  additional_services_revenue: number;
+  notes: string | null;
 }
 
 // New interfaces for Menu Management
