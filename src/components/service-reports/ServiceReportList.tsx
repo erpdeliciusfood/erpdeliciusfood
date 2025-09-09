@@ -8,13 +8,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, FileText, Utensils } from "lucide-react"; // Added Utensils icon
+import { Edit, Trash2, FileText } from "lucide-react";
 import { ServiceReport } from "@/types";
 import { useDeleteServiceReport } from "@/hooks/useServiceReports";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Badge } from "@/components/ui/badge"; // Import Badge
+import { Badge } from "@/components/ui/badge";
 
 interface ServiceReportListProps {
   reports: ServiceReport[];
