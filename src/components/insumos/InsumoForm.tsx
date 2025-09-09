@@ -259,15 +259,11 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
                       <Info className="h-4 w-4 text-gray-500 dark:text-gray-400 cursor-help" />
                     </TooltipTrigger>
                     <TooltipContent className="max-w-xs text-base p-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                      <p className="font-semibold mb-1 text-gray-900 dark:text-gray-100">¿Qué es el Factor de Conversión?</p>
-                      <p className="text-gray-700 dark:text-gray-300">Define cuántas unidades de tu "Unidad Base" (para recetas) hay en una "Unidad de Compra" (al proveedor).</p>
+                      <p className="font-semibold mb-1 text-gray-900 dark:text-gray-100">Factor de Conversión</p>
+                      <p className="text-gray-700 dark:text-gray-300">Indica cuántas unidades base (receta) hay en una unidad de compra (proveedor).</p>
                       <p className="mt-2 text-gray-700 dark:text-gray-300">
-                        <span className="font-medium text-gray-800 dark:text-gray-200">Ejemplo:</span> Si compras "1 kg" de papas (Unidad de Compra) y tu unidad base para recetas es "g", el factor de conversión sería "1000" (porque 1 kg = 1000 g).
+                        <span className="font-medium text-gray-800 dark:text-gray-200">Ejemplo:</span> Si 1 kg (compra) = 1000 g (base), el factor es 1000.
                       </p>
-                      <p className="mt-1 text-gray-700 dark:text-gray-300">
-                        <span className="font-medium text-gray-800 dark:text-gray-200">Otro ejemplo:</span> Si compras "1 caja" de huevos y cada caja contiene "30 unidades" de huevos, y tu unidad base es "unidad", el factor de conversión sería "30".
-                      </p>
-                      <p className="mt-2 text-gray-700 dark:text-gray-300">Si las unidades son iguales (ej. "unidad" a "unidad"), el factor es "1".</p>
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
