@@ -33,7 +33,7 @@ interface MenuDetailsFormSectionProps {
   availableEventTypes: EventType[] | undefined;
 }
 
-const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoading, preselectedDate, initialData, availableEventTypes }) => {
+const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoading, preselectedDate, initialData: _initialData, availableEventTypes }) => {
   const form = useFormContext<MenuFormValues & { menu_type: "daily" | "event" }>();
 
   const menuType = form.watch("menu_type");
@@ -43,15 +43,13 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
   useEffect(() => {
     if (menuType === "daily" && menuDate) {
       const formattedDate = format(new Date(menuDate), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: es });
-      form.setValue("title", formattedDate, { shouldValidate: true });
-    } else if (menuType === "event") {
-      if (initialData && initialData.menu_date && !initialData.event_type_id) {
-        form.setValue("title", "", { shouldValidate: true });
-      } else if (!initialData && menuDate) {
-        form.setValue("title", "", { shouldValidate: true });
+      // Only update if the title is different to prevent unnecessary re-renders
+      if (form.getValues("title") !== formattedDate) {
+        form.setValue("title", formattedDate, { shouldValidate: true });
       }
     }
-  }, [menuType, menuDate, form, initialData]);
+    // For 'event' type, the title is manually managed by the user, so no auto-titling here.
+  }, [menuType, menuDate, form]);
 
   const eventTypePlaceholder = () => {
     if (isLoading) return "Cargando tipos de evento...";
@@ -112,8 +110,14 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
                   if (value === "daily") {
                     form.setValue("event_type_id", null);
                     form.setValue("menu_date", preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null);
-                  } else {
+                    // If switching to daily, and title is empty, try to auto-generate
+                    if (!form.getValues("title") && preselectedDate) {
+                        const newTitle = format(preselectedDate, "EEEE, dd 'de' MMMM 'de' yyyy", { locale: es });
+                        form.setValue("title", newTitle, { shouldValidate: true });
+                    }
+                  } else { // value === "event"
                     form.setValue("menu_date", null);
+                    form.setValue("title", "", { shouldValidate: true }); // Clear title for event menus
                   }
                 }}
                 defaultValue={field.value}
