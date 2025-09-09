@@ -77,6 +77,16 @@ const UNIDADES_COMPRA = [
   "kg", "litro", "unidad", "atado", "manojo", "caja", "paquete", "botella", "lata", "saco", "galón"
 ];
 
+// Predefined common conversions (Purchase Unit to Base Unit)
+const predefinedConversions: { [purchaseUnit: string]: { [baseUnit: string]: number } } = {
+  "kg": { "g": 1000 },
+  "litro": { "ml": 1000 },
+  "unidad": { "unidad": 1 },
+  // Add more common conversions here if needed, e.g., for US customary units
+  // "galón": { "ml": 3785.41, "litro": 3.78541 },
+  // "libra": { "g": 453.592, "onza": 16 },
+};
+
 const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCancel }) => {
   const addMutation = useAddInsumo();
   const updateMutation = useUpdateInsumo();
@@ -90,11 +100,14 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
       conversion_factor: 1.0,
       costo_unitario: 0,
       stock_quantity: 0,
-      min_stock_level: 0, // Default value for new field
+      min_stock_level: 0,
       supplier_name: "",
       supplier_phone: "",
     },
   });
+
+  const purchaseUnit = form.watch("purchase_unit");
+  const baseUnit = form.watch("base_unit");
 
   useEffect(() => {
     if (initialData) {
@@ -105,7 +118,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         conversion_factor: initialData.conversion_factor,
         costo_unitario: initialData.costo_unitario,
         stock_quantity: initialData.stock_quantity,
-        min_stock_level: initialData.min_stock_level, // Set initial value
+        min_stock_level: initialData.min_stock_level,
         supplier_name: initialData.supplier_name || "",
         supplier_phone: initialData.supplier_phone || "",
       });
@@ -117,12 +130,32 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         conversion_factor: 1.0,
         costo_unitario: 0,
         stock_quantity: 0,
-        min_stock_level: 0, // Reset for new form
+        min_stock_level: 0,
         supplier_name: "",
         supplier_phone: "",
       });
     }
   }, [initialData, form]);
+
+  // Effect to suggest conversion factor based on selected units
+  useEffect(() => {
+    if (purchaseUnit && baseUnit) {
+      const suggestedFactor = predefinedConversions[purchaseUnit]?.[baseUnit];
+      if (suggestedFactor !== undefined) {
+        // If a predefined conversion exists, suggest it
+        form.setValue("conversion_factor", suggestedFactor, { shouldValidate: true });
+      } else if (purchaseUnit === baseUnit) {
+        // If units are the same, default to 1.0
+        form.setValue("conversion_factor", 1.0, { shouldValidate: true });
+      } else {
+        // For non-standard or unknown conversions, keep current value or default to 1.0 if it's 0
+        if (form.getValues("conversion_factor") === 0) {
+          form.setValue("conversion_factor", 1.0, { shouldValidate: true });
+        }
+      }
+    }
+  }, [purchaseUnit, baseUnit, form]);
+
 
   const onSubmit = async (values: InsumoFormValues) => {
     if (initialData) {
@@ -162,7 +195,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Unidad Base (para recetas)</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value || ""} disabled={isLoading}>
+              <Select onValueChange={field.onChange} value={field.value || ""} disabled={isLoading}>
                 <FormControl>
                   <SelectTrigger className="h-12 text-base">
                     <SelectValue placeholder="Selecciona una unidad base" />
@@ -186,7 +219,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
           render={({ field }) => (
             <FormItem>
               <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Unidad de Compra (al proveedor)</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value || ""} disabled={isLoading}>
+              <Select onValueChange={field.onChange} value={field.value || ""} disabled={isLoading}>
                 <FormControl>
                   <SelectTrigger className="h-12 text-base">
                     <SelectValue placeholder="Selecciona una unidad de compra" />
