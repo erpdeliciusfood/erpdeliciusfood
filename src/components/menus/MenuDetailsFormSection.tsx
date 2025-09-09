@@ -25,17 +25,16 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { EventType, MenuFormValues, Menu } from "@/types";
-import { useEventTypes } from "@/hooks/useEventTypes"; // Import useEventTypes
 
 interface MenuDetailsFormSectionProps {
   isLoading: boolean;
   preselectedDate?: Date;
   initialData?: Menu | null;
+  availableEventTypes: EventType[] | undefined; // NEW PROP
 }
 
-const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoading, preselectedDate, initialData }) => {
+const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoading, preselectedDate, initialData, availableEventTypes }) => {
   const form = useFormContext<MenuFormValues & { menu_type: "daily" | "event" }>();
-  const { data: availableEventTypes, isLoading: isLoadingEventTypes } = useEventTypes(); // Fetch here
 
   const menuType = form.watch("menu_type");
   const menuDate = form.watch("menu_date");
@@ -190,7 +189,7 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value || ""}
-                disabled={isLoading || isLoadingEventTypes}
+                disabled={isLoading}
               >
                 <FormControl>
                   <SelectTrigger className="h-12 text-base">

@@ -19,26 +19,25 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MealService, MealType, MenuFormValues, Plato } from "@/types";
-import { usePlatos } from "@/hooks/usePlatos"; // Import usePlatos
-import { useMealServices } from "@/hooks/useMealServices"; // Import useMealServices
-import { useMealTypes } from "@/hooks/useMealTypes"; // Import useMealTypes
 
 interface PlatosPorServicioFormSectionProps {
   isLoading: boolean;
+  availablePlatos: Plato[] | undefined;
+  availableMealServices: MealService[] | undefined;
+  availableMealTypes: MealType[] | undefined;
 }
 
 const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> = ({
   isLoading,
+  availablePlatos,
+  availableMealServices,
+  availableMealTypes,
 }) => {
   const form = useFormContext<MenuFormValues>();
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "platos_por_servicio",
   });
-
-  const { data: availablePlatos, isLoading: isLoadingPlatos } = usePlatos(); // Fetch here
-  const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices(); // Fetch here
-  const { data: availableMealTypes, isLoading: isLoadingMealTypes } = useMealTypes(); // Fetch here
 
   return (
     <Card className="mt-8">
@@ -57,7 +56,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
                   <Select
                     onValueChange={serviceField.onChange}
                     defaultValue={serviceField.value}
-                    disabled={isLoading || isLoadingMealServices}
+                    disabled={isLoading}
                   >
                     <FormControl>
                       <SelectTrigger className="h-12 text-base">
@@ -85,7 +84,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
                   <Select
                     onValueChange={platoField.onChange}
                     defaultValue={platoField.value}
-                    disabled={isLoading || isLoadingPlatos}
+                    disabled={isLoading}
                   >
                     <FormControl>
                       <SelectTrigger className="h-12 text-base">
@@ -113,7 +112,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
                   <Select
                     onValueChange={mealTypeField.onChange}
                     defaultValue={mealTypeField.value || ""}
-                    disabled={isLoading || isLoadingMealTypes}
+                    disabled={isLoading}
                   >
                     <FormControl>
                       <SelectTrigger className="h-12 text-base">

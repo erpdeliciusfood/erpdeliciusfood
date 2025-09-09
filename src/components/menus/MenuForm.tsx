@@ -8,6 +8,10 @@ import {
 } from "@/components/ui/form";
 import { Menu, MenuFormValues } from "@/types";
 import { useAddMenu, useUpdateMenu } from "@/hooks/useMenus";
+import { usePlatos } from "@/hooks/usePlatos";
+import { useMealServices } from "@/hooks/useMealServices";
+import { useEventTypes } from "@/hooks/useEventTypes";
+import { useMealTypes } from "@/hooks/useMealTypes";
 import { Loader2 } from "lucide-react";
 import MenuDetailsFormSection from "./MenuDetailsFormSection";
 import PlatosPorServicioFormSection from "./PlatosPorServicioFormSection";
@@ -76,6 +80,12 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
   const addMutation = useAddMenu();
   const updateMutation = useUpdateMenu();
 
+  // Fetch all necessary data here
+  const { data: availablePlatos, isLoading: isLoadingPlatos } = usePlatos();
+  const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
+  const { data: availableEventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
+  const { data: availableMealTypes, isLoading: isLoadingMealTypes } = useMealTypes();
+
   const form = useForm<MenuFormValues & { menu_type: "daily" | "event" }>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -132,7 +142,8 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
     onSuccess();
   };
 
-  const isLoading = addMutation.isPending || updateMutation.isPending;
+  // Calculate overall loading state
+  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingPlatos || isLoadingMealServices || isLoadingEventTypes || isLoadingMealTypes;
 
   return (
     <FormProvider {...form}>
@@ -142,10 +153,14 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
             isLoading={isLoading}
             preselectedDate={preselectedDate}
             initialData={initialData}
+            availableEventTypes={availableEventTypes} // Pass as prop
           />
 
           <PlatosPorServicioFormSection
             isLoading={isLoading}
+            availablePlatos={availablePlatos}
+            availableMealServices={availableMealServices}
+            availableMealTypes={availableMealTypes}
           />
 
           <div className="flex justify-end space-x-4 pt-4">
