@@ -264,7 +264,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
             <FormItem>
               <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Notas (Opcional)</FormLabel>
               <FormControl>
-                <Textarea
+                <Textarea // Changed from Input to Textarea
                   placeholder="Cualquier observación relevante sobre el servicio..."
                   {...field}
                   value={field.value || ""}
