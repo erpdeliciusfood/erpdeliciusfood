@@ -11,6 +11,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription, // Added FormDescription import
 } from "@/components/ui/form";
 import {
   Select,
@@ -29,8 +30,16 @@ const formSchema = z.object({
   }).max(50, {
     message: "El nombre no debe exceder los 50 caracteres.",
   }),
-  unidad_medida: z.string().min(1, {
-    message: "Debe seleccionar una unidad de medida.",
+  base_unit: z.string().min(1, { // Renamed from unidad_medida
+    message: "Debe seleccionar una unidad base.",
+  }),
+  purchase_unit: z.string().min(1, { // New field
+    message: "Debe seleccionar una unidad de compra.",
+  }),
+  conversion_factor: z.coerce.number().min(0.000001, { // New field
+    message: "El factor de conversión debe ser mayor a 0.",
+  }).max(1000000, {
+    message: "El factor de conversión no debe exceder 1,000,000.",
   }),
   costo_unitario: z.coerce.number().min(0.01, {
     message: "El costo unitario debe ser mayor a 0.",
@@ -42,12 +51,12 @@ const formSchema = z.object({
   }).max(999999, {
     message: "La cantidad de stock no debe exceder 999999.",
   }),
-  supplier_name: z.string().min(1, { // Made mandatory
+  supplier_name: z.string().min(1, {
     message: "El nombre del proveedor es requerido.",
   }).max(100, {
     message: "El nombre del proveedor no debe exceder los 100 caracteres.",
   }),
-  supplier_phone: z.string().min(1, { // Made mandatory
+  supplier_phone: z.string().min(1, {
     message: "El teléfono del proveedor es requerido.",
   }).max(20, {
     message: "El teléfono del proveedor no debe exceder los 20 caracteres.",
@@ -72,11 +81,13 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
       nombre: "",
-      unidad_medida: "",
+      base_unit: "",
+      purchase_unit: "",
+      conversion_factor: 1.0,
       costo_unitario: 0,
       stock_quantity: 0,
-      supplier_name: "", // Changed to empty string for mandatory field
-      supplier_phone: "", // Changed to empty string for mandatory field
+      supplier_name: "",
+      supplier_phone: "",
     },
   });
 
@@ -84,16 +95,20 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
     if (initialData) {
       form.reset({
         nombre: initialData.nombre,
-        unidad_medida: initialData.unidad_medida,
+        base_unit: initialData.base_unit,
+        purchase_unit: initialData.purchase_unit,
+        conversion_factor: initialData.conversion_factor,
         costo_unitario: initialData.costo_unitario,
         stock_quantity: initialData.stock_quantity,
-        supplier_name: initialData.supplier_name || "", // Ensure it's a string
-        supplier_phone: initialData.supplier_phone || "", // Ensure it's a string
+        supplier_name: initialData.supplier_name || "",
+        supplier_phone: initialData.supplier_phone || "",
       });
     } else {
       form.reset({
         nombre: "",
-        unidad_medida: "",
+        base_unit: "",
+        purchase_unit: "",
+        conversion_factor: 1.0,
         costo_unitario: 0,
         stock_quantity: 0,
         supplier_name: "",
@@ -136,14 +151,14 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         />
         <FormField
           control={form.control}
-          name="unidad_medida"
+          name="base_unit"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Unidad de Medida</FormLabel>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Unidad Base (para recetas)</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
                 <FormControl>
                   <SelectTrigger className="h-12 text-base">
-                    <SelectValue placeholder="Selecciona una unidad" />
+                    <SelectValue placeholder="Selecciona una unidad base" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -160,10 +175,58 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         />
         <FormField
           control={form.control}
+          name="purchase_unit"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Unidad de Compra</FormLabel>
+              <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
+                <FormControl>
+                  <SelectTrigger className="h-12 text-base">
+                    <SelectValue placeholder="Selecciona una unidad de compra" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {UNIDADES_MEDIDA.map((unidad) => (
+                    <SelectItem key={unidad} value={unidad}>
+                      {unidad}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="conversion_factor"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Factor de Conversión (Base a Compra)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.000001"
+                  placeholder="Ej. 0.001 (para g a kg)"
+                  {...field}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  className="h-12 text-base"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormDescription className="text-sm text-gray-600 dark:text-gray-400">
+                Cantidad de unidad de compra por una unidad base. Ej: si 1g = 0.001kg, el factor es 0.001.
+              </FormDescription>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
           name="costo_unitario"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Costo Unitario (S/)</FormLabel>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Costo Unitario (S/ por Unidad de Compra)</FormLabel>
               <FormControl>
                 <Input
                   type="number"
@@ -184,7 +247,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
           name="stock_quantity"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad en Stock</FormLabel>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad en Stock (en Unidad de Compra)</FormLabel>
               <FormControl>
                 <Input
                   type="number"

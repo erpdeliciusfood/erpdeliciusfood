@@ -40,9 +40,10 @@ const InsumoList: React.FC<InsumoListProps> = ({ insumos, onEdit }) => {
         <TableHeader className="bg-gray-50 dark:bg-gray-700">
           <TableRow>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Nombre</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Unidad de Medida</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Unidad Base</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Unidad Compra</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Unitario (S/)</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Stock</TableHead> {/* New column */}
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Stock</TableHead>
             <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -50,9 +51,10 @@ const InsumoList: React.FC<InsumoListProps> = ({ insumos, onEdit }) => {
           {insumos.map((insumo) => (
             <TableRow key={insumo.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
               <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{insumo.nombre}</TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{insumo.unidad_medida}</TableCell>
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{insumo.base_unit}</TableCell>
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{insumo.purchase_unit}</TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {insumo.costo_unitario.toFixed(2)}</TableCell>
-              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">{insumo.stock_quantity}</TableCell> {/* Display stock quantity */}
+              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">{insumo.stock_quantity}</TableCell>
               <TableCell className="flex justify-center space-x-2 py-3 px-6">
                 <Button
                   variant="outline"

@@ -2,7 +2,9 @@ export interface Insumo {
   id: string;
   user_id: string;
   nombre: string;
-  unidad_medida: string;
+  base_unit: string; // Renamed from unidad_medida
+  purchase_unit: string; // New field
+  conversion_factor: number; // New field
   costo_unitario: number;
   stock_quantity: number;
   supplier_name: string | null;
@@ -13,7 +15,9 @@ export interface Insumo {
 
 export interface InsumoFormValues {
   nombre: string;
-  unidad_medida: string;
+  base_unit: string; // Renamed from unidad_medida
+  purchase_unit: string; // New field
+  conversion_factor: number; // New field
   costo_unitario: number;
   stock_quantity: number;
   supplier_name: string | null;

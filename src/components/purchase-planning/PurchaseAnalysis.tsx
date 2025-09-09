@@ -21,9 +21,9 @@ interface PurchaseAnalysisProps {
 }
 
 interface InsumoNeeded extends Insumo {
-  quantity_needed_for_period: number;
-  current_stock: number;
-  purchase_suggestion: number;
+  quantity_needed_for_period: number; // This will be in purchase_unit
+  current_stock: number; // This is already in purchase_unit
+  purchase_suggestion: number; // This will be in purchase_unit
 }
 
 interface GroupedInsumos {
@@ -41,7 +41,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
   const groupedInsumosForPurchase = useMemo(() => {
     if (isLoading || isError || !menus || !allInsumos) return {};
 
-    const insumoNeedsMap = new Map<string, number>(); // Map<insumoId, totalQuantityNeeded>
+    const insumoNeedsMap = new Map<string, number>(); // Map<insumoId, totalQuantityNeededInBaseUnit>
 
     menus.forEach(menu => {
       const menuDate = menu.menu_date ? parseISO(menu.menu_date) : null;
@@ -54,8 +54,9 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
             plato.plato_insumos?.forEach(platoInsumo => {
               const insumo = platoInsumo.insumos;
               if (insumo) {
-                const totalNeeded = (platoInsumo.cantidad_necesaria * menuPlato.quantity_needed);
-                insumoNeedsMap.set(insumo.id, (insumoNeedsMap.get(insumo.id) || 0) + totalNeeded);
+                // Quantity needed for this menuPlato in base_unit
+                const totalNeededInBaseUnit = (platoInsumo.cantidad_necesaria * menuPlato.quantity_needed);
+                insumoNeedsMap.set(insumo.id, (insumoNeedsMap.get(insumo.id) || 0) + totalNeededInBaseUnit);
               }
             });
           }
@@ -66,9 +67,12 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
     const groupedResult: GroupedInsumos = {};
 
     allInsumos.forEach(insumo => {
-      const quantityNeededForPeriod = insumoNeedsMap.get(insumo.id) || 0;
-      const currentStock = insumo.stock_quantity;
-      const purchaseSuggestion = Math.max(0, quantityNeededForPeriod - currentStock);
+      const totalNeededInBaseUnit = insumoNeedsMap.get(insumo.id) || 0;
+      // Convert total needed from base_unit to purchase_unit
+      const quantityNeededForPeriodInPurchaseUnit = totalNeededInBaseUnit * insumo.conversion_factor;
+      
+      const currentStock = insumo.stock_quantity; // This is already in purchase_unit
+      const purchaseSuggestion = Math.max(0, quantityNeededForPeriodInPurchaseUnit - currentStock);
 
       if (purchaseSuggestion > 0 || currentStock < 0) { // Show if needed or if stock is negative (error)
         const supplierName = insumo.supplier_name || "Sin Proveedor Asignado";
@@ -77,7 +81,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
         }
         groupedResult[supplierName].push({
           ...insumo,
-          quantity_needed_for_period: quantityNeededForPeriod,
+          quantity_needed_for_period: quantityNeededForPeriodInPurchaseUnit,
           current_stock: currentStock,
           purchase_suggestion: purchaseSuggestion,
         });
@@ -136,7 +140,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                       <TableHeader>
                         <TableRow>
                           <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Insumo</TableHead>
-                          <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Unidad</TableHead>
+                          <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Unidad Compra</TableHead>
                           <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Stock Actual</TableHead>
                           <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Necesidad Periodo</TableHead>
                           <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Sugerencia Compra</TableHead>
@@ -146,10 +150,10 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                         {insumos.map((insumo) => (
                           <TableRow key={insumo.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                             <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{insumo.nombre}</TableCell>
-                            <TableCell className="text-base text-gray-700 dark:text-gray-300">{insumo.unidad_medida}</TableCell>
+                            <TableCell className="text-base text-gray-700 dark:text-gray-300">{insumo.purchase_unit}</TableCell>
                             <TableCell className="text-right text-base">
                               <Badge variant={insumo.current_stock <= 0 ? "destructive" : insumo.current_stock < insumo.quantity_needed_for_period ? "secondary" : "outline"}>
-                                {insumo.current_stock}
+                                {insumo.current_stock.toFixed(2)}
                               </Badge>
                             </TableCell>
                             <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">{insumo.quantity_needed_for_period.toFixed(2)}</TableCell>

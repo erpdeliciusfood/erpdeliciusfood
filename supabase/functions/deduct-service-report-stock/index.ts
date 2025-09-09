@@ -1,4 +1,3 @@
-/// <reference lib="deno.ns" />
 // @ts-ignore
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
 // @ts-ignore
@@ -30,7 +29,9 @@ serve(async (req: Request) => {
       });
     }
 
+    // @ts-ignore
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    // @ts-ignore
     const supabaseServiceRoleKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
 
     if (!supabaseUrl || !supabaseServiceRoleKey) {
@@ -47,7 +48,7 @@ serve(async (req: Request) => {
     // 1. Revert any previous stock deductions for this report (important for updates)
     const { data: previousConsumptionRecords, error: prevConsumptionError } = await supabaseAdmin
       .from('consumption_records')
-      .select('insumo_id, quantity_consumed, insumos(stock_quantity)')
+      .select('insumo_id, quantity_consumed, insumos(id, stock_quantity)') // Select insumo id and stock_quantity
       .eq('service_report_id', service_report_id);
 
     if (prevConsumptionError) {
@@ -83,9 +84,9 @@ serve(async (req: Request) => {
       }
     }
 
-    // 2. Fetch the platos sold for the current service report
-    const { data: soldPlatos, error: soldPlatosError } = await supabaseAdmin
-      .from('service_reports')
+    // 2. Fetch the platos sold for the current service report, including insumo conversion factor
+    const { data: serviceReportPlatos, error: soldPlatosError } = await supabaseAdmin
+      .from('service_report_platos')
       .select(`
         quantity_sold,
         platos (
@@ -93,7 +94,8 @@ serve(async (req: Request) => {
             cantidad_necesaria,
             insumos (
               id,
-              stock_quantity
+              stock_quantity,
+              conversion_factor
             )
           )
         )
@@ -108,7 +110,7 @@ serve(async (req: Request) => {
       });
     }
 
-    if (!soldPlatos || soldPlatos.length === 0) {
+    if (!serviceReportPlatos || serviceReportPlatos.length === 0) {
       return new Response(JSON.stringify({ message: 'No sold platos found for this service report, no stock deduction needed.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
@@ -119,26 +121,29 @@ serve(async (req: Request) => {
     const consumptionRecordsToInsert = [];
     const now = new Date().toISOString(); // Get current timestamp for consumption records
 
-    for (const soldPlato of soldPlatos) {
-      const plato = soldPlato.platos;
+    for (const srp of serviceReportPlatos) {
+      const plato = srp.platos;
       if (plato && plato.plato_insumos) {
         for (const platoInsumo of plato.plato_insumos) {
           const insumo = platoInsumo.insumos;
           if (insumo) {
-            const totalConsumedQuantity = platoInsumo.cantidad_necesaria * soldPlato.quantity_sold;
+            // Calculate total consumed quantity in base_unit
+            const quantityInBaseUnit = platoInsumo.cantidad_necesaria * srp.quantity_sold;
+            // Convert to purchase_unit using conversion_factor
+            const totalConsumedQuantityInPurchaseUnit = quantityInBaseUnit * insumo.conversion_factor;
 
             // Aggregate stock quantity updates
             if (!insumoUpdates[insumo.id]) {
               insumoUpdates[insumo.id] = { id: insumo.id, stock_quantity: insumo.stock_quantity };
             }
-            insumoUpdates[insumo.id].stock_quantity -= totalConsumedQuantity;
+            insumoUpdates[insumo.id].stock_quantity -= totalConsumedQuantityInPurchaseUnit;
 
-            // Prepare consumption record
+            // Prepare consumption record (store in purchase unit for consistency with stock)
             consumptionRecordsToInsert.push({
               user_id: user_id,
               service_report_id: service_report_id,
               insumo_id: insumo.id,
-              quantity_consumed: totalConsumedQuantity,
+              quantity_consumed: totalConsumedQuantityInPurchaseUnit,
               consumed_at: now, // Add timestamp
             });
           }

@@ -15,7 +15,7 @@ interface ConsumptionReportProps {
 interface AggregatedConsumption {
   insumo_id: string;
   nombre: string;
-  unidad_medida: string;
+  unidad_medida: string; // This should be purchase_unit for consistency
   total_consumed_quantity: number;
   total_cost: number;
 }
@@ -38,7 +38,7 @@ const ConsumptionReport: React.FC<ConsumptionReportProps> = ({ startDate, endDat
           aggregationMap.set(insumo.id, {
             insumo_id: insumo.id,
             nombre: insumo.nombre,
-            unidad_medida: insumo.unidad_medida,
+            unidad_medida: insumo.purchase_unit, // Changed to purchase_unit
             total_consumed_quantity: 0,
             total_cost: 0,
           });

@@ -43,7 +43,7 @@ const StockOverview: React.FC<StockOverviewProps> = ({ insumos, lowStockThreshol
                         {insumo.stock_quantity}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-base text-gray-700 dark:text-gray-300">{insumo.unidad_medida}</TableCell>
+                    <TableCell className="text-base text-gray-700 dark:text-gray-300">{insumo.purchase_unit}</TableCell> {/* Changed to purchase_unit */}
                   </TableRow>
                 ))}
               </TableBody>

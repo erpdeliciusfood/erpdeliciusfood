@@ -233,7 +233,7 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
                         <SelectContent>
                           {availableInsumos?.map((insumo: Insumo) => (
                             <SelectItem key={insumo.id} value={insumo.id}>
-                              {insumo.nombre} ({insumo.unidad_medida})
+                              {insumo.nombre} ({insumo.base_unit}) {/* Changed to base_unit */}
                             </SelectItem>
                           ))}
                         </SelectContent>

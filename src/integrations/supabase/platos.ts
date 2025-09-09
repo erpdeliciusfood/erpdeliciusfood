@@ -32,20 +32,22 @@ const calculatePlatoCost = async (insumosData: { insumo_id: string; cantidad_nec
     const insumoIds = insumosData.map(item => item.insumo_id);
     const { data: fetchedInsumos, error: insumosError } = await supabase
       .from("insumos")
-      .select("id, costo_unitario")
+      .select("id, costo_unitario, conversion_factor") // Fetch conversion_factor
       .in("id", insumoIds);
 
     if (insumosError) throw new Error(`Failed to fetch insumo costs: ${insumosError.message}`);
 
-    const insumoCostMap = new Map<string, number>();
-    fetchedInsumos.forEach(insumo => insumoCostMap.set(insumo.id, insumo.costo_unitario));
+    const insumoDetailsMap = new Map<string, { costo_unitario: number; conversion_factor: number }>();
+    fetchedInsumos.forEach(insumo => insumoDetailsMap.set(insumo.id, { costo_unitario: insumo.costo_unitario, conversion_factor: insumo.conversion_factor }));
 
     for (const item of insumosData) {
-      const costoUnitario = insumoCostMap.get(item.insumo_id);
-      if (costoUnitario !== undefined) {
-        totalCost += costoUnitario * item.cantidad_necesaria;
+      const details = insumoDetailsMap.get(item.insumo_id);
+      if (details) {
+        // Convert cantidad_necesaria (in base_unit) to purchase_unit using conversion_factor
+        const quantityInPurchaseUnit = item.cantidad_necesaria * details.conversion_factor;
+        totalCost += details.costo_unitario * quantityInPurchaseUnit;
       } else {
-        console.warn(`Costo unitario no encontrado para el insumo ID: ${item.insumo_id}`);
+        console.warn(`Detalles de insumo no encontrados para el insumo ID: ${item.insumo_id}`);
       }
     }
   }
