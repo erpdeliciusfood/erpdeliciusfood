@@ -1,8 +1,20 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Insumo, InsumoFormValues } from "@/types";
 
-export const getInsumos = async (): Promise<Insumo[]> => {
-  const { data, error } = await supabase.from("insumos").select("*").order("created_at", { ascending: false });
+export const getInsumos = async (searchTerm?: string, category?: string): Promise<Insumo[]> => {
+  let query = supabase.from("insumos").select("*");
+
+  if (searchTerm) {
+    query = query.ilike("nombre", `%${searchTerm}%`);
+  }
+
+  if (category) {
+    query = query.eq("category", category);
+  }
+
+  query = query.order("created_at", { ascending: false });
+
+  const { data, error } = await query;
   if (error) throw new Error(error.message);
   return data;
 };

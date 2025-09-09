@@ -10,7 +10,8 @@ export interface Insumo {
   last_price_update: string | null;
   purchase_unit: string;
   conversion_factor: number;
-  min_stock_level: number; // Added
+  min_stock_level: number;
+  category: string; // Added
   created_at: string;
 }
 
@@ -23,7 +24,8 @@ export interface InsumoFormValues {
   supplier_phone: string | null;
   purchase_unit: string;
   conversion_factor: number;
-  min_stock_level: number; // Added
+  min_stock_level: number;
+  category: string; // Added
 }
 
 export interface Plato {

@@ -12,6 +12,7 @@ import { Edit, Trash2, UtensilsCrossed } from "lucide-react";
 import { Insumo } from "@/types";
 import { useDeleteInsumo } from "@/hooks/useInsumos";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge"; // Import Badge
 
 interface InsumoListProps {
   insumos: Insumo[];
@@ -40,6 +41,7 @@ const InsumoList: React.FC<InsumoListProps> = ({ insumos, onEdit }) => {
         <TableHeader className="bg-gray-50 dark:bg-gray-700">
           <TableRow>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Nombre</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Categoría</TableHead> {/* Added Category Header */}
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Unidad de Compra</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Unitario (S/)</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Stock</TableHead>
@@ -50,6 +52,9 @@ const InsumoList: React.FC<InsumoListProps> = ({ insumos, onEdit }) => {
           {insumos.map((insumo) => (
             <TableRow key={insumo.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
               <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{insumo.nombre}</TableCell>
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+                <Badge variant="secondary" className="text-sm px-2 py-1">{insumo.category}</Badge>
+              </TableCell> {/* Added Category Cell */}
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{insumo.purchase_unit}</TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {insumo.costo_unitario.toFixed(2)}</TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">{insumo.stock_quantity}</TableCell>

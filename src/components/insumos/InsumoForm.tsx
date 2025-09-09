@@ -62,6 +62,9 @@ const formSchema = z.object({
   supplier_phone: z.string().max(20, {
     message: "El teléfono del proveedor no debe exceder los 20 caracteres.",
   }).nullable(),
+  category: z.string().min(1, {
+    message: "Debe seleccionar una categoría.",
+  }), // Added category to schema
 });
 
 interface InsumoFormProps {
@@ -76,6 +79,19 @@ const UNIDADES_BASE = [
 
 const UNIDADES_COMPRA = [
   "kg", "litro", "unidad", "atado", "manojo", "caja", "paquete", "botella", "lata", "saco", "galón"
+];
+
+const INSUMO_CATEGORIES = [
+  "Cereales y Legumbres",
+  "Proteínas (Carnes, Aves, Pescados)",
+  "Lácteos y Huevos",
+  "Verduras y Hortalizas",
+  "Frutas",
+  "Grasas y Aceites",
+  "Condimentos y Especias",
+  "Panadería y Pastelería",
+  "Bebidas",
+  "Otros",
 ];
 
 // Predefined common conversions (Purchase Unit to Base Unit)
@@ -106,6 +122,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
       min_stock_level: 0,
       supplier_name: "",
       supplier_phone: "",
+      category: "Otros", // Default category
     },
   });
 
@@ -124,6 +141,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         min_stock_level: initialData.min_stock_level,
         supplier_name: initialData.supplier_name || "",
         supplier_phone: initialData.supplier_phone || "",
+        category: initialData.category || "Otros", // Set initial category
       });
       setIsConversionFactorEditable(true); // Always editable when editing an existing item
       // Removed setIsCostoUnitarioEditable(false);
@@ -138,6 +156,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         min_stock_level: 0,
         supplier_name: "",
         supplier_phone: "",
+        category: "Otros", // Default category for new items
       });
       setIsConversionFactorEditable(true); // Editable by default for new items
       // Removed setIsCostoUnitarioEditable(true);
@@ -195,6 +214,30 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
                   disabled={isLoading}
                 />
               </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="category"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Categoría</FormLabel>
+              <Select onValueChange={field.onChange} value={field.value || ""} disabled={isLoading}>
+                <FormControl>
+                  <SelectTrigger className="h-12 text-base">
+                    <SelectValue placeholder="Selecciona una categoría" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {INSUMO_CATEGORIES.map((category) => (
+                    <SelectItem key={category} value={category}>
+                      {category}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
               <FormMessage />
             </FormItem>
           )}

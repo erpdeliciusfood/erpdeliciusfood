@@ -3,10 +3,10 @@ import { getInsumos, createInsumo, updateInsumo, deleteInsumo } from "@/integrat
 import { Insumo, InsumoFormValues } from "@/types";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
-export const useInsumos = () => {
+export const useInsumos = (searchTerm?: string, category?: string) => {
   return useQuery<Insumo[], Error>({
-    queryKey: ["insumos"],
-    queryFn: getInsumos,
+    queryKey: ["insumos", searchTerm, category], // Include search and category in query key
+    queryFn: () => getInsumos(searchTerm, category),
   });
 };
 
