@@ -104,14 +104,6 @@ export interface EventType {
   created_at: string;
 }
 
-export interface MealType { // NEW INTERFACE
-  id: string;
-  user_id: string;
-  name: string;
-  description: string | null;
-  created_at: string;
-}
-
 export interface Menu {
   id: string;
   user_id: string;
@@ -129,12 +121,11 @@ export interface MenuPlato {
   menu_id: string;
   plato_id: string;
   meal_service_id: string;
-  meal_type_id: string | null; // NEW: Link to MealType
+  dish_category: string; // NEW: Replaced meal_type_id
   quantity_needed: number;
   created_at: string;
   platos?: Plato; // Optional, for when fetching with relations
   meal_services?: MealService; // Optional, for when fetching with relations
-  meal_types?: MealType; // NEW: Optional, for when fetching with relations
 }
 
 export interface MenuFormValues {
@@ -145,7 +136,7 @@ export interface MenuFormValues {
   platos_por_servicio: {
     meal_service_id: string;
     plato_id: string;
-    meal_type_id: string | null; // NEW: For form submission
+    dish_category: string; // NEW: Replaced meal_type_id
     quantity_needed: number;
   }[];
 }

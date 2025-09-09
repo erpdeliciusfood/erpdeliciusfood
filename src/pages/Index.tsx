@@ -1,7 +1,7 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Utensils, UserCircle2, LayoutDashboard, ChefHat, BookText, CalendarDays, BarChart3, Users, ShoppingBag, FileText, Package, ListChecks } from "lucide-react"; // Updated icons, added ListChecks
+import { Utensils, UserCircle2, LayoutDashboard, ChefHat, BookText, CalendarDays, BarChart3, Users, ShoppingBag, FileText, Package } from "lucide-react"; // Updated icons, removed ListChecks
 import { useSession } from "@/contexts/SessionContext";
 import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,7 @@ import { useInsumos } from "@/hooks/useInsumos";
 import { usePlatos } from "@/hooks/usePlatos";
 import { useMenus } from "@/hooks/useMenus";
 import { useEventTypes } from "@/hooks/useEventTypes";
-import { useMealTypes } from "@/hooks/useMealTypes"; // NEW: Import useMealTypes
+// import { useMealTypes } from "@/hooks/useMealTypes"; // REMOVED: Import useMealTypes
 import { useServiceReports } from "@/hooks/useServiceReports";
 import { useStockMovements } from "@/hooks/useStockMovements";
 import LowStockAlerts from "@/components/insumos/LowStockAlerts";
@@ -21,7 +21,7 @@ const Index = () => {
   const { data: platos, isLoading: isLoadingPlatos } = usePlatos();
   const { data: menus, isLoading: isLoadingMenus } = useMenus();
   const { data: eventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
-  const { data: mealTypes, isLoading: isLoadingMealTypes } = useMealTypes(); // NEW: Fetch meal types
+  // const { data: mealTypes, isLoading: isLoadingMealTypes } = useMealTypes(); // REMOVED: Fetch meal types
   const { data: serviceReports, isLoading: isLoadingServiceReports } = useServiceReports();
   const { data: stockMovements, isLoading: isLoadingStockMovements } = useStockMovements();
 
@@ -32,7 +32,7 @@ const Index = () => {
   const totalPlatos = platos?.length || 0;
   const totalMenus = menus?.length || 0;
   const totalEventTypes = eventTypes?.length || 0;
-  const totalMealTypes = mealTypes?.length || 0; // NEW: Total meal types
+  // const totalMealTypes = mealTypes?.length || 0; // REMOVED: Total meal types
   const totalServiceReports = serviceReports?.length || 0;
   const totalStockMovements = stockMovements?.length || 0;
 
@@ -124,8 +124,8 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          {/* NEW: Card for Total Meal Types */}
-          <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out h-full flex flex-col justify-between">
+          {/* REMOVED: Card for Total Meal Types */}
+          {/* <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out h-full flex flex-col justify-between">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <CardTitle className="text-2xl font-bold">Tipos de Plato</CardTitle>
               <ListChecks className="h-8 w-8 text-muted-foreground" />
@@ -140,7 +140,7 @@ const Index = () => {
                 Categorías de platos para tus menús.
               </CardDescription>
             </CardContent>
-          </Card>
+          </Card> */}
 
           {/* Card for Total Service Reports */}
           <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out h-full flex flex-col justify-between">
@@ -231,7 +231,8 @@ const Index = () => {
             </Card>
           </Link>
 
-          <Link to="/meal-types"> {/* NEW CARD */}
+          {/* REMOVED: Link to Meal Types */}
+          {/* <Link to="/meal-types">
             <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-2xl font-bold">Gestión de Tipos de Plato</CardTitle>
@@ -246,7 +247,7 @@ const Index = () => {
                 Ir a Tipos de Plato
               </Button>
             </Card>
-          </Link>
+          </Link> */}
 
           <Link to="/menus">
             <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">

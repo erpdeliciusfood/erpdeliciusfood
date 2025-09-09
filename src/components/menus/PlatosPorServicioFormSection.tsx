@@ -18,20 +18,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MealService, MealType, MenuFormValues, Plato } from "@/types";
+import { MealService, MenuFormValues, Plato } from "@/types"; // Removed MealType
 
 interface PlatosPorServicioFormSectionProps {
   isLoading: boolean;
   availablePlatos: Plato[] | undefined;
   availableMealServices: MealService[] | undefined;
-  availableMealTypes: MealType[] | undefined;
+  // availableMealTypes: MealType[] | undefined; // REMOVED
 }
+
+const DISH_CATEGORIES = [
+  "Desayuno / Merienda",
+  "Entrada",
+  "Sopa / Crema",
+  "Ensalada Fría",
+  "Ensalada Caliente",
+  "Plato de Fondo - Carnes",
+  "Plato de Fondo - Aves",
+  "Plato de Fondo - Pescados y Mariscos",
+  "Plato de Fondo - Pastas y Arroces",
+  "Plato de Fondo - Vegetariano / Vegano",
+  "Acompañamiento / Guarnición",
+  "Postre",
+  "Bebida",
+  "Dieta Blanda",
+  "Otra Opción",
+];
 
 const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> = ({
   isLoading,
   availablePlatos,
   availableMealServices,
-  availableMealTypes,
+  // availableMealTypes, // REMOVED
 }) => {
   const form = useFormContext<MenuFormValues>();
   const { fields, append, remove } = useFieldArray({
@@ -51,10 +69,9 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
     return "Selecciona un servicio";
   };
 
-  const mealTypePlaceholder = () => {
-    if (isLoading) return "Cargando tipos de plato...";
-    if (!availableMealTypes || availableMealTypes.length === 0) return "No hay tipos de plato disponibles";
-    return "Selecciona tipo de plato";
+  const dishCategoryPlaceholder = () => {
+    if (isLoading) return "Cargando categorías...";
+    return "Selecciona una categoría";
   };
 
   return (
@@ -123,24 +140,24 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
             />
             <FormField
               control={form.control}
-              name={`platos_por_servicio.${index}.meal_type_id`}
-              render={({ field: mealTypeField }) => (
+              name={`platos_por_servicio.${index}.dish_category`} // NEW: dish_category field
+              render={({ field: categoryField }) => (
                 <FormItem className="flex-grow w-full md:w-1/3">
-                  <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Tipo de Plato</FormLabel>
+                  <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Categoría de Plato</FormLabel>
                   <Select
-                    onValueChange={mealTypeField.onChange}
-                    defaultValue={mealTypeField.value || ""}
-                    disabled={isLoading || !availableMealTypes || availableMealTypes.length === 0}
+                    onValueChange={categoryField.onChange}
+                    defaultValue={categoryField.value}
+                    disabled={isLoading}
                   >
                     <FormControl>
                       <SelectTrigger className="h-12 text-base">
-                        <SelectValue placeholder={mealTypePlaceholder()} />
+                        <SelectValue placeholder={dishCategoryPlaceholder()} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {availableMealTypes?.map((mealType: MealType) => (
-                        <SelectItem key={mealType.id} value={mealType.id}>
-                          {mealType.name}
+                      {DISH_CATEGORIES.map((category) => (
+                        <SelectItem key={category} value={category}>
+                          {category}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -185,9 +202,9 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
         <Button
           type="button"
           variant="outline"
-          onClick={() => append({ meal_service_id: "", plato_id: "", meal_type_id: null, quantity_needed: 1 })}
+          onClick={() => append({ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 })} // NEW: dish_category
           className="w-full mt-4 px-6 py-3 text-lg"
-          disabled={isLoading || !availablePlatos || availablePlatos.length === 0 || !availableMealServices || availableMealServices.length === 0 || !availableMealTypes || availableMealTypes.length === 0}
+          disabled={isLoading || !availablePlatos || availablePlatos.length === 0 || !availableMealServices || availableMealServices.length === 0} // Removed availableMealTypes check
         >
           <PlusCircle className="mr-2 h-5 w-5" />
           Añadir Plato a Servicio

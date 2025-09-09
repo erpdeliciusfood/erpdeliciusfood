@@ -11,7 +11,7 @@ import { useAddMenu, useUpdateMenu } from "@/hooks/useMenus";
 import { usePlatos } from "@/hooks/usePlatos";
 import { useMealServices } from "@/hooks/useMealServices";
 import { useEventTypes } from "@/hooks/useEventTypes";
-import { useMealTypes } from "@/hooks/useMealTypes";
+// import { useMealTypes } from "@/hooks/useMealTypes"; // REMOVED
 import { Loader2 } from "lucide-react";
 import MenuDetailsFormSection from "./MenuDetailsFormSection";
 import PlatosPorServicioFormSection from "./PlatosPorServicioFormSection";
@@ -35,7 +35,7 @@ const formSchema = z.object({
     z.object({
       meal_service_id: z.string().min(1, { message: "Debe seleccionar un servicio de comida." }),
       plato_id: z.string().min(1, { message: "Debe seleccionar un plato." }),
-      meal_type_id: z.string().min(1, { message: "Debe seleccionar un tipo de plato." }).nullable(),
+      dish_category: z.string().min(1, { message: "Debe seleccionar una categoría de plato." }), // NEW: dish_category
       quantity_needed: z.coerce.number().min(1, {
         message: "La cantidad debe ser al menos 1.",
       }).max(999, {
@@ -58,15 +58,7 @@ const formSchema = z.object({
       path: ["event_type_id"],
     });
   }
-  data.platos_por_servicio.forEach((platoServicio, index) => {
-    if (!platoServicio.meal_type_id) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "Debe seleccionar un tipo de plato.",
-        path: [`platos_por_servicio.${index}.meal_type_id`],
-      });
-    }
-  });
+  // Removed meal_type_id validation
 });
 
 interface MenuFormProps {
@@ -84,7 +76,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
   const { data: availablePlatos, isLoading: isLoadingPlatos } = usePlatos();
   const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
   const { data: availableEventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
-  const { data: availableMealTypes, isLoading: isLoadingMealTypes } = useMealTypes();
+  // const { data: availableMealTypes, isLoading: isLoadingMealTypes } = useMealTypes(); // REMOVED
 
   const form = useForm<MenuFormValues & { menu_type: "daily" | "event" }>({
     resolver: zodResolver(formSchema),
@@ -94,7 +86,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       menu_type: "daily",
       menu_date: preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null,
       event_type_id: null,
-      platos_por_servicio: [{ meal_service_id: "", plato_id: "", meal_type_id: null, quantity_needed: 1 }],
+      platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }], // NEW: dish_category
     },
   });
 
@@ -109,9 +101,9 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         platos_por_servicio: initialData.menu_platos?.map(mp => ({
           meal_service_id: mp.meal_service_id,
           plato_id: mp.plato_id,
-          meal_type_id: mp.meal_type_id || null,
+          dish_category: mp.dish_category, // NEW: dish_category
           quantity_needed: mp.quantity_needed,
-        })) || [{ meal_service_id: "", plato_id: "", meal_type_id: null, quantity_needed: 1 }],
+        })) || [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }], // NEW: dish_category
       });
     } else {
       form.reset({
@@ -120,7 +112,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         menu_type: "daily",
         menu_date: preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null,
         event_type_id: null,
-        platos_por_servicio: [{ meal_service_id: "", plato_id: "", meal_type_id: null, quantity_needed: 1 }],
+        platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }], // NEW: dish_category
       });
     }
   }, [initialData, form, preselectedDate]);
@@ -143,7 +135,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
   };
 
   // Calculate overall loading state
-  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingPlatos || isLoadingMealServices || isLoadingEventTypes || isLoadingMealTypes;
+  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingPlatos || isLoadingMealServices || isLoadingEventTypes; // REMOVED isLoadingMealTypes
 
   return (
     <FormProvider {...form}>
@@ -160,7 +152,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
             isLoading={isLoading}
             availablePlatos={availablePlatos}
             availableMealServices={availableMealServices}
-            availableMealTypes={availableMealTypes}
+            // availableMealTypes={availableMealTypes} // REMOVED
           />
 
           <div className="flex justify-end space-x-4 pt-4">

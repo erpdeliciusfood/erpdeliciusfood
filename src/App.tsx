@@ -10,7 +10,7 @@ import Login from "./pages/Login";
 import Profile from "./pages/Profile";
 import Platos from "./pages/Platos";
 import EventTypes from "./pages/EventTypes";
-import MealTypes from "./pages/MealTypes"; // NEW: Import MealTypes page
+// import MealTypes from "./pages/MealTypes"; // REMOVED: Import MealTypes page
 import Menus from "./pages/Menus";
 import ServiceReports from "./pages/ServiceReports";
 import Reports from "./pages/Reports";
@@ -50,7 +50,7 @@ const AppRoutes = () => (
     <Route path="/insumos" element={<ProtectedRoute><Insumos /></ProtectedRoute>} />
     <Route path="/platos" element={<ProtectedRoute><Platos /></ProtectedRoute>} />
     <Route path="/event-types" element={<ProtectedRoute><EventTypes /></ProtectedRoute>} />
-    <Route path="/meal-types" element={<ProtectedRoute><MealTypes /></ProtectedRoute>} /> {/* NEW PROTECTED ROUTE */}
+    {/* <Route path="/meal-types" element={<ProtectedRoute><MealTypes /></ProtectedRoute>} /> */} {/* REMOVED PROTECTED ROUTE */}
     <Route path="/menus" element={<ProtectedRoute><Menus /></ProtectedRoute>} />
     <Route path="/service-reports" element={<ProtectedRoute><ServiceReports /></ProtectedRoute>} />
     <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />

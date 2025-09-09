@@ -66,19 +66,19 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
               }
             });
 
-            // Group platos by meal service and then by meal type for detailed display
-            const platosGroupedByServiceAndType = menu.menu_platos?.reduce((acc, mp) => {
+            // Group platos by meal service and then by dish category for detailed display
+            const platosGroupedByServiceAndCategory = menu.menu_platos?.reduce((acc, mp) => {
               const serviceName = mp.meal_services?.name || "Sin Servicio";
-              const mealTypeName = mp.meal_types?.name || "Sin Tipo";
+              const dishCategory = mp.dish_category || "Sin Categoría"; // NEW: Use dish_category
               if (!acc[serviceName]) {
                 acc[serviceName] = {};
               }
-              if (!acc[serviceName][mealTypeName]) {
-                acc[serviceName][mealTypeName] = [];
+              if (!acc[serviceName][dishCategory]) {
+                acc[serviceName][dishCategory] = [];
               }
-              acc[serviceName][mealTypeName].push(mp);
+              acc[serviceName][dishCategory].push(mp);
               return acc;
-            }, {} as { [serviceName: string]: { [mealTypeName: string]: MenuPlato[] } });
+            }, {} as { [serviceName: string]: { [dishCategory: string]: MenuPlato[] } });
 
             return (
               <React.Fragment key={menu.id}>
@@ -165,19 +165,19 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                           </AccordionTrigger>
                           <AccordionContent className="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
                             <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Detalles de Platos:</h4>
-                            {Object.entries(platosGroupedByServiceAndType || {}).sort(([serviceA], [serviceB]) => {
+                            {Object.entries(platosGroupedByServiceAndCategory || {}).sort(([serviceA], [serviceB]) => {
                               // Sort services by predefined order
                               const indexA = MEAL_SERVICES_ORDER.indexOf(serviceA.toLowerCase());
                               const indexB = MEAL_SERVICES_ORDER.indexOf(serviceB.toLowerCase());
                               if (indexA === -1) return 1; // Unknown services last
                               if (indexB === -1) return -1;
                               return indexA - indexB;
-                            }).map(([serviceName, mealTypes]) => (
+                            }).map(([serviceName, dishCategories]) => (
                               <div key={serviceName} className="mb-4 last:mb-0">
                                 <h5 className="text-md font-bold text-gray-800 dark:text-gray-200 mb-2 capitalize">{serviceName}</h5>
-                                {Object.entries(mealTypes).map(([mealTypeName, platos]) => (
-                                  <div key={mealTypeName} className="ml-4 mb-2 last:mb-0">
-                                    <h6 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 capitalize">{mealTypeName}:</h6>
+                                {Object.entries(dishCategories).map(([dishCategory, platos]) => (
+                                  <div key={dishCategory} className="ml-4 mb-2 last:mb-0">
+                                    <h6 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 capitalize">{dishCategory}:</h6>
                                     <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
                                       {platos?.map((mp, idx) => (
                                         <li key={idx} className="text-base">
