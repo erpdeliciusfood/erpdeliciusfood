@@ -91,7 +91,8 @@ const predefinedConversions: { [purchaseUnit: string]: { [baseUnit: string]: num
 const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCancel }) => {
   const addMutation = useAddInsumo();
   const updateMutation = useUpdateInsumo();
-  const [isConversionFactorEditable, setIsConversionFactorEditable] = useState(true); // New state for editability
+  const [isConversionFactorEditable, setIsConversionFactorEditable] = useState(true);
+  const [isCostoUnitarioEditable, setIsCostoUnitarioEditable] = useState(false); // New state for costo_unitario editability
 
   const form = useForm<InsumoFormValues>({
     resolver: zodResolver(formSchema),
@@ -125,6 +126,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         supplier_phone: initialData.supplier_phone || "",
       });
       setIsConversionFactorEditable(true); // Always editable when editing an existing item
+      setIsCostoUnitarioEditable(false); // Make costo_unitario read-only by default when editing
     } else {
       form.reset({
         nombre: "",
@@ -138,6 +140,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         supplier_phone: "",
       });
       setIsConversionFactorEditable(true); // Editable by default for new items
+      setIsCostoUnitarioEditable(true); // Editable by default for new items
     }
   }, [initialData, form]);
 
@@ -300,7 +303,35 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
           name="costo_unitario"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Costo Unitario (S/ por Unidad de Compra)</FormLabel>
+              <div className="flex items-center space-x-2">
+                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Costo Unitario (S/ por Unidad de Compra)</FormLabel>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-gray-500 dark:text-gray-400 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs text-base p-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
+                      <p className="font-semibold mb-1 text-gray-900 dark:text-gray-100">Costo Unitario</p>
+                      <p className="text-gray-700 dark:text-gray-300">Este costo se actualiza automáticamente al registrar una "Entrada por Compra" en Movimientos de Stock.</p>
+                      <p className="mt-2 text-gray-700 dark:text-gray-300">
+                        <span className="font-medium text-gray-800 dark:text-gray-200">Nota:</span> Puedes editarlo manualmente si es necesario.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                {!isCostoUnitarioEditable && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsCostoUnitarioEditable(true)}
+                    className="ml-auto h-8 text-sm"
+                    disabled={isLoading}
+                  >
+                    Editar
+                  </Button>
+                )}
+              </div>
               <FormControl>
                 <Input
                   type="number"
@@ -309,7 +340,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
                   {...field}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
                   className="h-12 text-base"
-                  disabled={isLoading}
+                  disabled={isLoading || !isCostoUnitarioEditable} // Disable based on new state
                 />
               </FormControl>
               <FormMessage />
