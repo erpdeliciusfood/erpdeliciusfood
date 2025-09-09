@@ -4,6 +4,7 @@ export interface Insumo {
   nombre: string;
   unidad_medida: string;
   costo_unitario: number;
+  stock_quantity: number; // New field for inventory management
   created_at: string;
 }
 
@@ -11,6 +12,7 @@ export interface InsumoFormValues {
   nombre: string;
   unidad_medida: string;
   costo_unitario: number;
+  stock_quantity: number; // New field for inventory management
 }
 
 export interface Plato {

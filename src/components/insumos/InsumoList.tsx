@@ -42,6 +42,7 @@ const InsumoList: React.FC<InsumoListProps> = ({ insumos, onEdit }) => {
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Nombre</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Unidad de Medida</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Unitario (S/)</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Stock</TableHead> {/* New column */}
             <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -51,6 +52,7 @@ const InsumoList: React.FC<InsumoListProps> = ({ insumos, onEdit }) => {
               <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{insumo.nombre}</TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{insumo.unidad_medida}</TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {insumo.costo_unitario.toFixed(2)}</TableCell>
+              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">{insumo.stock_quantity}</TableCell> {/* Display stock quantity */}
               <TableCell className="flex justify-center space-x-2 py-3 px-6">
                 <Button
                   variant="outline"

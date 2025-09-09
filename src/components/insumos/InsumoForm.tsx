@@ -37,6 +37,11 @@ const formSchema = z.object({
   }).max(99999.99, {
     message: "El costo unitario no debe exceder 99999.99.",
   }),
+  stock_quantity: z.coerce.number().min(0, { // New field validation
+    message: "La cantidad de stock no puede ser negativa.",
+  }).max(999999, {
+    message: "La cantidad de stock no debe exceder 999999.",
+  }),
 });
 
 interface InsumoFormProps {
@@ -59,6 +64,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
       nombre: "",
       unidad_medida: "",
       costo_unitario: 0,
+      stock_quantity: 0, // Default value for new field
     },
   });
 
@@ -68,12 +74,14 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         nombre: initialData.nombre,
         unidad_medida: initialData.unidad_medida,
         costo_unitario: initialData.costo_unitario,
+        stock_quantity: initialData.stock_quantity, // Set initial value for new field
       });
     } else {
       form.reset({
         nombre: "",
         unidad_medida: "",
         costo_unitario: 0,
+        stock_quantity: 0,
       });
     }
   }, [initialData, form]);
@@ -147,6 +155,27 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
                   placeholder="Ej. 2.50"
                   {...field}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  className="h-12 text-base"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="stock_quantity"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad en Stock</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="1"
+                  placeholder="Ej. 100"
+                  {...field}
+                  onChange={(e) => field.onChange(parseInt(e.target.value))}
                   className="h-12 text-base"
                   disabled={isLoading}
                 />
