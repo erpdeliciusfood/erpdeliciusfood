@@ -6,6 +6,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"; // Import Sheet components
 import { useMenus } from "@/hooks/useMenus";
 import { Menu } from "@/types";
 import DailyMenuList from "./DailyMenuList";
@@ -173,14 +174,14 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
         </DialogContent>
       </Dialog>
 
-      {/* Dialog for Add/Edit Menu Form */}
-      <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-        <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-3xl p-6 max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+      {/* Sheet for Add/Edit Menu Form */}
+      <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
+        <SheetContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-3xl p-6 max-h-screen overflow-y-auto">
+          <SheetHeader>
+            <SheetTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
               {editingMenu ? "Editar Menú" : "Crear Nuevo Menú"}
-            </DialogTitle>
-          </DialogHeader>
+            </SheetTitle>
+          </SheetHeader>
           <MenuForm
             initialData={editingMenu}
             onSuccess={() => {
@@ -193,8 +194,8 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
             }}
             preselectedDate={selectedDate} // Pass selectedDate to MenuForm
           />
-        </DialogContent>
-      </Dialog>
+        </SheetContent>
+      </Sheet>
     </div>
   );
 };
