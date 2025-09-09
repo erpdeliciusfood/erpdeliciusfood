@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -22,21 +22,29 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ServiceReport, ServiceReportFormValues, Menu } from "@/types"; // Changed MealService to Menu
+import { ServiceReport, ServiceReportFormValues, MealService, Plato } from "@/types";
 import { useAddServiceReport, useUpdateServiceReport } from "@/hooks/useServiceReports";
-import { useMenus } from "@/hooks/useMenus"; // Changed useMealServices to useMenus
-import { Loader2, CalendarIcon } from "lucide-react";
+import { useMealServices } from "@/hooks/useMealServices"; // Changed to useMealServices
+import { usePlatos } from "@/hooks/usePlatos"; // New import for platos
+import { Loader2, CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 
 const formSchema = z.object({
   report_date: z.string().min(1, { message: "La fecha del reporte es requerida." }),
-  menu_id: z.string().min(1, { message: "Debe seleccionar un menú." }), // Changed to menu_id
+  meal_service_id: z.string().min(1, { message: "Debe seleccionar un servicio de comida." }),
   tickets_issued: z.coerce.number().min(0, { message: "Los tickets emitidos no pueden ser negativos." }).int({ message: "Los tickets emitidos deben ser un número entero." }),
   meals_sold: z.coerce.number().min(0, { message: "Las colaciones vendidas no pueden ser negativas." }).int({ message: "La cantidad de colaciones vendidas debe ser un número entero." }),
   additional_services_revenue: z.coerce.number().min(0, { message: "Los ingresos adicionales no pueden ser negativos." }).max(999999.99, { message: "Los ingresos adicionales no deben exceder 999999.99." }),
   notes: z.string().max(500, { message: "Las notas no deben exceder los 500 caracteres." }).nullable(),
+  platos_vendidos: z.array(
+    z.object({
+      plato_id: z.string().min(1, { message: "Debe seleccionar un plato." }),
+      quantity_sold: z.coerce.number().min(1, { message: "La cantidad vendida debe ser al menos 1." }).int({ message: "La cantidad vendida debe ser un número entero." }),
+    })
+  ).min(1, { message: "Debe añadir al menos un plato vendido." }),
 });
 
 interface ServiceReportFormProps {
@@ -48,38 +56,50 @@ interface ServiceReportFormProps {
 const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSuccess, onCancel }) => {
   const addMutation = useAddServiceReport();
   const updateMutation = useUpdateServiceReport();
-  const { data: availableMenus, isLoading: isLoadingMenus } = useMenus(); // Changed to useMenus
+  const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices(); // Correct hook
+  const { data: availablePlatos, isLoading: isLoadingPlatos } = usePlatos(); // Fetch available platos
 
   const form = useForm<ServiceReportFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       report_date: format(new Date(), "yyyy-MM-dd"),
-      menu_id: "", // Changed to menu_id
+      meal_service_id: "",
       tickets_issued: 0,
       meals_sold: 0,
       additional_services_revenue: 0,
       notes: "",
+      platos_vendidos: [{ plato_id: "", quantity_sold: 1 }],
     },
+  });
+
+  const { fields, append, remove } = useFieldArray({
+    control: form.control,
+    name: "platos_vendidos",
   });
 
   useEffect(() => {
     if (initialData) {
       form.reset({
         report_date: initialData.report_date,
-        menu_id: initialData.menu_id, // Changed to menu_id
+        meal_service_id: initialData.meal_service_id,
         tickets_issued: initialData.tickets_issued,
         meals_sold: initialData.meals_sold,
         additional_services_revenue: initialData.additional_services_revenue,
         notes: initialData.notes || "",
+        platos_vendidos: initialData.platos_vendidos_data?.map(pv => ({
+          plato_id: pv.plato_id,
+          quantity_sold: pv.quantity_sold,
+        })) || [{ plato_id: "", quantity_sold: 1 }],
       });
     } else {
       form.reset({
         report_date: format(new Date(), "yyyy-MM-dd"),
-        menu_id: "", // Changed to menu_id
+        meal_service_id: "",
         tickets_issued: 0,
         meals_sold: 0,
         additional_services_revenue: 0,
         notes: "",
+        platos_vendidos: [{ plato_id: "", quantity_sold: 1 }],
       });
     }
   }, [initialData, form]);
@@ -93,7 +113,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
     onSuccess();
   };
 
-  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingMenus; // Changed isLoadingMealServices to isLoadingMenus
+  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingMealServices || isLoadingPlatos;
 
   return (
     <Form {...form}>
@@ -144,24 +164,24 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
 
         <FormField
           control={form.control}
-          name="menu_id" // Changed name to menu_id
+          name="meal_service_id"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Menú Servido</FormLabel> {/* Updated label */}
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Servicio de Comida</FormLabel>
               <Select
                 onValueChange={field.onChange}
-                defaultValue={field.value || ""} // Ensure default value is string or empty string
-                disabled={isLoading || isLoadingMenus} // Changed isLoadingMealServices to isLoadingMenus
+                defaultValue={field.value}
+                disabled={isLoading || isLoadingMealServices}
               >
                 <FormControl>
                   <SelectTrigger className="h-12 text-base">
-                    <SelectValue placeholder="Selecciona un menú" /> {/* Updated placeholder */}
+                    <SelectValue placeholder="Selecciona un servicio de comida" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {availableMenus?.map((menu: Menu) => ( // Changed availableMealServices to availableMenus, MealService to Menu
-                    <SelectItem key={menu.id} value={menu.id}>
-                      {menu.title}
+                  {availableMealServices?.map((service: MealService) => (
+                    <SelectItem key={service.id} value={service.id}>
+                      {service.name}
                     </SelectItem>
                   ))}
                 </SelectContent>
@@ -256,6 +276,87 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
             </FormItem>
           )}
         />
+
+        <Card className="mt-8">
+          <CardHeader>
+            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Platos Vendidos</CardTitle>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {fields.map((field, index) => (
+              <div key={field.id} className="flex flex-col md:flex-row gap-4 items-end border-b pb-4 last:border-b-0 last:pb-0">
+                <FormField
+                  control={form.control}
+                  name={`platos_vendidos.${index}.plato_id`}
+                  render={({ field: platoField }) => (
+                    <FormItem className="flex-grow w-full">
+                      <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Plato</FormLabel>
+                      <Select
+                        onValueChange={platoField.onChange}
+                        defaultValue={platoField.value}
+                        disabled={isLoading || isLoadingPlatos}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-12 text-base">
+                            <SelectValue placeholder="Selecciona un plato" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {availablePlatos?.map((plato: Plato) => (
+                            <SelectItem key={plato.id} value={plato.id}>
+                              {plato.nombre}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
+                  name={`platos_vendidos.${index}.quantity_sold`}
+                  render={({ field: quantityField }) => (
+                    <FormItem className="w-full md:w-1/3">
+                      <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Cantidad Vendida</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="1"
+                          placeholder="Cantidad"
+                          {...quantityField}
+                          onChange={(e) => quantityField.onChange(parseInt(e.target.value))}
+                          className="h-12 text-base"
+                          disabled={isLoading}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <Button
+                  type="button"
+                  variant="destructive"
+                  size="icon"
+                  onClick={() => remove(index)}
+                  className="h-10 w-10 flex-shrink-0"
+                  disabled={isLoading || fields.length === 1}
+                >
+                  <Trash2 className="h-5 w-5" />
+                </Button>
+              </div>
+            ))}
+            <Button
+              type="button"
+              variant="outline"
+              onClick={() => append({ plato_id: "", quantity_sold: 1 })}
+              className="w-full mt-4 px-6 py-3 text-lg"
+              disabled={isLoading}
+            >
+              <PlusCircle className="mr-2 h-5 w-5" />
+              Añadir Plato Vendido
+            </Button>
+          </CardContent>
+        </Card>
 
         <div className="flex justify-end space-x-4 pt-4">
           <Button

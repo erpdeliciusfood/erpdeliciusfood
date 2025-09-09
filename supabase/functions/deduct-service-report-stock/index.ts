@@ -32,115 +32,112 @@ serve(async (req: Request) => { // Explicitly type req as Request
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // 1. Fetch the Service Report details
-    const { data: serviceReport, error: serviceReportError } = await supabaseAdmin
-      .from('service_reports')
-      .select('menu_id, meals_sold')
-      .eq('id', service_report_id)
-      .single();
+    // 1. Revert any previous stock deductions for this report (important for updates)
+    const { data: previousConsumptionRecords, error: prevConsumptionError } = await supabaseAdmin
+      .from('consumption_records')
+      .select('insumo_id, quantity_consumed, insumos(stock_quantity)')
+      .eq('service_report_id', service_report_id);
 
-    if (serviceReportError) {
-      console.error('Error fetching service report:', serviceReportError);
-      return new Response(JSON.stringify({ error: serviceReportError.message }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 500,
-      });
+    if (prevConsumptionError) {
+      console.error('Error fetching previous consumption records for reversal:', prevConsumptionError);
+    } else if (previousConsumptionRecords && previousConsumptionRecords.length > 0) {
+      const reversalUpdates = [];
+      for (const record of previousConsumptionRecords) {
+        const insumo = record.insumos;
+        if (insumo) {
+          reversalUpdates.push({
+            id: record.insumo_id,
+            stock_quantity: insumo.stock_quantity + record.quantity_consumed, // Add back to stock
+          });
+        }
+      }
+      if (reversalUpdates.length > 0) {
+        const { error: reversalUpdateError } = await supabaseAdmin
+          .from('insumos')
+          .upsert(reversalUpdates, { onConflict: 'id' });
+        if (reversalUpdateError) {
+          console.error('Error reverting previous insumo stock:', reversalUpdateError);
+        } else {
+          console.log('Previous stock successfully reverted for service report:', service_report_id);
+        }
+      }
+      // Delete previous consumption records
+      const { error: deleteConsumptionError } = await supabaseAdmin
+        .from('consumption_records')
+        .delete()
+        .eq('service_report_id', service_report_id);
+      if (deleteConsumptionError) {
+        console.error('Error deleting previous consumption records:', deleteConsumptionError);
+      }
     }
 
-    if (!serviceReport) {
-      return new Response(JSON.stringify({ message: 'Service report not found.' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 404,
-      });
-    }
-
-    const { menu_id, meals_sold } = serviceReport;
-
-    if (meals_sold <= 0) {
-      return new Response(JSON.stringify({ message: 'No meals sold, no stock deduction needed.' }), {
-        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
-        status: 200,
-      });
-    }
-
-    // 2. Fetch the Menu and its associated platos and insumos
-    const { data: menu, error: menuError } = await supabaseAdmin
-      .from('menus')
+    // 2. Fetch the platos sold for the current service report
+    const { data: soldPlatos, error: soldPlatosError } = await supabaseAdmin
+      .from('service_report_platos')
       .select(`
-        menu_platos (
-          quantity_needed,
-          platos (
-            plato_insumos (
-              cantidad_necesaria,
-              insumos (
-                id,
-                stock_quantity
-              )
+        quantity_sold,
+        platos (
+          plato_insumos (
+            cantidad_necesaria,
+            insumos (
+              id,
+              stock_quantity
             )
           )
         )
       `)
-      .eq('id', menu_id)
-      .single();
+      .eq('service_report_id', service_report_id);
 
-    if (menuError) {
-      console.error('Error fetching menu details:', menuError);
-      return new Response(JSON.stringify({ error: menuError.message }), {
+    if (soldPlatosError) {
+      console.error('Error fetching sold platos for service report:', soldPlatosError);
+      return new Response(JSON.stringify({ error: soldPlatosError.message }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       });
     }
 
-    if (!menu || !menu.menu_platos || menu.menu_platos.length === 0) {
-      return new Response(JSON.stringify({ message: 'No platos found for this menu, no stock deduction needed.' }), {
+    if (!soldPlatos || soldPlatos.length === 0) {
+      return new Response(JSON.stringify({ message: 'No sold platos found for this service report, no stock deduction needed.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
     }
 
-    const insumoConsumption: { [insumoId: string]: number } = {};
-    const insumoCurrentStock: { [insumoId: string]: number } = {};
+    const insumoUpdates: { [insumoId: string]: { id: string; stock_quantity: number } } = {};
+    const consumptionRecordsToInsert = [];
 
-    // Calculate total insumo consumption for the meals sold
-    for (const menuPlato of menu.menu_platos) {
-      const plato = menuPlato.platos;
+    for (const soldPlato of soldPlatos) {
+      const plato = soldPlato.platos;
       if (plato && plato.plato_insumos) {
         for (const platoInsumo of plato.plato_insumos) {
           const insumo = platoInsumo.insumos;
           if (insumo) {
-            const consumedQuantity = (platoInsumo.cantidad_necesaria * menuPlato.quantity_needed * meals_sold);
-            insumoConsumption[insumo.id] = (insumoConsumption[insumo.id] || 0) + consumedQuantity;
-            insumoCurrentStock[insumo.id] = insumo.stock_quantity; // Store current stock
+            const totalConsumedQuantity = platoInsumo.cantidad_necesaria * soldPlato.quantity_sold;
+
+            // Update stock quantity
+            if (!insumoUpdates[insumo.id]) {
+              insumoUpdates[insumo.id] = { id: insumo.id, stock_quantity: insumo.stock_quantity };
+            }
+            insumoUpdates[insumo.id].stock_quantity -= totalConsumedQuantity;
+
+            // Prepare consumption record
+            consumptionRecordsToInsert.push({
+              user_id: user_id,
+              service_report_id: service_report_id,
+              insumo_id: insumo.id,
+              quantity_consumed: totalConsumedQuantity,
+            });
           }
         }
       }
     }
 
-    const updates = [];
-    const consumptionRecords = [];
+    const updatesArray = Object.values(insumoUpdates);
 
-    for (const insumoId in insumoConsumption) {
-      const quantityToDeduct = insumoConsumption[insumoId];
-      const currentStock = insumoCurrentStock[insumoId];
-      const newStock = currentStock - quantityToDeduct;
-
-      updates.push({
-        id: insumoId,
-        stock_quantity: newStock,
-      });
-
-      consumptionRecords.push({
-        user_id: user_id, // Pass user_id to consumption record
-        service_report_id: service_report_id,
-        insumo_id: insumoId,
-        quantity_consumed: quantityToDeduct,
-      });
-    }
-
-    if (updates.length > 0) {
+    if (updatesArray.length > 0) {
       const { error: updateError } = await supabaseAdmin
         .from('insumos')
-        .upsert(updates, { onConflict: 'id' });
+        .upsert(updatesArray, { onConflict: 'id' });
 
       if (updateError) {
         console.error('Error updating insumo stock:', updateError);
@@ -151,14 +148,13 @@ serve(async (req: Request) => { // Explicitly type req as Request
       }
     }
 
-    if (consumptionRecords.length > 0) {
+    if (consumptionRecordsToInsert.length > 0) {
       const { error: consumptionError } = await supabaseAdmin
         .from('consumption_records')
-        .insert(consumptionRecords);
+        .insert(consumptionRecordsToInsert);
 
       if (consumptionError) {
         console.error('Error inserting consumption records:', consumptionError);
-        // This error is not critical enough to roll back stock, but should be logged
       }
     }
 
@@ -167,9 +163,9 @@ serve(async (req: Request) => { // Explicitly type req as Request
       status: 200,
     });
 
-  } catch (error: unknown) { // Explicitly type error as unknown
+  } catch (error: unknown) {
     console.error('Error in deduct-service-report-stock function:', error);
-    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'An unknown error occurred' }), { // Type guard for error
+    return new Response(JSON.stringify({ error: error instanceof Error ? error.message : 'An unknown error occurred' }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });
