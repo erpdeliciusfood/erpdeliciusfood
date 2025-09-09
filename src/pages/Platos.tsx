@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Loader2, PlusCircle } from "lucide-react";
@@ -6,16 +6,16 @@ import { usePlatos } from "@/hooks/usePlatos";
 import PlatoList from "@/components/platos/PlatoList";
 import PlatoForm from "@/components/platos/PlatoForm";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { Plato } from "@/types"; // Import Plato type
+import { Plato } from "@/types";
 
 const Platos = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingPlato, setEditingPlato] = useState<Plato | null>(null); // State to hold plato being edited
+  const [editingPlato, setEditingPlato] = useState<Plato | null>(null);
 
   const { data: platos, isLoading, isError, error } = usePlatos();
 
   const handleAddClick = () => {
-    setEditingPlato(null); // Clear any editing state
+    setEditingPlato(null);
     setIsFormOpen(true);
   };
 

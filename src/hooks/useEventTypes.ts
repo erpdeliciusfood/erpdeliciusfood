@@ -29,7 +29,9 @@ export const useAddEventType = () => {
       showSuccess("Tipo de evento añadido exitosamente.");
     },
     onError: (error, __, context) => {
-      dismissToast(context.toastId);
+      if (context?.toastId) { // Added optional chaining
+        dismissToast(context.toastId);
+      }
       showError(`Error al añadir tipo de evento: ${error.message}`);
     },
   });
@@ -49,7 +51,9 @@ export const useUpdateEventType = () => {
       showSuccess("Tipo de evento actualizado exitosamente.");
     },
     onError: (error, __, context) => {
-      dismissToast(context.toastId);
+      if (context?.toastId) { // Added optional chaining
+        dismissToast(context.toastId);
+      }
       showError(`Error al actualizar tipo de evento: ${error.message}`);
     },
   });
@@ -69,7 +73,9 @@ export const useDeleteEventType = () => {
       showSuccess("Tipo de evento eliminado exitosamente.");
     },
     onError: (error, __, context) => {
-      dismissToast(context.toastId);
+      if (context?.toastId) { // Added optional chaining
+        dismissToast(context.toastId);
+      }
       showError(`Error al eliminar tipo de evento: ${error.message}`);
     },
   });

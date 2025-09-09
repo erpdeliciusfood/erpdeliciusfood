@@ -32,7 +32,9 @@ export const useAddOrder = () => {
       showSuccess("Pedido creado exitosamente.");
     },
     onError: (error, __, context) => {
-      dismissToast(context.toastId);
+      if (context?.toastId) { // Added optional chaining
+        dismissToast(context.toastId);
+      }
       showError(`Error al crear pedido: ${error.message}`);
     },
   });
@@ -53,7 +55,9 @@ export const useUpdateOrder = () => {
       showSuccess("Pedido actualizado exitosamente.");
     },
     onError: (error, __, context) => {
-      dismissToast(context.toastId);
+      if (context?.toastId) { // Added optional chaining
+        dismissToast(context.toastId);
+      }
       showError(`Error al actualizar pedido: ${error.message}`);
     },
   });
@@ -73,7 +77,9 @@ export const useDeleteOrder = () => {
       showSuccess("Pedido eliminado exitosamente.");
     },
     onError: (error, __, context) => {
-      dismissToast(context.toastId);
+      if (context?.toastId) { // Added optional chaining
+        dismissToast(context.toastId);
+      }
       showError(`Error al eliminar pedido: ${error.message}`);
     },
   });

@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Order, OrderFormValues, OrderItem } from "@/types";
+import { Order, OrderFormValues } from "@/types"; // Removed OrderItem
 
 export const getOrders = async (): Promise<Order[]> => {
   const { data, error } = await supabase

@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Plato, PlatoFormValues, PlatoInsumo } from "@/types";
+import { Plato, PlatoFormValues } from "@/types"; // Removed PlatoInsumo
 
 export const getPlatos = async (): Promise<Plato[]> => {
   const { data, error } = await supabase

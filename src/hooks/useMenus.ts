@@ -32,7 +32,9 @@ export const useAddMenu = () => {
       showSuccess("Menú creado exitosamente.");
     },
     onError: (error, __, context) => {
-      dismissToast(context.toastId);
+      if (context?.toastId) { // Added optional chaining
+        dismissToast(context.toastId);
+      }
       showError(`Error al crear menú: ${error.message}`);
     },
   });
@@ -53,7 +55,9 @@ export const useUpdateMenu = () => {
       showSuccess("Menú actualizado exitosamente.");
     },
     onError: (error, __, context) => {
-      dismissToast(context.toastId);
+      if (context?.toastId) { // Added optional chaining
+        dismissToast(context.toastId);
+      }
       showError(`Error al actualizar menú: ${error.message}`);
     },
   });
@@ -73,7 +77,9 @@ export const useDeleteMenu = () => {
       showSuccess("Menú eliminado exitosamente.");
     },
     onError: (error, __, context) => {
-      dismissToast(context.toastId);
+      if (context?.toastId) { // Added optional chaining
+        dismissToast(context.toastId);
+      }
       showError(`Error al eliminar menú: ${error.message}`);
     },
   });

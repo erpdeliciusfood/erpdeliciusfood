@@ -1,4 +1,3 @@
-import React from "react";
 import { Button } from "@/components/ui/button";
 import { LogOut, UserCircle2 } from "lucide-react";
 import ProfileForm from "@/components/profile/ProfileForm";

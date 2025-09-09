@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Menu, MenuFormValues, MenuPlato } from "@/types";
+import { Menu, MenuFormValues } from "@/types"; // Removed MenuPlato
 
 export const getMenus = async (): Promise<Menu[]> => {
   const { data, error } = await supabase

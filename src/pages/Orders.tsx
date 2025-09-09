@@ -1,21 +1,21 @@
-import React, { useState } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, PlusCircle, Package } from "lucide-react";
+import { Loader2, PlusCircle } from "lucide-react"; // Removed Package
 import { useOrders } from "@/hooks/useOrders";
 import OrderList from "@/components/orders/OrderList";
 import OrderForm from "@/components/orders/OrderForm";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { Order } from "@/types"; // Import Order type
+import { Order } from "@/types";
 
 const Orders = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [editingOrder, setEditingOrder] = useState<Order | null>(null); // State to hold order being edited
+  const [editingOrder, setEditingOrder] = useState<Order | null>(null);
 
   const { data: orders, isLoading, isError, error } = useOrders();
 
   const handleAddClick = () => {
-    setEditingOrder(null); // Clear any editing state
+    setEditingOrder(null);
     setIsFormOpen(true);
   };
 

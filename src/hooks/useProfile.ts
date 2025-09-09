@@ -44,7 +44,9 @@ export const useUpdateProfile = () => {
       showSuccess("Perfil actualizado exitosamente.");
     },
     onError: (error, __, context) => {
-      dismissToast(context.toastId);
+      if (context?.toastId) { // Added optional chaining
+        dismissToast(context.toastId);
+      }
       showError(`Error al actualizar perfil: ${error.message}`);
     },
   });

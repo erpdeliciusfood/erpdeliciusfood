@@ -32,7 +32,9 @@ export const useAddPlato = () => {
       showSuccess("Plato añadido exitosamente.");
     },
     onError: (error, __, context) => {
-      dismissToast(context.toastId);
+      if (context?.toastId) { // Added optional chaining
+        dismissToast(context.toastId);
+      }
       showError(`Error al añadir plato: ${error.message}`);
     },
   });
@@ -53,7 +55,9 @@ export const useUpdatePlato = () => {
       showSuccess("Plato actualizado exitosamente.");
     },
     onError: (error, __, context) => {
-      dismissToast(context.toastId);
+      if (context?.toastId) { // Added optional chaining
+        dismissToast(context.toastId);
+      }
       showError(`Error al actualizar plato: ${error.message}`);
     },
   });
@@ -73,7 +77,9 @@ export const useDeletePlato = () => {
       showSuccess("Plato eliminado exitosamente.");
     },
     onError: (error, __, context) => {
-      dismissToast(context.toastId);
+      if (context?.toastId) { // Added optional chaining
+        dismissToast(context.toastId);
+      }
       showError(`Error al eliminar plato: ${error.message}`);
     },
   });
