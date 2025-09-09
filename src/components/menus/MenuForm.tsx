@@ -20,12 +20,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Imported Card components
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
-import { es } from "date-fns/locale"; // Import Spanish locale
+import { format, formatISO } from "date-fns";
+import { es } from "date-fns/locale";
 import { Menu, MenuFormValues, Plato, MealService, EventType } from "@/types";
 import { useAddMenu, useUpdateMenu } from "@/hooks/useMenus";
 import { usePlatos } from "@/hooks/usePlatos";
@@ -46,7 +46,7 @@ const formSchema = z.object({
   menu_type: z.enum(["daily", "event"], {
     required_error: "Debe seleccionar un tipo de menú.",
   }),
-  menu_date: z.string().nullable(), // Storing as string for form, will convert to Date for API
+  menu_date: z.string().nullable(),
   event_type_id: z.string().nullable(),
   platos_por_servicio: z.array(
     z.object({
@@ -80,7 +80,7 @@ interface MenuFormProps {
   initialData?: Menu | null;
   onSuccess: () => void;
   onCancel: () => void;
-  preselectedDate?: Date; // New prop for pre-selecting date
+  preselectedDate?: Date;
 }
 
 const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, preselectedDate }) => {
@@ -97,7 +97,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       title: "",
       description: "",
       menu_type: "daily",
-      menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null, // Pre-fill if available
+      menu_date: preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null,
       event_type_id: null,
       platos_por_servicio: [{ meal_service_id: "", plato_id: "", quantity_needed: 1 }],
     },
@@ -129,20 +129,20 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         title: "",
         description: "",
         menu_type: "daily",
-        menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null, // Pre-fill for new forms
+        menu_date: preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null,
         event_type_id: null,
         platos_por_servicio: [{ meal_service_id: "", plato_id: "", quantity_needed: 1 }],
       });
     }
-  }, [initialData, form, preselectedDate]); // Add preselectedDate to dependencies
+  }, [initialData, form, preselectedDate]);
 
   const onSubmit = async (values: MenuFormValues & { menu_type: "daily" | "event" }) => {
     const submitValues: MenuFormValues = {
       title: values.title,
       description: values.description,
       platos_por_servicio: values.platos_por_servicio,
-      menu_date: values.menu_type === "daily" ? values.menu_date : null,
-      event_type_id: values.menu_type === "event" ? values.event_type_id : null,
+      menu_date: values.menu_type === "daily" && values.menu_date ? values.menu_date : null,
+      event_type_id: values.menu_type === "event" && values.event_type_id ? values.event_type_id : null,
     };
 
     if (initialData) {
@@ -204,7 +204,16 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
               <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Tipo de Menú</FormLabel>
               <FormControl>
                 <RadioGroup
-                  onValueChange={field.onChange}
+                  onValueChange={(value) => {
+                    field.onChange(value);
+                    // Reset date/event_type_id when switching menu type
+                    if (value === "daily") {
+                      form.setValue("event_type_id", null);
+                      form.setValue("menu_date", preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null);
+                    } else {
+                      form.setValue("menu_date", null);
+                    }
+                  }}
                   defaultValue={field.value}
                   className="flex flex-col space-y-1"
                   disabled={isLoading}
@@ -259,7 +268,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
                     <Calendar
                       mode="single"
                       selected={field.value ? new Date(field.value) : undefined}
-                      onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : null)}
+                      onSelect={(date) => field.onChange(date ? formatISO(date, { representation: 'date' }) : null)}
                       disabled={(date) =>
                         date < new Date("1900-01-01") || isLoading
                       }
