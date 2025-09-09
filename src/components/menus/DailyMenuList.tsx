@@ -31,6 +31,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
       <div className="text-center py-10 text-gray-600 dark:text-gray-400">
         <UtensilsCrossed className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
         <p className="text-xl">No hay menús registrados para este día.</p>
+        <p className="text-md mt-2">Haz clic en "Añadir Menú para este día" para empezar.</p>
       </div>
     );
   }
