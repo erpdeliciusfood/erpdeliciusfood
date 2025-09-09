@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useMenus } from "@/hooks/useMenus";
 import { useInsumos } from "@/hooks/useInsumos";
-import { Loader2, ShoppingBag } from "lucide-react"; // Removed AlertCircle
+import { Loader2, ShoppingBag } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -44,8 +44,10 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
             plato.plato_insumos?.forEach(platoInsumo => {
               const insumo = platoInsumo.insumos;
               if (insumo) {
-                const totalNeeded = (platoInsumo.cantidad_necesaria * menuPlato.quantity_needed);
-                insumoNeedsMap.set(insumo.id, (insumoNeedsMap.get(insumo.id) || 0) + totalNeeded);
+                // Calculate total needed in base_unit, then convert to purchase_unit
+                const totalNeededBaseUnit = (platoInsumo.cantidad_necesaria * menuPlato.quantity_needed);
+                const totalNeededPurchaseUnit = totalNeededBaseUnit / insumo.conversion_factor;
+                insumoNeedsMap.set(insumo.id, (insumoNeedsMap.get(insumo.id) || 0) + totalNeededPurchaseUnit);
               }
             });
           }
@@ -56,7 +58,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
     const result: InsumoNeeded[] = [];
     allInsumos.forEach(insumo => {
       const quantityNeededForPeriod = insumoNeedsMap.get(insumo.id) || 0;
-      const currentStock = insumo.stock_quantity;
+      const currentStock = insumo.stock_quantity; // stock_quantity is already in purchase_unit
       const purchaseSuggestion = Math.max(0, quantityNeededForPeriod - currentStock);
 
       if (quantityNeededForPeriod > 0 || currentStock < 0) { // Show if needed or if stock is negative (error)
@@ -117,7 +119,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                 {insumosForPurchase.map((insumo) => (
                   <TableRow key={insumo.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{insumo.nombre}</TableCell>
-                    <TableCell className="text-base text-gray-700 dark:text-gray-300">{insumo.unidad_medida}</TableCell>
+                    <TableCell className="text-base text-gray-700 dark:text-gray-300">{insumo.purchase_unit}</TableCell>
                     <TableCell className="text-right text-base">
                       <Badge variant={insumo.current_stock <= 0 ? "destructive" : insumo.current_stock < insumo.quantity_needed_for_period ? "secondary" : "outline"}>
                         {insumo.current_stock}

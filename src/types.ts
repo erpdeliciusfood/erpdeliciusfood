@@ -2,22 +2,26 @@ export interface Insumo {
   id: string;
   user_id: string;
   nombre: string;
-  unidad_medida: string;
+  base_unit: string;
   costo_unitario: number;
   stock_quantity: number;
   supplier_name: string | null;
   supplier_phone: string | null;
   last_price_update: string | null;
+  purchase_unit: string;
+  conversion_factor: number;
   created_at: string;
 }
 
 export interface InsumoFormValues {
   nombre: string;
-  unidad_medida: string;
+  base_unit: string;
   costo_unitario: number;
   stock_quantity: number;
   supplier_name: string | null;
   supplier_phone: string | null;
+  purchase_unit: string;
+  conversion_factor: number;
 }
 
 export interface Plato {
@@ -26,6 +30,8 @@ export interface Plato {
   nombre: string;
   descripcion: string | null;
   precio_venta: number;
+  costo_produccion: number; // Added
+  markup_percentage: number; // Added
   created_at: string;
   plato_insumos?: PlatoInsumo[];
 }

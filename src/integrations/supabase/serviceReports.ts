@@ -4,7 +4,20 @@ import { ServiceReport, ServiceReportFormValues } from "@/types";
 export const getServiceReports = async (): Promise<ServiceReport[]> => {
   const { data, error } = await supabase
     .from("service_reports")
-    .select("*, meal_services(*)")
+    .select(`
+      *,
+      meal_services(*),
+      service_report_platos(
+        quantity_sold,
+        platos(
+          id,
+          nombre,
+          precio_venta,
+          costo_produccion,
+          markup_percentage
+        )
+      )
+    `)
     .order("report_date", { ascending: false })
     .order("created_at", { ascending: false });
 
