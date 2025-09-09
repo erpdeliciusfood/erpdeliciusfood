@@ -24,18 +24,18 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { EventType, MenuFormValues, Menu } from "@/types"; // Import Menu type
-import { useEventTypes } from "@/hooks/useEventTypes";
+import { EventType, MenuFormValues, Menu } from "@/types";
+import { useEventTypes } from "@/hooks/useEventTypes"; // Import useEventTypes
 
 interface MenuDetailsFormSectionProps {
   isLoading: boolean;
   preselectedDate?: Date;
-  initialData?: Menu | null; // NEW PROP
+  initialData?: Menu | null;
 }
 
 const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoading, preselectedDate, initialData }) => {
   const form = useFormContext<MenuFormValues & { menu_type: "daily" | "event" }>();
-  const { data: availableEventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
+  const { data: availableEventTypes, isLoading: isLoadingEventTypes } = useEventTypes(); // Fetch here
 
   const menuType = form.watch("menu_type");
   const menuDate = form.watch("menu_date");
@@ -46,15 +46,13 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
       const formattedDate = format(new Date(menuDate), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: es });
       form.setValue("title", formattedDate, { shouldValidate: true });
     } else if (menuType === "event") {
-      // If switching from daily to event, and the initialData was a daily menu, clear the title.
-      // For new event menus, title should be empty by default.
       if (initialData && initialData.menu_date && !initialData.event_type_id) {
         form.setValue("title", "", { shouldValidate: true });
-      } else if (!initialData && menuDate) { // If it's a new menu and was previously daily, clear title
+      } else if (!initialData && menuDate) {
         form.setValue("title", "", { shouldValidate: true });
       }
     }
-  }, [menuType, menuDate, form, initialData]); // Added initialData to dependencies
+  }, [menuType, menuDate, form, initialData]);
 
   return (
     <>

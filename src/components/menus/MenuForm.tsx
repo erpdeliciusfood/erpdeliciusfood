@@ -1,5 +1,5 @@
 import React, { useEffect } from "react";
-import { useForm, FormProvider } from "react-hook-form"; // Use FormProvider
+import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -8,14 +8,10 @@ import {
 } from "@/components/ui/form";
 import { Menu, MenuFormValues } from "@/types";
 import { useAddMenu, useUpdateMenu } from "@/hooks/useMenus";
-import { usePlatos } from "@/hooks/usePlatos";
-import { useMealServices } from "@/hooks/useMealServices";
-import { useEventTypes } from "@/hooks/useEventTypes";
-import { useMealTypes } from "@/hooks/useMealTypes";
 import { Loader2 } from "lucide-react";
-import MenuDetailsFormSection from "./MenuDetailsFormSection"; // NEW IMPORT
-import PlatosPorServicioFormSection from "./PlatosPorServicioFormSection"; // NEW IMPORT
-import { formatISO } from "date-fns"; // Import formatISO
+import MenuDetailsFormSection from "./MenuDetailsFormSection";
+import PlatosPorServicioFormSection from "./PlatosPorServicioFormSection";
+import { formatISO } from "date-fns";
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -35,7 +31,7 @@ const formSchema = z.object({
     z.object({
       meal_service_id: z.string().min(1, { message: "Debe seleccionar un servicio de comida." }),
       plato_id: z.string().min(1, { message: "Debe seleccionar un plato." }),
-      meal_type_id: z.string().min(1, { message: "Debe seleccionar un tipo de plato." }).nullable(), // Ensure it's not null
+      meal_type_id: z.string().min(1, { message: "Debe seleccionar un tipo de plato." }).nullable(),
       quantity_needed: z.coerce.number().min(1, {
         message: "La cantidad debe ser al menos 1.",
       }).max(999, {
@@ -58,7 +54,6 @@ const formSchema = z.object({
       path: ["event_type_id"],
     });
   }
-  // Validate meal_type_id for each plato_por_servicio
   data.platos_por_servicio.forEach((platoServicio, index) => {
     if (!platoServicio.meal_type_id) {
       ctx.addIssue({
@@ -80,11 +75,6 @@ interface MenuFormProps {
 const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, preselectedDate }) => {
   const addMutation = useAddMenu();
   const updateMutation = useUpdateMenu();
-
-  const { data: availablePlatos, isLoading: isLoadingPlatos } = usePlatos();
-  const { isLoading: isLoadingMealServices } = useMealServices(); // Removed data: availableMealServices as it's not used directly here
-  const { isLoading: isLoadingEventTypes } = useEventTypes(); // Removed data: availableEventTypes as it's not used directly here
-  const { data: availableMealTypes, isLoading: isLoadingMealTypes } = useMealTypes();
 
   const form = useForm<MenuFormValues & { menu_type: "daily" | "event" }>({
     resolver: zodResolver(formSchema),
@@ -142,28 +132,20 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
     onSuccess();
   };
 
-  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingPlatos || isLoadingMealServices || isLoadingEventTypes || isLoadingMealTypes;
+  const isLoading = addMutation.isPending || updateMutation.isPending;
 
   return (
-    <FormProvider {...form}> {/* Wrap with FormProvider */}
+    <FormProvider {...form}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-2">
           <MenuDetailsFormSection
             isLoading={isLoading}
             preselectedDate={preselectedDate}
-            initialData={initialData} // Pass initialData
+            initialData={initialData}
           />
 
           <PlatosPorServicioFormSection
             isLoading={isLoading}
-            availablePlatos={availablePlatos}
-            isLoadingPlatos={isLoadingPlatos}
-            // availableMealServices is fetched in MenuForm, but passed to PlatosPorServicioFormSection
-            // availableEventTypes is fetched in MenuForm, but passed to MenuDetailsFormSection
-            availableMealServices={useMealServices().data} // Fetch directly here for passing
-            isLoadingMealServices={isLoadingMealServices}
-            availableMealTypes={availableMealTypes}
-            isLoadingMealTypes={isLoadingMealTypes}
           />
 
           <div className="flex justify-end space-x-4 pt-4">

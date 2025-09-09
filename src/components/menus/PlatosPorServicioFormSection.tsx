@@ -19,31 +19,26 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MealService, MealType, MenuFormValues, Plato } from "@/types";
+import { usePlatos } from "@/hooks/usePlatos"; // Import usePlatos
+import { useMealServices } from "@/hooks/useMealServices"; // Import useMealServices
+import { useMealTypes } from "@/hooks/useMealTypes"; // Import useMealTypes
 
 interface PlatosPorServicioFormSectionProps {
   isLoading: boolean;
-  availablePlatos: Plato[] | undefined;
-  isLoadingPlatos: boolean;
-  availableMealServices: MealService[] | undefined;
-  isLoadingMealServices: boolean;
-  availableMealTypes: MealType[] | undefined;
-  isLoadingMealTypes: boolean;
 }
 
 const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> = ({
   isLoading,
-  availablePlatos,
-  isLoadingPlatos,
-  availableMealServices,
-  isLoadingMealServices,
-  availableMealTypes,
-  isLoadingMealTypes,
 }) => {
   const form = useFormContext<MenuFormValues>();
   const { fields, append, remove } = useFieldArray({
     control: form.control,
     name: "platos_por_servicio",
   });
+
+  const { data: availablePlatos, isLoading: isLoadingPlatos } = usePlatos(); // Fetch here
+  const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices(); // Fetch here
+  const { data: availableMealTypes, isLoading: isLoadingMealTypes } = useMealTypes(); // Fetch here
 
   return (
     <Card className="mt-8">
