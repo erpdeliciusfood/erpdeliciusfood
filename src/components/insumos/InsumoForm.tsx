@@ -21,8 +21,8 @@ import {
 } from "@/components/ui/select";
 import { Insumo, InsumoFormValues } from "@/types";
 import { useAddInsumo, useUpdateInsumo } from "@/hooks/useInsumos";
-import { Loader2, Info } from "lucide-react"; // Import Info icon
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
+import { Loader2, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -92,7 +92,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
   const addMutation = useAddInsumo();
   const updateMutation = useUpdateInsumo();
   const [isConversionFactorEditable, setIsConversionFactorEditable] = useState(true);
-  const [isCostoUnitarioEditable, setIsCostoUnitarioEditable] = useState(false); // New state for costo_unitario editability
+  // Removed isCostoUnitarioEditable state
 
   const form = useForm<InsumoFormValues>({
     resolver: zodResolver(formSchema),
@@ -126,7 +126,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         supplier_phone: initialData.supplier_phone || "",
       });
       setIsConversionFactorEditable(true); // Always editable when editing an existing item
-      setIsCostoUnitarioEditable(false); // Make costo_unitario read-only by default when editing
+      // Removed setIsCostoUnitarioEditable(false);
     } else {
       form.reset({
         nombre: "",
@@ -140,7 +140,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         supplier_phone: "",
       });
       setIsConversionFactorEditable(true); // Editable by default for new items
-      setIsCostoUnitarioEditable(true); // Editable by default for new items
+      // Removed setIsCostoUnitarioEditable(true);
     }
   }, [initialData, form]);
 
@@ -291,7 +291,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
                   {...field}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
                   className="h-12 text-base"
-                  disabled={isLoading || !isConversionFactorEditable} // Disable based on state
+                  disabled={isLoading || !isConversionFactorEditable}
                 />
               </FormControl>
               <FormMessage />
@@ -319,18 +319,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-                {!isCostoUnitarioEditable && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsCostoUnitarioEditable(true)}
-                    className="ml-auto h-8 text-sm"
-                    disabled={isLoading}
-                  >
-                    Editar
-                  </Button>
-                )}
+                {/* Removed conditional "Editar" button for costo_unitario */}
               </div>
               <FormControl>
                 <Input
@@ -340,7 +329,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
                   {...field}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
                   className="h-12 text-base"
-                  disabled={isLoading || !isCostoUnitarioEditable} // Disable based on new state
+                  disabled={isLoading} // Always enabled, only disabled by overall form loading state
                 />
               </FormControl>
               <FormMessage />
