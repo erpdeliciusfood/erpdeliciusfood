@@ -9,13 +9,12 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, UtensilsCrossed, CalendarDays, ChevronDown, CheckCircle2 } from "lucide-react";
-import { Menu } from "@/types";
+import { Menu, MenuPlato } from "@/types"; // Import MenuPlato
 import { useDeleteMenu } from "@/hooks/useMenus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useMealServices } from "@/hooks/useMealServices";
 import { Badge } from "@/components/ui/badge";
-// Removed unused imports: import { isSameDay, parseISO } from "date-fns";
 
 interface DailyMenuListProps {
   menus: Menu[];
@@ -30,7 +29,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
     deleteMutation.mutate(id);
   };
 
-  const MEAL_TYPES = ["desayuno", "almuerzo", "cena", "merienda"]; // Standard meal types to check
+  const MEAL_SERVICES_ORDER = ["desayuno", "almuerzo", "cena", "merienda"]; // Standard meal services to check and order by
 
   if (menus.length === 0) {
     return (
@@ -56,27 +55,30 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
         <TableBody>
           {menus.map((menu) => {
             const mealServiceStatus: { [key: string]: boolean } = {};
-            MEAL_TYPES.forEach(type => {
+            MEAL_SERVICES_ORDER.forEach(type => {
               mealServiceStatus[type] = false; // Initialize all to false
             });
 
             menu.menu_platos?.forEach(mp => {
               const serviceName = mp.meal_services?.name?.toLowerCase();
-              if (serviceName && MEAL_TYPES.includes(serviceName)) {
+              if (serviceName && MEAL_SERVICES_ORDER.includes(serviceName)) {
                 mealServiceStatus[serviceName] = true;
               }
             });
 
-            // Group platos by meal service for detailed display
-            const platosGroupedByService = menu.menu_platos?.reduce((acc, mp) => {
+            // Group platos by meal service and then by meal type for detailed display
+            const platosGroupedByServiceAndType = menu.menu_platos?.reduce((acc, mp) => {
               const serviceName = mp.meal_services?.name || "Sin Servicio";
+              const mealTypeName = mp.meal_types?.name || "Sin Tipo";
               if (!acc[serviceName]) {
-                acc[serviceName] = [];
+                acc[serviceName] = {};
               }
-              acc[serviceName].push(mp);
+              if (!acc[serviceName][mealTypeName]) {
+                acc[serviceName][mealTypeName] = [];
+              }
+              acc[serviceName][mealTypeName].push(mp);
               return acc;
-            }, {} as { [key: string]: typeof menu.menu_platos });
-
+            }, {} as { [serviceName: string]: { [mealTypeName: string]: MenuPlato[] } });
 
             return (
               <React.Fragment key={menu.id}>
@@ -100,7 +102,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                       <span className="text-sm text-gray-500">Cargando...</span>
                     ) : (
                       <div className="flex flex-wrap gap-1">
-                        {MEAL_TYPES.map(type => (
+                        {MEAL_SERVICES_ORDER.map(type => (
                           <Badge
                             key={type}
                             variant={mealServiceStatus[type] ? "default" : "secondary"}
@@ -163,17 +165,29 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                           </AccordionTrigger>
                           <AccordionContent className="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
                             <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Detalles de Platos:</h4>
-                            {Object.entries(platosGroupedByService || {}).map(([serviceName, platos]) => (
+                            {Object.entries(platosGroupedByServiceAndType || {}).sort(([serviceA], [serviceB]) => {
+                              // Sort services by predefined order
+                              const indexA = MEAL_SERVICES_ORDER.indexOf(serviceA.toLowerCase());
+                              const indexB = MEAL_SERVICES_ORDER.indexOf(serviceB.toLowerCase());
+                              if (indexA === -1) return 1; // Unknown services last
+                              if (indexB === -1) return -1;
+                              return indexA - indexB;
+                            }).map(([serviceName, mealTypes]) => (
                               <div key={serviceName} className="mb-4 last:mb-0">
                                 <h5 className="text-md font-bold text-gray-800 dark:text-gray-200 mb-2 capitalize">{serviceName}</h5>
-                                <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
-                                  {platos?.map((mp, idx) => (
-                                    <li key={idx} className="text-base">
-                                      <span className="font-medium text-gray-800 dark:text-gray-200">{mp.platos?.nombre || "Plato Desconocido"}</span>
-                                      {" "} (Cantidad: {mp.quantity_needed})
-                                    </li>
-                                  ))}
-                                </ul>
+                                {Object.entries(mealTypes).map(([mealTypeName, platos]) => (
+                                  <div key={mealTypeName} className="ml-4 mb-2 last:mb-0">
+                                    <h6 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 capitalize">{mealTypeName}:</h6>
+                                    <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
+                                      {platos?.map((mp, idx) => (
+                                        <li key={idx} className="text-base">
+                                          <span className="font-medium text-gray-800 dark:text-gray-200">{mp.platos?.nombre || "Plato Desconocido"}</span>
+                                          {" "} (Cantidad: {mp.quantity_needed})
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  </div>
+                                ))}
                               </div>
                             ))}
                           </AccordionContent>

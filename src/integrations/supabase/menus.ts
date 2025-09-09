@@ -4,7 +4,7 @@ import { Menu, MenuFormValues } from "@/types";
 export const getMenus = async (startDate?: string, endDate?: string): Promise<Menu[]> => {
   let query = supabase
     .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))") // Deep fetch for insumos
+    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*), meal_types(*))") // Deep fetch for insumos and meal_types
     .order("menu_date", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -24,7 +24,7 @@ export const getMenus = async (startDate?: string, endDate?: string): Promise<Me
 export const getMenuById = async (id: string): Promise<Menu | null> => {
   const { data, error } = await supabase
     .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))") // Deep fetch for insumos
+    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*), meal_types(*))") // Deep fetch for insumos and meal_types
     .eq("id", id)
     .single();
 
@@ -64,6 +64,7 @@ export const createMenu = async (menuData: MenuFormValues): Promise<Menu> => {
       menu_id: newMenu.id,
       plato_id: item.plato_id,
       meal_service_id: item.meal_service_id,
+      meal_type_id: item.meal_type_id === "" ? null : item.meal_type_id, // NEW: Add meal_type_id
       quantity_needed: item.quantity_needed,
     }));
 
@@ -79,7 +80,7 @@ export const createMenu = async (menuData: MenuFormValues): Promise<Menu> => {
   // Fetch the complete menu with its relations for the return value
   const { data: completeMenu, error: fetchError } = await supabase
     .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))") // Deep fetch for insumos
+    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*), meal_types(*))") // Deep fetch for insumos and meal_types
     .eq("id", newMenu.id)
     .single();
 
@@ -121,6 +122,7 @@ export const updateMenu = async (id: string, menuData: MenuFormValues): Promise<
       menu_id: updatedMenu.id,
       plato_id: item.plato_id,
       meal_service_id: item.meal_service_id,
+      meal_type_id: item.meal_type_id === "" ? null : item.meal_type_id, // NEW: Add meal_type_id
       quantity_needed: item.quantity_needed,
     }));
 
@@ -136,7 +138,7 @@ export const updateMenu = async (id: string, menuData: MenuFormValues): Promise<
   // Fetch the complete menu with its relations for the return value
   const { data: completeMenu, error: fetchError } = await supabase
     .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))") // Deep fetch for insumos
+    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*), meal_types(*))") // Deep fetch for insumos and meal_types
     .eq("id", updatedMenu.id)
     .single();
 

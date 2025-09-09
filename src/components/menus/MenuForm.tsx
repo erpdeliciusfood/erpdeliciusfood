@@ -25,14 +25,15 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format, formatISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Menu, MenuFormValues, Plato, MealService, EventType } from "@/types";
+import { Menu, MenuFormValues, Plato, MealService, EventType, MealType } from "@/types"; // Import MealType
 import { useAddMenu, useUpdateMenu } from "@/hooks/useMenus";
 import { usePlatos } from "@/hooks/usePlatos";
 import { useMealServices } from "@/hooks/useMealServices";
 import { useEventTypes } from "@/hooks/useEventTypes";
+import { useMealTypes } from "@/hooks/useMealTypes"; // Import useMealTypes
 import { Loader2, PlusCircle, Trash2, CalendarIcon } from "lucide-react";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Textarea } from "@/components/ui/textarea"; // Added Textarea import
+import { Textarea } from "@/components/ui/textarea";
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -52,6 +53,7 @@ const formSchema = z.object({
     z.object({
       meal_service_id: z.string().min(1, { message: "Debe seleccionar un servicio de comida." }),
       plato_id: z.string().min(1, { message: "Debe seleccionar un plato." }),
+      meal_type_id: z.string().nullable(), // NEW: meal_type_id is now part of the schema
       quantity_needed: z.coerce.number().min(1, {
         message: "La cantidad debe ser al menos 1.",
       }).max(999, {
@@ -74,6 +76,16 @@ const formSchema = z.object({
       path: ["event_type_id"],
     });
   }
+  // Validate meal_type_id for each plato_por_servicio
+  data.platos_por_servicio.forEach((platoServicio, index) => {
+    if (!platoServicio.meal_type_id) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "Debe seleccionar un tipo de plato.",
+        path: [`platos_por_servicio.${index}.meal_type_id`],
+      });
+    }
+  });
 });
 
 interface MenuFormProps {
@@ -90,6 +102,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
   const { data: availablePlatos, isLoading: isLoadingPlatos } = usePlatos();
   const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
   const { data: availableEventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
+  const { data: availableMealTypes, isLoading: isLoadingMealTypes } = useMealTypes(); // Fetch available meal types
 
   const form = useForm<MenuFormValues & { menu_type: "daily" | "event" }>({
     resolver: zodResolver(formSchema),
@@ -99,7 +112,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       menu_type: "daily",
       menu_date: preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null,
       event_type_id: null,
-      platos_por_servicio: [{ meal_service_id: "", plato_id: "", quantity_needed: 1 }],
+      platos_por_servicio: [{ meal_service_id: "", plato_id: "", meal_type_id: null, quantity_needed: 1 }], // NEW: Default meal_type_id
     },
   });
 
@@ -122,8 +135,9 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         platos_por_servicio: initialData.menu_platos?.map(mp => ({
           meal_service_id: mp.meal_service_id,
           plato_id: mp.plato_id,
+          meal_type_id: mp.meal_type_id || null, // NEW: Initialize meal_type_id
           quantity_needed: mp.quantity_needed,
-        })) || [{ meal_service_id: "", plato_id: "", quantity_needed: 1 }],
+        })) || [{ meal_service_id: "", plato_id: "", meal_type_id: null, quantity_needed: 1 }],
       });
     } else {
       form.reset({
@@ -132,7 +146,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         menu_type: "daily",
         menu_date: preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null,
         event_type_id: null,
-        platos_por_servicio: [{ meal_service_id: "", plato_id: "", quantity_needed: 1 }],
+        platos_por_servicio: [{ meal_service_id: "", plato_id: "", meal_type_id: null, quantity_needed: 1 }], // NEW: Default meal_type_id
       });
     }
   }, [initialData, form, preselectedDate]);
@@ -171,7 +185,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
     onSuccess();
   };
 
-  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingPlatos || isLoadingMealServices || isLoadingEventTypes;
+  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingPlatos || isLoadingMealServices || isLoadingEventTypes || isLoadingMealTypes; // NEW: Include isLoadingMealTypes
 
   return (
     <Form {...form}>
@@ -397,6 +411,34 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
                 />
                 <FormField
                   control={form.control}
+                  name={`platos_por_servicio.${index}.meal_type_id`} // NEW FIELD
+                  render={({ field: mealTypeField }) => (
+                    <FormItem className="flex-grow w-full md:w-1/3">
+                      <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Tipo de Plato</FormLabel>
+                      <Select
+                        onValueChange={mealTypeField.onChange}
+                        defaultValue={mealTypeField.value || ""}
+                        disabled={isLoading || isLoadingMealTypes}
+                      >
+                        <FormControl>
+                          <SelectTrigger className="h-12 text-base">
+                            <SelectValue placeholder="Selecciona tipo de plato" />
+                          </SelectTrigger>
+                        </FormControl>
+                        <SelectContent>
+                          {availableMealTypes?.map((mealType: MealType) => (
+                            <SelectItem key={mealType.id} value={mealType.id}>
+                              {mealType.name}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+                <FormField
+                  control={form.control}
                   name={`platos_por_servicio.${index}.quantity_needed`}
                   render={({ field: quantityField }) => (
                     <FormItem className="w-full md:w-1/4">
@@ -431,7 +473,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
             <Button
               type="button"
               variant="outline"
-              onClick={() => append({ meal_service_id: "", plato_id: "", quantity_needed: 1 })}
+              onClick={() => append({ meal_service_id: "", plato_id: "", meal_type_id: null, quantity_needed: 1 })} // NEW: Default meal_type_id
               className="w-full mt-4 px-6 py-3 text-lg"
               disabled={isLoading}
             >

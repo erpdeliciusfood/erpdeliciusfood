@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, Utensils, UserCircle2, Home, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package } from "lucide-react"; // Updated icons
+import { LogOut, Utensils, UserCircle2, Home, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package, ListChecks } from "lucide-react"; // Updated icons, added ListChecks
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
@@ -50,6 +50,12 @@ const Header: React.FC = () => {
               Tipos Evento
             </Button>
           </Link>
+          <Link to="/meal-types"> {/* NEW LINK */}
+            <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
+              <ListChecks className="mr-2 h-5 w-5" />
+              Tipos Plato
+            </Button>
+          </Link>
           <Link to="/menus">
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <BookText className="mr-2 h-5 w-5" />
@@ -68,7 +74,7 @@ const Header: React.FC = () => {
               Compras
             </Button>
           </Link>
-          <Link to="/stock-movements"> {/* New link */}
+          <Link to="/stock-movements">
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <Package className="mr-2 h-5 w-5" />
               Movimientos Stock
