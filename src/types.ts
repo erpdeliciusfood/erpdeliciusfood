@@ -46,39 +46,42 @@ export interface PlatoInsumo {
   insumos?: Insumo;
 }
 
+// New interfaces for Service Reports
 export interface ServiceReport {
   id: string;
   user_id: string;
   report_date: string; // Date string (e.g., 'YYYY-MM-DD')
-  meal_service_id: string;
+  menu_id: string; // Link directly to the menu served
   tickets_issued: number;
   meals_sold: number;
   additional_services_revenue: number;
   notes: string | null;
   created_at: string;
-  meal_services?: MealService; // Optional, for when fetching with relations
-  platos_vendidos_data?: ServiceReportPlato[]; // New: For fetching with relations
+  menus?: Menu; // Optional, for when fetching with relations
 }
 
 export interface ServiceReportFormValues {
   report_date: string;
-  meal_service_id: string;
+  menu_id: string;
   tickets_issued: number;
   meals_sold: number;
   additional_services_revenue: number;
   notes: string | null;
-  platos_vendidos: { plato_id: string; quantity_sold: number }[]; // New: Array of sold dishes
 }
 
-export interface ServiceReportPlato { // New interface
+// New interface for Consumption Records
+export interface ConsumptionRecord {
   id: string;
+  user_id: string;
   service_report_id: string;
-  plato_id: string;
-  quantity_sold: number;
-  created_at: string;
-  platos?: Plato; // Optional, for when fetching with relations
+  insumo_id: string;
+  quantity_consumed: number;
+  consumed_at: string;
+  insumos?: Insumo; // Optional, for when fetching with relations
+  service_reports?: ServiceReport; // Optional, for when fetching with relations
 }
 
+// Existing interfaces for Menu Management
 export interface MealService {
   id: string;
   name: string;
@@ -135,5 +138,5 @@ export interface Profile {
   last_name: string | null;
   avatar_url: string | null;
   updated_at: string | null;
-  role: 'user' | 'admin'; // Added role property
+  role: 'user' | 'admin';
 }
