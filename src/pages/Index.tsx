@@ -1,7 +1,7 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Utensils, UserCircle2, LayoutDashboard, ChefHat, BookText, CalendarDays, BarChart3, Users, ShoppingBag, FileText } from "lucide-react"; // Updated icons
+import { Utensils, UserCircle2, LayoutDashboard, ChefHat, BookText, CalendarDays, BarChart3, Users, ShoppingBag, FileText, Package } from "lucide-react"; // Updated icons
 import { useSession } from "@/contexts/SessionContext";
 import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,8 @@ import { useInsumos } from "@/hooks/useInsumos";
 import { usePlatos } from "@/hooks/usePlatos";
 import { useMenus } from "@/hooks/useMenus";
 import { useEventTypes } from "@/hooks/useEventTypes";
-import { useServiceReports } from "@/hooks/useServiceReports"; // New import
+import { useServiceReports } from "@/hooks/useServiceReports";
+import { useStockMovements } from "@/hooks/useStockMovements"; // New import
 
 const Index = () => {
   const { user, session } = useSession();
@@ -18,7 +19,8 @@ const Index = () => {
   const { data: platos, isLoading: isLoadingPlatos } = usePlatos();
   const { data: menus, isLoading: isLoadingMenus } = useMenus();
   const { data: eventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
-  const { data: serviceReports, isLoading: isLoadingServiceReports } = useServiceReports(); // New hook
+  const { data: serviceReports, isLoading: isLoadingServiceReports } = useServiceReports();
+  const { data: stockMovements, isLoading: isLoadingStockMovements } = useStockMovements(); // New hook
 
   const userName = profile?.first_name || user?.email || "Usuario";
   const userRole = session?.user?.user_metadata?.role;
@@ -27,7 +29,8 @@ const Index = () => {
   const totalPlatos = platos?.length || 0;
   const totalMenus = menus?.length || 0;
   const totalEventTypes = eventTypes?.length || 0;
-  const totalServiceReports = serviceReports?.length || 0; // New total
+  const totalServiceReports = serviceReports?.length || 0;
+  const totalStockMovements = stockMovements?.length || 0; // New total
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
@@ -130,6 +133,24 @@ const Index = () => {
               </CardDescription>
             </CardContent>
           </Card>
+
+          {/* Card for Total Stock Movements */}
+          <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out h-full flex flex-col justify-between">
+            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+              <CardTitle className="text-2xl font-bold">Movimientos de Stock</CardTitle>
+              <Package className="h-8 w-8 text-muted-foreground" />
+            </CardHeader>
+            <CardContent>
+              {isLoadingStockMovements ? (
+                <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md" />
+              ) : (
+                <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalStockMovements}</div>
+              )}
+              <CardDescription className="text-lg text-left mt-2">
+                Registros de entradas y salidas de inventario.
+              </CardDescription>
+            </CardContent>
+          </Card>
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
@@ -201,7 +222,7 @@ const Index = () => {
             </Card>
           </Link>
 
-          <Link to="/service-reports"> {/* New card */}
+          <Link to="/service-reports">
             <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-2xl font-bold">Gestión de Reportes de Servicio</CardTitle>
@@ -231,6 +252,23 @@ const Index = () => {
               </CardContent>
               <Button className="w-full mt-4 px-8 py-4 text-lg bg-pink-600 hover:bg-pink-700 text-white transition-colors duration-200 ease-in-out">
                 Ir a Compras
+              </Button>
+            </Card>
+          </Link>
+
+          <Link to="/stock-movements"> {/* New card */}
+            <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-2xl font-bold">Movimientos de Stock</CardTitle>
+                <Package className="h-8 w-8 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-lg text-left">
+                  Registra entradas y salidas manuales de inventario.
+                </CardDescription>
+              </CardContent>
+              <Button className="w-full mt-4 px-8 py-4 text-lg bg-teal-600 hover:bg-teal-700 text-white transition-colors duration-200 ease-in-out">
+                Ir a Movimientos de Stock
               </Button>
             </Card>
           </Link>

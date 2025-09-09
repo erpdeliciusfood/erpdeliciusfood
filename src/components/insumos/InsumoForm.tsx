@@ -50,6 +50,11 @@ const formSchema = z.object({
   }).max(999999, {
     message: "La cantidad de stock no debe exceder 999999.",
   }),
+  min_stock_level: z.coerce.number().min(0, {
+    message: "El nivel mínimo de stock no puede ser negativo.",
+  }).max(999999, {
+    message: "El nivel mínimo de stock no debe exceder 999999.",
+  }),
   supplier_name: z.string().max(100, {
     message: "El nombre del proveedor no debe exceder los 100 caracteres.",
   }).nullable(),
@@ -85,6 +90,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
       conversion_factor: 1.0,
       costo_unitario: 0,
       stock_quantity: 0,
+      min_stock_level: 0, // Default value for new field
       supplier_name: "",
       supplier_phone: "",
     },
@@ -99,6 +105,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         conversion_factor: initialData.conversion_factor,
         costo_unitario: initialData.costo_unitario,
         stock_quantity: initialData.stock_quantity,
+        min_stock_level: initialData.min_stock_level, // Set initial value
         supplier_name: initialData.supplier_name || "",
         supplier_phone: initialData.supplier_phone || "",
       });
@@ -110,6 +117,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         conversion_factor: 1.0,
         costo_unitario: 0,
         stock_quantity: 0,
+        min_stock_level: 0, // Reset for new form
         supplier_name: "",
         supplier_phone: "",
       });
@@ -249,6 +257,27 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
                   type="number"
                   step="1"
                   placeholder="Ej. 100"
+                  {...field}
+                  onChange={(e) => field.onChange(parseInt(e.target.value))}
+                  className="h-12 text-base"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="min_stock_level"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nivel Mínimo de Stock (en Unidad de Compra)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="1"
+                  placeholder="Ej. 10"
                   {...field}
                   onChange={(e) => field.onChange(parseInt(e.target.value))}
                   className="h-12 text-base"
