@@ -30,7 +30,7 @@ interface MenuDetailsFormSectionProps {
   isLoading: boolean;
   preselectedDate?: Date;
   initialData?: Menu | null;
-  availableEventTypes: EventType[] | undefined; // NEW PROP
+  availableEventTypes: EventType[] | undefined;
 }
 
 const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoading, preselectedDate, initialData, availableEventTypes }) => {
@@ -189,11 +189,11 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value || ""}
-                disabled={isLoading}
+                disabled={isLoading || !availableEventTypes} // Disable if overall loading or data not yet available
               >
                 <FormControl>
                   <SelectTrigger className="h-12 text-base">
-                    <SelectValue placeholder="Selecciona un tipo de evento" />
+                    <SelectValue placeholder={!availableEventTypes && isLoading ? "Cargando tipos de evento..." : "Selecciona un tipo de evento"} />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>

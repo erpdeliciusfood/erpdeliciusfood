@@ -56,11 +56,11 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
                   <Select
                     onValueChange={serviceField.onChange}
                     defaultValue={serviceField.value}
-                    disabled={isLoading}
+                    disabled={isLoading || !availableMealServices} // Disable if overall loading or data not yet available
                   >
                     <FormControl>
                       <SelectTrigger className="h-12 text-base">
-                        <SelectValue placeholder="Selecciona un servicio" />
+                        <SelectValue placeholder={!availableMealServices && isLoading ? "Cargando servicios..." : "Selecciona un servicio"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -84,11 +84,11 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
                   <Select
                     onValueChange={platoField.onChange}
                     defaultValue={platoField.value}
-                    disabled={isLoading}
+                    disabled={isLoading || !availablePlatos} // Disable if overall loading or data not yet available
                   >
                     <FormControl>
                       <SelectTrigger className="h-12 text-base">
-                        <SelectValue placeholder="Selecciona un plato" />
+                        <SelectValue placeholder={!availablePlatos && isLoading ? "Cargando platos..." : "Selecciona un plato"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
@@ -112,11 +112,11 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
                   <Select
                     onValueChange={mealTypeField.onChange}
                     defaultValue={mealTypeField.value || ""}
-                    disabled={isLoading}
+                    disabled={isLoading || !availableMealTypes} // Disable if overall loading or data not yet available
                   >
                     <FormControl>
                       <SelectTrigger className="h-12 text-base">
-                        <SelectValue placeholder="Selecciona tipo de plato" />
+                        <SelectValue placeholder={!availableMealTypes && isLoading ? "Cargando tipos de plato..." : "Selecciona tipo de plato"} />
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
