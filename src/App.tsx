@@ -6,8 +6,10 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import Insumos from "./pages/Insumos";
-import Login from "./pages/Login"; // Import the new Login page
-import { SessionContextProvider, useSession } from "./contexts/SessionContext"; // Import SessionContext
+import Login from "./pages/Login";
+import Profile from "./pages/Profile"; // Import the new Profile page
+import { SessionContextProvider, useSession } from "./contexts/SessionContext";
+import Header from "./components/layout/Header"; // Import the new Header component
 
 const queryClient = new QueryClient();
 
@@ -16,7 +18,6 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   const { session, isLoading } = useSession();
 
   if (isLoading) {
-    // Esto ya se maneja en SessionContextProvider, pero es un fallback
     return null; 
   }
 
@@ -24,7 +25,12 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
     return <Navigate to="/login" replace />;
   }
 
-  return <>{children}</>;
+  return (
+    <>
+      <Header /> {/* Render the Header for protected routes */}
+      {children}
+    </>
+  );
 };
 
 const AppRoutes = () => (
@@ -32,6 +38,7 @@ const AppRoutes = () => (
     <Route path="/login" element={<Login />} />
     <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
     <Route path="/insumos" element={<ProtectedRoute><Insumos /></ProtectedRoute>} />
+    <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} /> {/* Add the new Profile route */}
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
     <Route path="*" element={<NotFound />} />
   </Routes>
