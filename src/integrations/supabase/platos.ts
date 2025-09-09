@@ -1,10 +1,9 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Plato, PlatoFormValues } from "@/types";
 
-// Helper function to calculate production cost and markup percentage
+// Helper function to calculate production cost
 const calculatePlatoCosts = async (
   insumosData: { insumo_id: string; cantidad_necesaria: number }[],
-  precio_venta: number
 ) => {
   let totalProductionCost = 0;
 
@@ -23,13 +22,8 @@ const calculatePlatoCosts = async (
     }
   }
 
-  const markupPercentage = totalProductionCost > 0
-    ? ((precio_venta - totalProductionCost) / totalProductionCost) * 100
-    : 0;
-
   return {
     costo_produccion: parseFloat(totalProductionCost.toFixed(2)),
-    markup_percentage: parseFloat(markupPercentage.toFixed(2)),
   };
 };
 
@@ -58,15 +52,15 @@ export const getPlatoById = async (id: string): Promise<Plato | null> => {
 };
 
 export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> => {
-  const { nombre, descripcion, precio_venta, insumos } = platoData;
+  const { nombre, descripcion, insumos } = platoData;
 
-  // Calculate production cost and markup percentage
-  const { costo_produccion, markup_percentage } = await calculatePlatoCosts(insumos, precio_venta);
+  // Calculate production cost
+  const { costo_produccion } = await calculatePlatoCosts(insumos);
 
   // Insert the main plato with calculated costs
   const { data: newPlato, error: platoError } = await supabase
     .from("platos")
-    .insert({ nombre, descripcion, precio_venta, costo_produccion, markup_percentage })
+    .insert({ nombre, descripcion, costo_produccion }) // Removed precio_venta and markup_percentage
     .select()
     .single();
 
@@ -103,15 +97,15 @@ export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> =>
 };
 
 export const updatePlato = async (id: string, platoData: PlatoFormValues): Promise<Plato> => {
-  const { nombre, descripcion, precio_venta, insumos } = platoData;
+  const { nombre, descripcion, insumos } = platoData;
 
-  // Calculate production cost and markup percentage
-  const { costo_produccion, markup_percentage } = await calculatePlatoCosts(insumos, precio_venta);
+  // Calculate production cost
+  const { costo_produccion } = await calculatePlatoCosts(insumos);
 
   // Update the main plato with calculated costs
   const { data: updatedPlato, error: platoError } = await supabase
     .from("platos")
-    .update({ nombre, descripcion, precio_venta, costo_produccion, markup_percentage })
+    .update({ nombre, descripcion, costo_produccion }) // Removed precio_venta and markup_percentage
     .eq("id", id)
     .select()
     .single();
