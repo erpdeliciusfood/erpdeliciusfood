@@ -28,18 +28,18 @@ const UserList: React.FC<UserListProps> = ({ users }) => {
 
   const handleRoleChange = async (userId: string, newRole: 'user' | 'admin') => {
     try {
-      // The useUpdateProfile hook gets the userId from the session,
-      // so we only need to pass the profile data to update.
-      // We pass the existing first_name and last_name to avoid overwriting them with null.
       const userToUpdate = users.find(u => u.id === userId);
       if (!userToUpdate) {
         showError("Usuario no encontrado para actualizar.");
         return;
       }
       await updateProfileMutation.mutateAsync({
-        first_name: userToUpdate.first_name,
-        last_name: userToUpdate.last_name,
-        role: newRole
+        userId: userId, // Pass the specific userId to update
+        profileData: {
+          first_name: userToUpdate.first_name,
+          last_name: userToUpdate.last_name,
+          role: newRole
+        }
       });
       showSuccess("Rol de usuario actualizado exitosamente.");
     } catch (error: any) {
@@ -71,7 +71,7 @@ const UserList: React.FC<UserListProps> = ({ users }) => {
           {users.map((userProfile) => (
             <TableRow key={userProfile.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
               <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">
-                {userProfile.email || "N/A"} {/* Display actual email */}
+                {userProfile.email || "N/A"}
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
                 {userProfile.first_name || "N/A"} {userProfile.last_name || ""}

@@ -35,24 +35,24 @@ export const getProfile = async (userId: string): Promise<Profile | null> => {
 };
 
 export const getAllProfiles = async (): Promise<Profile[]> => {
-  // Explicitly type the select method's return data
   const { data, error } = await supabase
     .from("profiles")
-    .select<SupabaseProfileWithAuth[]>("*, auth_users:auth.users(email)") // Explicitly tell select what type to expect
+    .select("*, auth_users:auth.users(email)")
     .order("first_name", { ascending: true });
 
   if (error) {
     throw new Error(error.message);
   }
 
-  // At this point, if no error, data is guaranteed to be SupabaseProfileWithAuth[]
-  // We can add a null check for robustness, though TypeScript should now understand its type
   if (!data) {
     return []; // Return an empty array if data is unexpectedly null
   }
 
+  // Explicitly cast data to unknown first, then to the defined interface, to bypass parser errors
+  const profilesWithAuth = data as unknown as SupabaseProfileWithAuth[];
+
   // Map the data to flatten the auth_users object and assign email directly to profile
-  return data.map(profile => ({
+  return profilesWithAuth.map(profile => ({
     id: profile.id,
     first_name: profile.first_name,
     last_name: profile.last_name,

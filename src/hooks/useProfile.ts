@@ -34,19 +34,22 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
 
-  return useMutation<Profile, Error, ProfileFormValues, { toastId: string }>({
-    mutationFn: (profileData) => {
-      if (!user?.id) throw new Error("User not authenticated.");
-      return updateProfile(user.id, profileData);
+  // The mutation now accepts an object with userId and profileData
+  return useMutation<Profile, Error, { userId?: string; profileData: ProfileFormValues }, { toastId: string }>({
+    mutationFn: ({ userId, profileData }) => {
+      const targetUserId = userId || user?.id; // Use provided userId or current user's ID
+      if (!targetUserId) throw new Error("User ID not provided and not authenticated.");
+      return updateProfile(targetUserId, profileData);
     },
     onMutate: () => {
       const toastId: string = showLoading("Actualizando perfil...");
       return { toastId };
     },
-    onSuccess: (_, __, context) => {
+    onSuccess: (_, variables, context) => {
       dismissToast(context.toastId);
-      queryClient.invalidateQueries({ queryKey: ["profile", user?.id] });
-      queryClient.invalidateQueries({ queryKey: ["allProfiles"] }); // Invalidate all profiles cache as well
+      // Invalidate queries for the specific profile and all profiles
+      queryClient.invalidateQueries({ queryKey: ["profile", variables.userId || user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["allProfiles"] });
       showSuccess("Perfil actualizado exitosamente.");
     },
     onError: (error, __, context) => {
