@@ -1,17 +1,18 @@
 import { useState } from "react";
-import { ShoppingBag, CalendarDays, ChevronDown } from "lucide-react"; // Removed Loader2
+import { ShoppingBag, CalendarDays, ChevronDown } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns"; // Removed addDays, subDays
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu"; // Corrected DropMenuItem to DropdownMenuItem
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import PurchaseAnalysis from "@/components/purchase-planning/PurchaseAnalysis";
+import { DateRange } from "react-day-picker"; // Import DateRange type
 
 const PurchasePlanning = () => {
-  const [dateRange, setDateRange] = useState<{ from: Date | undefined; to: Date | undefined }>({
+  const [dateRange, setDateRange] = useState<DateRange>({ // Use DateRange type here
     from: startOfMonth(new Date()),
     to: endOfMonth(new Date()),
   });
@@ -104,7 +105,7 @@ const PurchasePlanning = () => {
                   mode="range"
                   defaultMonth={dateRange.from}
                   selected={dateRange}
-                  onSelect={(range) => setDateRange(range || { from: undefined, to: undefined })} // Adjusted onSelect handler
+                  onSelect={(range) => setDateRange(range || { from: undefined, to: undefined })}
                   numberOfMonths={2}
                   locale={es}
                 />
