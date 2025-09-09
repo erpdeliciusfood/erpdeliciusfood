@@ -8,12 +8,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, UtensilsCrossed, CalendarDays } from "lucide-react";
+import { Edit, Trash2, UtensilsCrossed, CalendarDays, ChevronDown } from "lucide-react";
 import { Menu } from "@/types";
 import { useDeleteMenu } from "@/hooks/useMenus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-// import { format } from "date-fns"; // Removed unused import
-// import { es } from "date-fns/locale"; // 'es' is not directly used in this component, but 'format' (if used) would need it. Since format is removed, 'es' can also be removed.
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion"; // Import Accordion components
 
 interface DailyMenuListProps {
   menus: Menu[];
@@ -49,61 +48,90 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
         </TableHeader>
         <TableBody>
           {menus.map((menu) => (
-            <TableRow key={menu.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
-              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{menu.title}</TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
-                {menu.menu_date ? (
-                  <span className="flex items-center">
-                    <CalendarDays className="h-4 w-4 mr-2" />
-                    Menú Diario
-                  </span>
-                ) : menu.event_types ? (
-                  <span className="flex items-center">
-                    <CalendarDays className="h-4 w-4 mr-2" />
-                    {menu.event_types.name}
-                  </span>
-                ) : "N/A"}
-              </TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{menu.description || "N/A"}</TableCell>
-              <TableCell className="flex justify-center space-x-2 py-3 px-6">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onEdit(menu)}
-                  className="h-10 w-10 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150 ease-in-out"
-                >
-                  <Edit className="h-5 w-5 text-blue-600" />
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-10 w-10 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition-colors duration-150 ease-in-out"
-                    >
-                      <Trash2 className="h-5 w-5 text-red-600" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="p-6">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
-                      <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                        Esta acción no se puede deshacer. Esto eliminará permanentemente el menú <span className="font-semibold">{menu.title}</span> y sus platos asociados de nuestros servidores.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
-                      <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleDelete(menu.id)}
-                        className="w-full sm:w-auto px-6 py-3 text-lg bg-destructive hover:bg-destructive-foreground text-destructive-foreground hover:text-destructive transition-colors duration-200 ease-in-out"
+            <React.Fragment key={menu.id}>
+              <TableRow className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
+                <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{menu.title}</TableCell>
+                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+                  {menu.menu_date ? (
+                    <span className="flex items-center">
+                      <CalendarDays className="h-4 w-4 mr-2" />
+                      Menú Diario
+                    </span>
+                  ) : menu.event_types ? (
+                    <span className="flex items-center">
+                      <CalendarDays className="h-4 w-4 mr-2" />
+                      {menu.event_types.name}
+                    </span>
+                  ) : "N/A"}
+                </TableCell>
+                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{menu.description || "N/A"}</TableCell>
+                <TableCell className="flex justify-center space-x-2 py-3 px-6">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => onEdit(menu)}
+                    className="h-10 w-10 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150 ease-in-out"
+                  >
+                    <Edit className="h-5 w-5 text-blue-600" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-10 w-10 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition-colors duration-150 ease-in-out"
                       >
-                        Eliminar
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </TableCell>
-            </TableRow>
+                        <Trash2 className="h-5 w-5 text-red-600" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="p-6">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
+                          Esta acción no se puede deshacer. Esto eliminará permanentemente el menú <span className="font-semibold">{menu.title}</span> y sus platos asociados de nuestros servidores.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
+                        <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(menu.id)}
+                          className="w-full sm:w-auto px-6 py-3 text-lg bg-destructive hover:bg-destructive-foreground text-destructive-foreground hover:text-destructive transition-colors duration-200 ease-in-out"
+                        >
+                          Eliminar
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
+              </TableRow>
+              {menu.menu_platos && menu.menu_platos.length > 0 && (
+                <TableRow className="bg-gray-50 dark:bg-gray-700">
+                  <TableCell colSpan={4} className="p-0">
+                    <Accordion type="single" collapsible className="w-full">
+                      <AccordionItem value={`item-${menu.id}`} className="border-none">
+                        <AccordionTrigger className="flex items-center justify-between w-full px-6 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:no-underline hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-150 ease-in-out">
+                          Ver Platos del Menú
+                          <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+                        </AccordionTrigger>
+                        <AccordionContent className="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
+                          <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Detalles de Platos:</h4>
+                          <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
+                            {menu.menu_platos.map((mp, idx) => (
+                              <li key={idx} className="text-base">
+                                <span className="font-medium text-gray-800 dark:text-gray-200">{mp.platos?.nombre || "Plato Desconocido"}</span>
+                                {" "}para{" "}
+                                <span className="font-medium text-gray-800 dark:text-gray-200">{mp.meal_services?.name || "Servicio Desconocido"}</span>
+                                {" "} (Cantidad: {mp.quantity_needed})
+                              </li>
+                            ))}
+                          </ul>
+                        </AccordionContent>
+                      </AccordionItem>
+                    </Accordion>
+                  </TableCell>
+                </TableRow>
+              )}
+            </React.Fragment>
           ))}
         </TableBody>
       </Table>
