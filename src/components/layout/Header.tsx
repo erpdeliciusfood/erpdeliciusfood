@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, Utensils, UserCircle2, Home } from "lucide-react";
+import { LogOut, Utensils, UserCircle2, Home, ChefHat } from "lucide-react"; // Add ChefHat icon
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
@@ -35,6 +35,12 @@ const Header: React.FC = () => {
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <Utensils className="mr-2 h-5 w-5" />
               Insumos
+            </Button>
+          </Link>
+          <Link to="/platos"> {/* New link for Platos */}
+            <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
+              <ChefHat className="mr-2 h-5 w-5" /> {/* Use ChefHat icon */}
+              Platos
             </Button>
           </Link>
           <Link to="/profile">

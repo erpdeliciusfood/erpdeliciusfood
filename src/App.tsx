@@ -8,6 +8,7 @@ import NotFound from "./pages/NotFound";
 import Insumos from "./pages/Insumos";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
+import Platos from "./pages/Platos"; // Import the new Platos page
 import { SessionContextProvider, useSession } from "./contexts/SessionContext";
 import Header from "./components/layout/Header";
 import { ThemeProvider } from "./contexts/ThemeProvider"; // Import ThemeProvider
@@ -39,6 +40,7 @@ const AppRoutes = () => (
     <Route path="/login" element={<Login />} />
     <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
     <Route path="/insumos" element={<ProtectedRoute><Insumos /></ProtectedRoute>} />
+    <Route path="/platos" element={<ProtectedRoute><Platos /></ProtectedRoute>} /> {/* New protected route for Platos */}
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
     <Route path="*" element={<NotFound />} />

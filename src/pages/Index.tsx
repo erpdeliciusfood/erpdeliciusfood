@@ -1,7 +1,7 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Utensils, UserCircle2, LayoutDashboard } from "lucide-react";
+import { Utensils, UserCircle2, LayoutDashboard, ChefHat } from "lucide-react"; // Add ChefHat icon
 import { useSession } from "@/contexts/SessionContext";
 import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -37,6 +37,23 @@ const Index = () => {
               </CardContent>
               <Button className="w-full mt-4 px-8 py-4 text-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200 ease-in-out">
                 Ir a Insumos
+              </Button>
+            </Card>
+          </Link>
+
+          <Link to="/platos"> {/* New card for Platos */}
+            <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-2xl font-bold">Gestión de Platos</CardTitle>
+                <ChefHat className="h-8 w-8 text-muted-foreground" /> {/* Use ChefHat icon */}
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-lg text-left">
+                  Crea y administra tus recetas con los insumos disponibles.
+                </CardDescription>
+              </CardContent>
+              <Button className="w-full mt-4 px-8 py-4 text-lg bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out">
+                Ir a Platos
               </Button>
             </Card>
           </Link>
