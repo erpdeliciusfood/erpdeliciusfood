@@ -1,14 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { format, startOfMonth, endOfMonth, isSameDay, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar as CalendarIcon, UtensilsCrossed } from "lucide-react";
+import { Calendar as CalendarIcon, PlusCircle, UtensilsCrossed } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useMenus } from "@/hooks/useMenus";
 import { Menu } from "@/types";
 import { DayModifiers } from "react-day-picker";
-import DailyMenuDialog from "./DailyMenuDialog"; // New import
-import MenuFormSheet from "./MenuFormSheet"; // New import
+import DailyMenuList from "./DailyMenuList";
+import MenuFormSheet from "./MenuFormSheet";
 
 interface MenuCalendarProps {
   onAddMenu: (date: Date) => void;
@@ -31,7 +32,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [dailyMenus, setDailyMenus] = useState<Menu[]>([]);
-  const [isDailyMenuDialogOpen, setIsDailyMenuDialogOpen] = useState(false);
+  // Removed isDailyMenuDialogOpen state as it's no longer needed
 
   const formattedMonthStart = format(startOfMonth(currentMonth), "yyyy-MM-dd");
   const formattedMonthEnd = format(endOfMonth(currentMonth), "yyyy-MM-dd");
@@ -51,9 +52,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
 
   const handleDayClick = (date: Date | undefined) => {
     setSelectedDate(date);
-    if (date) {
-      setIsDailyMenuDialogOpen(true);
-    }
+    // No need to open a dialog, the list will appear if selectedDate is set
   };
 
   const handleMonthChange = (month: Date) => {
@@ -135,21 +134,32 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
                 No hay menús registrados para este mes.
               </p>
               <p className="text-md text-gray-600 dark:text-gray-400 mt-2">
-                Selecciona una fecha y haz clic en "Añadir Menú para este día" para empezar.
+                Selecciona una fecha para ver o añadir menús.
               </p>
             </div>
           )}
         </CardContent>
       </Card>
 
-      <DailyMenuDialog
-        selectedDate={selectedDate}
-        dailyMenus={dailyMenus}
-        isDailyMenuDialogOpen={isDailyMenuDialogOpen}
-        setIsDailyMenuDialogOpen={setIsDailyMenuDialogOpen}
-        onAddMenu={onAddMenu}
-        onEditMenu={onEditMenu}
-      />
+      {selectedDate && (
+        <Card className="flex-grow lg:w-1/2 shadow-lg dark:bg-gray-800">
+          <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+              Menús para el {format(selectedDate, "PPP", { locale: es })}
+            </CardTitle>
+            <Button
+              onClick={() => onAddMenu(selectedDate)}
+              className="px-4 py-2 text-base bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
+            >
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Añadir Menú
+            </Button>
+          </CardHeader>
+          <CardContent>
+            <DailyMenuList menus={dailyMenus} onEdit={onEditMenu} />
+          </CardContent>
+        </Card>
+      )}
 
       <MenuFormSheet
         isFormOpen={isFormOpen}
