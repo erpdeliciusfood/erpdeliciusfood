@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Plato, PlatoFormValues } from "@/types"; // Removed PlatoInsumo
+import { Plato, PlatoFormValues } from "@/types"; // Removed Insumo import
 
 export const getPlatos = async (): Promise<Plato[]> => {
   const { data, error } = await supabase
@@ -25,13 +25,46 @@ export const getPlatoById = async (id: string): Promise<Plato | null> => {
   return data;
 };
 
+// Helper function to calculate production cost
+const calculatePlatoCost = async (insumosData: { insumo_id: string; cantidad_necesaria: number }[]): Promise<number> => {
+  let totalCost = 0;
+  if (insumosData && insumosData.length > 0) {
+    const insumoIds = insumosData.map(item => item.insumo_id);
+    const { data: fetchedInsumos, error: insumosError } = await supabase
+      .from("insumos")
+      .select("id, costo_unitario")
+      .in("id", insumoIds);
+
+    if (insumosError) throw new Error(`Failed to fetch insumo costs: ${insumosError.message}`);
+
+    const insumoCostMap = new Map<string, number>();
+    fetchedInsumos.forEach(insumo => insumoCostMap.set(insumo.id, insumo.costo_unitario));
+
+    for (const item of insumosData) {
+      const costoUnitario = insumoCostMap.get(item.insumo_id);
+      if (costoUnitario !== undefined) {
+        totalCost += costoUnitario * item.cantidad_necesaria;
+      } else {
+        console.warn(`Costo unitario no encontrado para el insumo ID: ${item.insumo_id}`);
+      }
+    }
+  }
+  return totalCost;
+};
+
 export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> => {
-  const { nombre, descripcion, precio_venta, insumos } = platoData;
+  const { nombre, descripcion, markup_percentage, insumos } = platoData;
+
+  // Calculate production cost
+  const costo_produccion = await calculatePlatoCost(insumos);
+
+  // Calculate sales price
+  const precio_venta = costo_produccion * (1 + markup_percentage);
 
   // Insert the main plato
   const { data: newPlato, error: platoError } = await supabase
     .from("platos")
-    .insert({ nombre, descripcion, precio_venta })
+    .insert({ nombre, descripcion, precio_venta, costo_produccion, markup_percentage })
     .select()
     .single();
 
@@ -51,8 +84,6 @@ export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> =>
       .insert(platoInsumosToInsert);
 
     if (platoInsumoError) {
-      // If insumo insertion fails, consider rolling back plato creation or handling appropriately
-      // For now, we'll just throw the error
       throw new Error(`Failed to add insumos to plato: ${platoInsumoError.message}`);
     }
   }
@@ -70,12 +101,18 @@ export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> =>
 };
 
 export const updatePlato = async (id: string, platoData: PlatoFormValues): Promise<Plato> => {
-  const { nombre, descripcion, precio_venta, insumos } = platoData;
+  const { nombre, descripcion, markup_percentage, insumos } = platoData;
+
+  // Calculate production cost
+  const costo_produccion = await calculatePlatoCost(insumos);
+
+  // Calculate sales price
+  const precio_venta = costo_produccion * (1 + markup_percentage);
 
   // Update the main plato
   const { data: updatedPlato, error: platoError } = await supabase
     .from("platos")
-    .update({ nombre, descripcion, precio_venta })
+    .update({ nombre, descripcion, precio_venta, costo_produccion, markup_percentage })
     .eq("id", id)
     .select()
     .single();

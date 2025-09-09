@@ -25,7 +25,9 @@ export interface Plato {
   user_id: string;
   nombre: string;
   descripcion: string | null;
-  precio_venta: number;
+  precio_venta: number; // This will now be a calculated field
+  costo_produccion: number; // New: Calculated production cost
+  markup_percentage: number; // New: Percentage for profit margin (e.g., 0.3 for 30%)
   created_at: string;
   plato_insumos?: PlatoInsumo[];
 }
@@ -33,7 +35,8 @@ export interface Plato {
 export interface PlatoFormValues {
   nombre: string;
   descripcion: string | null;
-  precio_venta: number;
+  // precio_venta: number; // Removed: No longer directly input by user
+  markup_percentage: number; // New: User inputs this percentage
   insumos: { insumo_id: string; cantidad_necesaria: number }[];
 }
 
