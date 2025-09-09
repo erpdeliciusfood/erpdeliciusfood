@@ -45,7 +45,13 @@ export const createMenu = async (menuData: MenuFormValues): Promise<Menu> => {
   // Insert the main menu
   const { data: newMenu, error: menuError } = await supabase
     .from("menus")
-    .insert({ title, menu_date, event_type_id, description, user_id: user.id }) // Added user.id here
+    .insert({
+      title,
+      menu_date: menu_date === "" ? null : menu_date, // Explicitly convert empty string to null
+      event_type_id: event_type_id === "" ? null : event_type_id, // Explicitly convert empty string to null
+      description,
+      user_id: user.id
+    })
     .select()
     .single();
 
@@ -88,7 +94,12 @@ export const updateMenu = async (id: string, menuData: MenuFormValues): Promise<
   // Update the main menu
   const { data: updatedMenu, error: menuError } = await supabase
     .from("menus")
-    .update({ title, menu_date, event_type_id, description })
+    .update({
+      title,
+      menu_date: menu_date === "" ? null : menu_date, // Explicitly convert empty string to null
+      event_type_id: event_type_id === "" ? null : event_type_id, // Explicitly convert empty string to null
+      description
+    })
     .eq("id", id)
     .select()
     .single();

@@ -148,7 +148,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
                   <Calendar
                     mode="single"
                     selected={field.value ? new Date(field.value) : undefined}
-                    onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : "")}
+                    onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : null)}
                     disabled={(date) =>
                       date > new Date() || date < new Date("1900-01-01") || isLoading
                     }
