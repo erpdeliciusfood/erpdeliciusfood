@@ -3,10 +3,10 @@ import { getMenus, getMenuById, createMenu, updateMenu, deleteMenu } from "@/int
 import { Menu, MenuFormValues } from "@/types";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
-export const useMenus = () => {
+export const useMenus = (startDate?: string, endDate?: string) => {
   return useQuery<Menu[], Error>({
-    queryKey: ["menus"],
-    queryFn: getMenus,
+    queryKey: ["menus", startDate, endDate], // Include dates in query key
+    queryFn: () => getMenus(startDate, endDate),
   });
 };
 
@@ -28,7 +28,7 @@ export const useAddMenu = () => {
     },
     onSuccess: (_, __, context) => {
       dismissToast(context.toastId);
-      queryClient.invalidateQueries({ queryKey: ["menus"] });
+      queryClient.invalidateQueries({ queryKey: ["menus"] }); // Invalidate all menus to refresh calendar
       showSuccess("Menú creado exitosamente.");
     },
     onError: (error, __, context) => {
@@ -50,7 +50,7 @@ export const useUpdateMenu = () => {
     },
     onSuccess: (_, { id }, context) => {
       dismissToast(context.toastId);
-      queryClient.invalidateQueries({ queryKey: ["menus"] });
+      queryClient.invalidateQueries({ queryKey: ["menus"] }); // Invalidate all menus to refresh calendar
       queryClient.invalidateQueries({ queryKey: ["menus", id] }); // Invalidate specific menu query
       showSuccess("Menú actualizado exitosamente.");
     },
@@ -73,7 +73,7 @@ export const useDeleteMenu = () => {
     },
     onSuccess: (_, __, context) => {
       dismissToast(context.toastId);
-      queryClient.invalidateQueries({ queryKey: ["menus"] });
+      queryClient.invalidateQueries({ queryKey: ["menus"] }); // Invalidate all menus to refresh calendar
       showSuccess("Menú eliminado exitosamente.");
     },
     onError: (error, __, context) => {

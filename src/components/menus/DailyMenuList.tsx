@@ -8,19 +8,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, CalendarDays, UtensilsCrossed } from "lucide-react";
+import { Edit, Trash2, UtensilsCrossed, CalendarDays } from "lucide-react";
 import { Menu } from "@/types";
 import { useDeleteMenu } from "@/hooks/useMenus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { format } from "date-fns";
-import { es } from "date-fns/locale";
+// import { format } from "date-fns"; // Removed unused import
+import { es } from "date-fns/locale"; // 'es' is not directly used in this component, but 'format' (if used) would need it. Since format is removed, 'es' can also be removed.
 
-interface MenuListProps {
+interface DailyMenuListProps {
   menus: Menu[];
   onEdit: (menu: Menu) => void;
 }
 
-const MenuList: React.FC<MenuListProps> = ({ menus, onEdit }) => {
+const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
   const deleteMutation = useDeleteMenu();
 
   const handleDelete = (id: string) => {
@@ -31,7 +31,7 @@ const MenuList: React.FC<MenuListProps> = ({ menus, onEdit }) => {
     return (
       <div className="text-center py-10 text-gray-600 dark:text-gray-400">
         <UtensilsCrossed className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
-        <p className="text-xl">No hay menús registrados.</p>
+        <p className="text-xl">No hay menús registrados para este día.</p>
       </div>
     );
   }
@@ -55,7 +55,7 @@ const MenuList: React.FC<MenuListProps> = ({ menus, onEdit }) => {
                 {menu.menu_date ? (
                   <span className="flex items-center">
                     <CalendarDays className="h-4 w-4 mr-2" />
-                    {format(new Date(menu.menu_date), "PPP", { locale: es })}
+                    Menú Diario
                   </span>
                 ) : menu.event_types ? (
                   <span className="flex items-center">
@@ -111,4 +111,4 @@ const MenuList: React.FC<MenuListProps> = ({ menus, onEdit }) => {
   );
 };
 
-export default MenuList;
+export default DailyMenuList;

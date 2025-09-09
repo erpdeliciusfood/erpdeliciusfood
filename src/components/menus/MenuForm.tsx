@@ -80,9 +80,10 @@ interface MenuFormProps {
   initialData?: Menu | null;
   onSuccess: () => void;
   onCancel: () => void;
+  preselectedDate?: Date; // New prop for pre-selecting date
 }
 
-const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel }) => {
+const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, preselectedDate }) => {
   const addMutation = useAddMenu();
   const updateMutation = useUpdateMenu();
 
@@ -96,7 +97,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel })
       title: "",
       description: "",
       menu_type: "daily",
-      menu_date: null,
+      menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null, // Pre-fill if available
       event_type_id: null,
       platos_por_servicio: [{ meal_service_id: "", plato_id: "", quantity_needed: 1 }],
     },
@@ -128,12 +129,12 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel })
         title: "",
         description: "",
         menu_type: "daily",
-        menu_date: null,
+        menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null, // Pre-fill for new forms
         event_type_id: null,
         platos_por_servicio: [{ meal_service_id: "", plato_id: "", quantity_needed: 1 }],
       });
     }
-  }, [initialData, form]);
+  }, [initialData, form, preselectedDate]); // Add preselectedDate to dependencies
 
   const onSubmit = async (values: MenuFormValues & { menu_type: "daily" | "event" }) => {
     const submitValues: MenuFormValues = {

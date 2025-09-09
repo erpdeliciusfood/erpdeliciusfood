@@ -1,12 +1,21 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Menu, MenuFormValues } from "@/types";
 
-export const getMenus = async (): Promise<Menu[]> => {
-  const { data, error } = await supabase
+export const getMenus = async (startDate?: string, endDate?: string): Promise<Menu[]> => {
+  let query = supabase
     .from("menus")
     .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))") // Deep fetch for insumos
     .order("menu_date", { ascending: false })
     .order("created_at", { ascending: false });
+
+  if (startDate) {
+    query = query.gte("menu_date", startDate);
+  }
+  if (endDate) {
+    query = query.lte("menu_date", endDate);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw new Error(error.message);
   return data;
