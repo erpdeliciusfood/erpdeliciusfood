@@ -1,4 +1,4 @@
-import React from "react"; // Removed useMemo import
+import React from "react";
 import {
   Table,
   TableBody,
@@ -8,13 +8,14 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, UtensilsCrossed, CalendarDays, ChevronDown, CheckCircle2, XCircle } from "lucide-react";
+import { Edit, Trash2, UtensilsCrossed, CalendarDays, ChevronDown, CheckCircle2 } from "lucide-react";
 import { Menu } from "@/types";
 import { useDeleteMenu } from "@/hooks/useMenus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useMealServices } from "@/hooks/useMealServices";
 import { Badge } from "@/components/ui/badge";
+// Removed unused imports: import { isSameDay, parseISO } from "date-fns";
 
 interface DailyMenuListProps {
   menus: Menu[];
@@ -23,7 +24,7 @@ interface DailyMenuListProps {
 
 const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
   const deleteMutation = useDeleteMenu();
-  const { data: _availableMealServices, isLoading: isLoadingMealServices } = useMealServices(); // Renamed to _availableMealServices
+  const { data: _availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
@@ -48,7 +49,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
           <TableRow>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Título</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Tipo</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Servicios</TableHead> {/* New column */}
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Servicios</TableHead>
             <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -65,6 +66,17 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                 mealServiceStatus[serviceName] = true;
               }
             });
+
+            // Group platos by meal service for detailed display
+            const platosGroupedByService = menu.menu_platos?.reduce((acc, mp) => {
+              const serviceName = mp.meal_services?.name || "Sin Servicio";
+              if (!acc[serviceName]) {
+                acc[serviceName] = [];
+              }
+              acc[serviceName].push(mp);
+              return acc;
+            }, {} as { [key: string]: typeof menu.menu_platos });
+
 
             return (
               <React.Fragment key={menu.id}>
@@ -95,7 +107,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                             className={`capitalize ${mealServiceStatus[type] ? "bg-green-500 hover:bg-green-600" : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"}`}
                           >
                             {type}
-                            {mealServiceStatus[type] ? <CheckCircle2 className="ml-1 h-3 w-3" /> : <XCircle className="ml-1 h-3 w-3" />}
+                            {mealServiceStatus[type] ? <CheckCircle2 className="ml-1 h-3 w-3" /> : <span className="ml-1 text-red-500">✕</span>}
                           </Badge>
                         ))}
                       </div>
@@ -151,16 +163,19 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                           </AccordionTrigger>
                           <AccordionContent className="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
                             <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Detalles de Platos:</h4>
-                            <ul className="list-disc pl-5 space-y-2 text-gray-700 dark:text-gray-300">
-                              {menu.menu_platos.map((mp, idx) => (
-                                <li key={idx} className="text-base">
-                                  <span className="font-medium text-gray-800 dark:text-gray-200">{mp.platos?.nombre || "Plato Desconocido"}</span>
-                                  {" "}para{" "}
-                                  <span className="font-medium text-gray-800 dark:text-gray-200">{mp.meal_services?.name || "Servicio Desconocido"}</span>
-                                  {" "} (Cantidad: {mp.quantity_needed})
-                                </li>
-                              ))}
-                            </ul>
+                            {Object.entries(platosGroupedByService || {}).map(([serviceName, platos]) => (
+                              <div key={serviceName} className="mb-4 last:mb-0">
+                                <h5 className="text-md font-bold text-gray-800 dark:text-gray-200 mb-2 capitalize">{serviceName}</h5>
+                                <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
+                                  {platos?.map((mp, idx) => (
+                                    <li key={idx} className="text-base">
+                                      <span className="font-medium text-gray-800 dark:text-gray-200">{mp.platos?.nombre || "Plato Desconocido"}</span>
+                                      {" "} (Cantidad: {mp.quantity_needed})
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            ))}
                           </AccordionContent>
                         </AccordionItem>
                       </Accordion>
