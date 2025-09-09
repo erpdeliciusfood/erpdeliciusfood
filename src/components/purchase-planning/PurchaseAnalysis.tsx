@@ -1,13 +1,14 @@
 import React, { useMemo } from "react";
 import { useMenus } from "@/hooks/useMenus";
 import { useInsumos } from "@/hooks/useInsumos";
-import { Loader2, ShoppingBag, DollarSign } from "lucide-react";
+import { Loader2, ShoppingBag, DollarSign, Info } from "lucide-react"; // Added Info icon
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Insumo } from "@/types";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Added Tooltip components
 
 interface PurchaseAnalysisProps {
   startDate: Date;
@@ -15,10 +16,14 @@ interface PurchaseAnalysisProps {
 }
 
 interface InsumoNeeded extends Insumo {
-  quantity_needed_for_period: number;
+  quantity_needed_for_period_raw: number; // Original calculated value
+  quantity_needed_for_period_rounded: number; // Rounded up value
+  quantity_needed_for_period_rounded_up: boolean; // Flag if rounding occurred
   current_stock: number;
-  purchase_suggestion: number;
-  estimated_purchase_cost: number; // New field
+  purchase_suggestion_raw: number; // Original calculated value
+  purchase_suggestion_rounded: number; // Rounded up value
+  purchase_suggestion_rounded_up: boolean; // Flag if rounding occurred
+  estimated_purchase_cost: number;
 }
 
 const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate }) => {
@@ -61,17 +66,35 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
     let overallEstimatedCost = 0;
     const result: InsumoNeeded[] = [];
     allInsumos.forEach(insumo => {
-      const quantityNeededForPeriod = insumoNeedsMap.get(insumo.id) || 0;
+      const quantityNeededForPeriodRaw = insumoNeedsMap.get(insumo.id) || 0;
       const currentStock = insumo.stock_quantity; // stock_quantity is already in purchase_unit
-      const purchaseSuggestion = Math.max(0, quantityNeededForPeriod - currentStock);
-      const estimatedPurchaseCost = purchaseSuggestion * insumo.costo_unitario;
 
-      if (quantityNeededForPeriod > 0 || currentStock < insumo.min_stock_level) { // Show if needed or if stock is below min_stock_level
+      // Rounding for quantity_needed_for_period
+      const quantityNeededForPeriodRounded = quantityNeededForPeriodRaw > 0 && quantityNeededForPeriodRaw % 1 !== 0
+        ? Math.ceil(quantityNeededForPeriodRaw)
+        : parseFloat(quantityNeededForPeriodRaw.toFixed(2)); // Keep 2 decimals if already whole or 0
+      const quantityNeededForPeriodRoundedUp = quantityNeededForPeriodRaw > 0 && quantityNeededForPeriodRaw % 1 !== 0;
+
+      const purchaseSuggestionRaw = Math.max(0, quantityNeededForPeriodRaw - currentStock);
+
+      // Rounding for purchase_suggestion
+      const purchaseSuggestionRounded = purchaseSuggestionRaw > 0 && purchaseSuggestionRaw % 1 !== 0
+        ? Math.ceil(purchaseSuggestionRaw)
+        : parseFloat(purchaseSuggestionRaw.toFixed(2)); // Keep 2 decimals if already whole or 0
+      const purchaseSuggestionRoundedUp = purchaseSuggestionRaw > 0 && purchaseSuggestionRaw % 1 !== 0;
+
+      const estimatedPurchaseCost = purchaseSuggestionRounded * insumo.costo_unitario; // Use rounded suggestion for cost calculation
+
+      if (quantityNeededForPeriodRaw > 0 || currentStock < insumo.min_stock_level) { // Show if needed or if stock is below min_stock_level
         result.push({
           ...insumo,
-          quantity_needed_for_period: parseFloat(quantityNeededForPeriod.toFixed(2)),
+          quantity_needed_for_period_raw: parseFloat(quantityNeededForPeriodRaw.toFixed(2)),
+          quantity_needed_for_period_rounded: quantityNeededForPeriodRounded,
+          quantity_needed_for_period_rounded_up: quantityNeededForPeriodRoundedUp,
           current_stock: parseFloat(currentStock.toFixed(2)),
-          purchase_suggestion: parseFloat(purchaseSuggestion.toFixed(2)),
+          purchase_suggestion_raw: parseFloat(purchaseSuggestionRaw.toFixed(2)),
+          purchase_suggestion_rounded: purchaseSuggestionRounded,
+          purchase_suggestion_rounded_up: purchaseSuggestionRoundedUp,
           estimated_purchase_cost: parseFloat(estimatedPurchaseCost.toFixed(2)),
         });
         overallEstimatedCost += estimatedPurchaseCost;
@@ -79,7 +102,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
     });
 
     return {
-      insumosForPurchase: result.sort((a, b) => b.purchase_suggestion - a.purchase_suggestion), // Sort by highest purchase suggestion
+      insumosForPurchase: result.sort((a, b) => b.purchase_suggestion_rounded - a.purchase_suggestion_rounded), // Sort by highest purchase suggestion (rounded)
       totalEstimatedPurchaseCost: parseFloat(overallEstimatedCost.toFixed(2)),
     };
   }, [menus, allInsumos, startDate, endDate, isLoading, isError]);
@@ -142,7 +165,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Stock Actual</TableHead>
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Necesidad Periodo</TableHead>
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Sugerencia Compra</TableHead>
-                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Costo Estimado (S/)</TableHead> {/* New column */}
+                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Costo Estimado (S/)</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -157,15 +180,45 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                         </Badge>
                       </TableCell>
                       <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">
-                        {insumo.quantity_needed_for_period.toFixed(2)} {insumo.purchase_unit}
+                        <TooltipProvider>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <span className="inline-flex items-center">
+                                {insumo.quantity_needed_for_period_rounded} {insumo.purchase_unit}
+                                {insumo.quantity_needed_for_period_rounded_up && (
+                                  <Info className="ml-1 h-4 w-4 text-blue-500 cursor-help" />
+                                )}
+                              </span>
+                            </TooltipTrigger>
+                            {insumo.quantity_needed_for_period_rounded_up && (
+                              <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
+                                <p>Valor real: {insumo.quantity_needed_for_period_raw.toFixed(2)} {insumo.purchase_unit}</p>
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        </TooltipProvider>
                       </TableCell>
                       <TableCell className="text-right text-base">
-                        {insumo.purchase_suggestion > 0 ? (
-                          <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white text-lg px-3 py-1">
-                            {insumo.purchase_suggestion.toFixed(2)}
-                          </Badge>
+                        {insumo.purchase_suggestion_rounded > 0 ? (
+                          <TooltipProvider>
+                            <Tooltip>
+                              <TooltipTrigger asChild>
+                                <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white text-lg px-3 py-1 inline-flex items-center">
+                                  {insumo.purchase_suggestion_rounded} {insumo.purchase_unit}
+                                  {insumo.purchase_suggestion_rounded_up && (
+                                    <Info className="ml-1 h-4 w-4 text-white cursor-help" />
+                                  )}
+                                </Badge>
+                              </TooltipTrigger>
+                              {insumo.purchase_suggestion_rounded_up && (
+                                <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
+                                  <p>Valor real: {insumo.purchase_suggestion_raw.toFixed(2)} {insumo.purchase_unit}</p>
+                                </TooltipContent>
+                              )}
+                            </Tooltip>
+                          </TooltipProvider>
                         ) : (
-                          <span className="text-gray-500 dark:text-gray-400">0</span>
+                          <span className="text-gray-500 dark:text-gray-400">0 {insumo.purchase_unit}</span>
                         )}
                       </TableCell>
                       <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">
