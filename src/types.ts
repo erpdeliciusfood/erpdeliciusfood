@@ -46,7 +46,6 @@ export interface PlatoInsumo {
   insumos?: Insumo;
 }
 
-// New interfaces for Service Reports
 export interface ServiceReport {
   id: string;
   user_id: string;
@@ -58,7 +57,17 @@ export interface ServiceReport {
   notes: string | null;
   created_at: string;
   meal_services?: MealService; // Optional, for when fetching with relations
-  service_report_platos?: ServiceReportPlato[]; // New: Optional, for when fetching with relations
+  platos_vendidos_data?: ServiceReportPlato[]; // New: For fetching with relations
+}
+
+export interface ServiceReportFormValues {
+  report_date: string;
+  meal_service_id: string;
+  tickets_issued: number;
+  meals_sold: number;
+  additional_services_revenue: number;
+  notes: string | null;
+  platos_vendidos: { plato_id: string; quantity_sold: number }[]; // New: Array of sold dishes
 }
 
 export interface ServiceReportPlato { // New interface
@@ -70,17 +79,6 @@ export interface ServiceReportPlato { // New interface
   platos?: Plato; // Optional, for when fetching with relations
 }
 
-export interface ServiceReportFormValues {
-  report_date: string;
-  meal_service_id: string;
-  tickets_issued: number;
-  meals_sold: number;
-  additional_services_revenue: number;
-  notes: string | null;
-  platos_vendidos: { plato_id: string; quantity_sold: number }[]; // New: For form submission
-}
-
-// New interfaces for Menu Management
 export interface MealService {
   id: string;
   name: string;

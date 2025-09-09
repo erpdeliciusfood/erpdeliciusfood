@@ -4,7 +4,7 @@ import { ServiceReport, ServiceReportFormValues } from "@/types";
 export const getServiceReports = async (): Promise<ServiceReport[]> => {
   const { data, error } = await supabase
     .from("service_reports")
-    .select("*, meal_services(*), service_report_platos(*, platos(*))") // Fetch service_report_platos and nested platos
+    .select("*, meal_services(*), platos_vendidos_data:service_report_platos(*, platos(*))") // Fetch service_report_platos and nested platos
     .order("report_date", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -13,19 +13,19 @@ export const getServiceReports = async (): Promise<ServiceReport[]> => {
 };
 
 export const createServiceReport = async (reportData: ServiceReportFormValues): Promise<ServiceReport> => {
-  const { platos_vendidos, ...rest } = reportData;
+  const { platos_vendidos, ...reportDetails } = reportData;
 
   // Insert the main service report
   const { data: newReport, error: reportError } = await supabase
     .from("service_reports")
-    .insert(rest)
+    .insert(reportDetails)
     .select("*, meal_services(*)")
     .single();
 
   if (reportError) throw new Error(reportError.message);
   if (!newReport) throw new Error("Failed to create service report.");
 
-  // Insert associated service_report_platos
+  // Insert associated platos_vendidos
   if (platos_vendidos && platos_vendidos.length > 0) {
     const serviceReportPlatosToInsert = platos_vendidos.map((item) => ({
       service_report_id: newReport.id,
@@ -42,10 +42,22 @@ export const createServiceReport = async (reportData: ServiceReportFormValues): 
     }
   }
 
-  // Fetch the complete service report with its relations for the return value
+  // Invoke the edge function to deduct stock
+  const { data: deductStockData, error: deductStockError } = await supabase.functions.invoke('deduct-stock', {
+    body: { service_report_id: newReport.id, user_id: newReport.user_id },
+  });
+
+  if (deductStockError) {
+    console.error('Error invoking deduct-stock function:', deductStockError);
+    // Depending on criticality, you might want to roll back or just log
+  } else {
+    console.log('Deduct stock function invoked successfully:', deductStockData);
+  }
+
+  // Fetch the complete report with its relations for the return value
   const { data: completeReport, error: fetchError } = await supabase
     .from("service_reports")
-    .select("*, meal_services(*), service_report_platos(*, platos(*))")
+    .select("*, meal_services(*), platos_vendidos_data:service_report_platos(*, platos(*))")
     .eq("id", newReport.id)
     .single();
 
@@ -55,12 +67,12 @@ export const createServiceReport = async (reportData: ServiceReportFormValues): 
 };
 
 export const updateServiceReport = async (id: string, reportData: ServiceReportFormValues): Promise<ServiceReport> => {
-  const { platos_vendidos, ...rest } = reportData;
+  const { platos_vendidos, ...reportDetails } = reportData;
 
   // Update the main service report
   const { data: updatedReport, error: reportError } = await supabase
     .from("service_reports")
-    .update(rest)
+    .update(reportDetails)
     .eq("id", id)
     .select("*, meal_services(*)")
     .single();
@@ -76,7 +88,7 @@ export const updateServiceReport = async (id: string, reportData: ServiceReportF
 
   if (deleteError) throw new Error(`Failed to delete existing sold platos for service report: ${deleteError.message}`);
 
-  // Insert new associated service_report_platos
+  // Insert new associated platos_vendidos
   if (platos_vendidos && platos_vendidos.length > 0) {
     const serviceReportPlatosToInsert = platos_vendidos.map((item) => ({
       service_report_id: updatedReport.id,
@@ -93,10 +105,21 @@ export const updateServiceReport = async (id: string, reportData: ServiceReportF
     }
   }
 
-  // Fetch the complete service report with its relations for the return value
+  // Invoke the edge function to deduct stock (re-deduct for updated report)
+  const { data: deductStockData, error: deductStockError } = await supabase.functions.invoke('deduct-stock', {
+    body: { service_report_id: updatedReport.id, user_id: updatedReport.user_id },
+  });
+
+  if (deductStockError) {
+    console.error('Error invoking deduct-stock function on update:', deductStockError);
+  } else {
+    console.log('Deduct stock function invoked successfully on update:', deductStockData);
+  }
+
+  // Fetch the complete report with its relations for the return value
   const { data: completeReport, error: fetchError } = await supabase
     .from("service_reports")
-    .select("*, meal_services(*), service_report_platos(*, platos(*))")
+    .select("*, meal_services(*), platos_vendidos_data:service_report_platos(*, platos(*))")
     .eq("id", updatedReport.id)
     .single();
 

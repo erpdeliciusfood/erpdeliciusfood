@@ -22,15 +22,15 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Import Card components
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { ServiceReport, ServiceReportFormValues, MealService, Plato } from "@/types";
 import { useAddServiceReport, useUpdateServiceReport } from "@/hooks/useServiceReports";
 import { useMealServices } from "@/hooks/useMealServices";
-import { usePlatos } from "@/hooks/usePlatos"; // Import usePlatos hook
+import { usePlatos } from "@/hooks/usePlatos"; // Import usePlatos
 import { Loader2, CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Import Card components
 
 const formSchema = z.object({
   report_date: z.string().min(1, { message: "La fecha del reporte es requerida." }),
@@ -39,10 +39,14 @@ const formSchema = z.object({
   meals_sold: z.coerce.number().min(0, { message: "Las colaciones vendidas no pueden ser negativas." }).int({ message: "Las colaciones vendidas deben ser un número entero." }),
   additional_services_revenue: z.coerce.number().min(0, { message: "Los ingresos adicionales no pueden ser negativos." }).max(999999.99, { message: "Los ingresos adicionales no deben exceder 999999.99." }),
   notes: z.string().max(500, { message: "Las notas no deben exceder los 500 caracteres." }).nullable(),
-  platos_vendidos: z.array(
+  platos_vendidos: z.array( // New field for sold platos
     z.object({
       plato_id: z.string().min(1, { message: "Debe seleccionar un plato." }),
-      quantity_sold: z.coerce.number().min(1, { message: "La cantidad vendida debe ser al menos 1." }).int({ message: "La cantidad vendida debe ser un número entero." }),
+      quantity_sold: z.coerce.number().min(1, {
+        message: "La cantidad vendida debe ser al menos 1.",
+      }).int({ message: "La cantidad vendida debe ser un número entero." }).max(9999, {
+        message: "La cantidad vendida no debe exceder 9999.",
+      }),
     })
   ).min(1, { message: "Debe añadir al menos un plato vendido al reporte." }),
 });
@@ -86,9 +90,9 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
         meals_sold: initialData.meals_sold,
         additional_services_revenue: initialData.additional_services_revenue,
         notes: initialData.notes || "",
-        platos_vendidos: initialData.service_report_platos?.map(srp => ({
-          plato_id: srp.plato_id,
-          quantity_sold: srp.quantity_sold,
+        platos_vendidos: initialData.platos_vendidos_data?.map(pv => ({ // Map existing sold platos
+          plato_id: pv.plato_id,
+          quantity_sold: pv.quantity_sold,
         })) || [{ plato_id: "", quantity_sold: 1 }],
       });
     } else {
@@ -257,26 +261,6 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
           )}
         />
 
-        <FormField
-          control={form.control}
-          name="notes"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Notas (Opcional)</FormLabel>
-              <FormControl>
-                <Textarea
-                  placeholder="Cualquier observación relevante sobre el servicio..."
-                  {...field}
-                  value={field.value || ""}
-                  className="min-h-[80px] text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
         <Card className="mt-8">
           <CardHeader>
             <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Platos Vendidos</CardTitle>
@@ -288,7 +272,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
                   control={form.control}
                   name={`platos_vendidos.${index}.plato_id`}
                   render={({ field: platoField }) => (
-                    <FormItem className="flex-grow w-full md:w-1/2">
+                    <FormItem className="flex-grow w-full">
                       <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Plato</FormLabel>
                       <Select
                         onValueChange={platoField.onChange}
@@ -317,7 +301,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
                   name={`platos_vendidos.${index}.quantity_sold`}
                   render={({ field: quantityField }) => (
                     <FormItem className="w-full md:w-1/3">
-                      <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Cantidad</FormLabel>
+                      <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Cantidad Vendida</FormLabel>
                       <FormControl>
                         <Input
                           type="number"
@@ -357,6 +341,26 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
             </Button>
           </CardContent>
         </Card>
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Notas (Opcional)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Cualquier observación relevante sobre el servicio..."
+                  {...field}
+                  value={field.value || ""}
+                  className="min-h-[80px] text-base"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
         <div className="flex justify-end space-x-4 pt-4">
           <Button
