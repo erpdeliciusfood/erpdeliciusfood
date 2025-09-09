@@ -26,13 +26,13 @@ export const getMenuById = async (id: string): Promise<Menu | null> => {
   return data;
 };
 
-export const createMenu = async (menuData: MenuFormValues): Promise<Menu> => {
+export const createMenu = async (menuData: MenuFormValues, userId: string): Promise<Menu> => {
   const { title, menu_date, event_type_id, description, platos_por_servicio } = menuData;
 
   // Insert the main menu
   const { data: newMenu, error: menuError } = await supabase
     .from("menus")
-    .insert({ title, menu_date, event_type_id, description })
+    .insert({ title, menu_date, event_type_id, description, user_id: userId })
     .select()
     .single();
 
@@ -69,7 +69,7 @@ export const createMenu = async (menuData: MenuFormValues): Promise<Menu> => {
   return completeMenu;
 };
 
-export const updateMenu = async (id: string, menuData: MenuFormValues): Promise<Menu> => {
+export const updateMenu = async (id: string, menuData: MenuFormValues, userId: string): Promise<Menu> => {
   const { title, menu_date, event_type_id, description, platos_por_servicio } = menuData;
 
   // Update the main menu
@@ -77,6 +77,7 @@ export const updateMenu = async (id: string, menuData: MenuFormValues): Promise<
     .from("menus")
     .update({ title, menu_date, event_type_id, description })
     .eq("id", id)
+    .eq("user_id", userId)
     .select()
     .single();
 
@@ -121,11 +122,12 @@ export const updateMenu = async (id: string, menuData: MenuFormValues): Promise<
   return completeMenu;
 };
 
-export const deleteMenu = async (id: string): Promise<void> => {
+export const deleteMenu = async (id: string, userId: string): Promise<void> => {
   const { error } = await supabase
     .from("menus")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) throw new Error(error.message);
 };

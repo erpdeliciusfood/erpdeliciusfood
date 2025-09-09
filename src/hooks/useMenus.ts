@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getMenus, getMenuById, createMenu, updateMenu, deleteMenu } from "@/integrations/supabase/menus";
 import { Menu, MenuFormValues } from "@/types";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
+import { useSession } from "@/contexts/SessionContext";
 
 export const useMenus = () => {
   return useQuery<Menu[], Error>({
@@ -20,8 +21,13 @@ export const useMenu = (id: string) => {
 
 export const useAddMenu = () => {
   const queryClient = useQueryClient();
+  const { user } = useSession();
+
   return useMutation<Menu, Error, MenuFormValues, { toastId: string }>({
-    mutationFn: createMenu,
+    mutationFn: async (menuData) => {
+      if (!user?.id) throw new Error("User not authenticated.");
+      return createMenu(menuData, user.id);
+    },
     onMutate: () => {
       const toastId: string = showLoading("Creando menú...");
       return { toastId };
@@ -42,8 +48,13 @@ export const useAddMenu = () => {
 
 export const useUpdateMenu = () => {
   const queryClient = useQueryClient();
+  const { user } = useSession();
+
   return useMutation<Menu, Error, { id: string; menu: MenuFormValues }, { toastId: string }>({
-    mutationFn: ({ id, menu }) => updateMenu(id, menu),
+    mutationFn: async ({ id, menu }) => {
+      if (!user?.id) throw new Error("User not authenticated.");
+      return updateMenu(id, menu, user.id);
+    },
     onMutate: () => {
       const toastId: string = showLoading("Actualizando menú...");
       return { toastId };
@@ -65,8 +76,13 @@ export const useUpdateMenu = () => {
 
 export const useDeleteMenu = () => {
   const queryClient = useQueryClient();
+  const { user } = useSession();
+
   return useMutation<void, Error, string, { toastId: string }>({
-    mutationFn: deleteMenu,
+    mutationFn: async (id) => {
+      if (!user?.id) throw new Error("User not authenticated.");
+      return deleteMenu(id, user.id);
+    },
     onMutate: () => {
       const toastId: string = showLoading("Eliminando menú...");
       return { toastId };

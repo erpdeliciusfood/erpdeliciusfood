@@ -12,13 +12,13 @@ export const getServiceReports = async (): Promise<ServiceReport[]> => {
   return data;
 };
 
-export const createServiceReport = async (reportData: ServiceReportFormValues & { meals_sold: number }): Promise<ServiceReport> => {
+export const createServiceReport = async (reportData: ServiceReportFormValues & { meals_sold: number }, userId: string): Promise<ServiceReport> => {
   const { platos_vendidos, meals_sold, ...baseReport } = reportData; // Destructure meals_sold
 
   // Insert the main service report
   const { data: newReport, error: reportError } = await supabase
     .from("service_reports")
-    .insert({ ...baseReport, meals_sold }) // Include meals_sold
+    .insert({ ...baseReport, meals_sold, user_id: userId }) // Include meals_sold and user_id
     .select("*, meal_services(name)") // Fetch meal_service name on insert
     .single();
 
@@ -54,7 +54,7 @@ export const createServiceReport = async (reportData: ServiceReportFormValues & 
   return completeReport;
 };
 
-export const updateServiceReport = async (id: string, reportData: ServiceReportFormValues & { meals_sold: number }): Promise<ServiceReport> => {
+export const updateServiceReport = async (id: string, reportData: ServiceReportFormValues & { meals_sold: number }, userId: string): Promise<ServiceReport> => {
   const { platos_vendidos, meals_sold, ...baseReport } = reportData; // Destructure meals_sold
 
   // Update the main service report
@@ -62,6 +62,7 @@ export const updateServiceReport = async (id: string, reportData: ServiceReportF
     .from("service_reports")
     .update({ ...baseReport, meals_sold }) // Include meals_sold
     .eq("id", id)
+    .eq("user_id", userId)
     .select("*, meal_services(name)") // Fetch meal_service name on update
     .single();
 
@@ -105,11 +106,12 @@ export const updateServiceReport = async (id: string, reportData: ServiceReportF
   return completeReport;
 };
 
-export const deleteServiceReport = async (id: string): Promise<void> => {
+export const deleteServiceReport = async (id: string, userId: string): Promise<void> => {
   const { error } = await supabase
     .from("service_reports")
     .delete()
-    .eq("id", id);
+    .eq("id", id)
+    .eq("user_id", userId);
 
   if (error) throw new Error(error.message);
 };
