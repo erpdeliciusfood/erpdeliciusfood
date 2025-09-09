@@ -38,3 +38,29 @@ export interface PlatoInsumo {
   created_at: string;
   insumos?: Insumo; // Optional, for when fetching with relations
 }
+
+export interface Order {
+  id: string;
+  user_id: string;
+  customer_name: string | null;
+  status: 'pending' | 'completed' | 'cancelled';
+  total_amount: number;
+  created_at: string;
+  order_items?: OrderItem[]; // Optional, for when fetching with relations
+}
+
+export interface OrderFormValues {
+  customer_name: string | null;
+  status: 'pending' | 'completed' | 'cancelled';
+  items: { plato_id: string; quantity: number; price_at_order: number }[];
+}
+
+export interface OrderItem {
+  id: string;
+  order_id: string;
+  plato_id: string;
+  quantity: number;
+  price_at_order: number;
+  created_at: string;
+  platos?: Plato; // Optional, for when fetching with relations
+}
