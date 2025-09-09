@@ -1,8 +1,9 @@
 import { useState } from "react";
-import { Loader2, BarChart3, CalendarDays, ChevronDown, UtensilsCrossed } from "lucide-react"; // Added UtensilsCrossed
+import { Loader2, BarChart3, CalendarDays, ChevronDown, DollarSign } from "lucide-react"; // Removed UtensilsCrossed
 import { useInsumos } from "@/hooks/useInsumos";
 import StockOverview from "@/components/reports/StockOverview";
 import ConsumptionReport from "@/components/reports/ConsumptionReport";
+import SalesProfitabilityReport from "@/components/reports/SalesProfitabilityReport";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -143,11 +144,14 @@ const Reports = () => {
       <div className="grid grid-cols-1 gap-8 mb-8">
         {insumos && <StockOverview insumos={insumos} lowStockThreshold={10} />}
         {dateRange.from && dateRange.to ? (
-          <ConsumptionReport startDate={dateRange.from} endDate={dateRange.to} />
+          <>
+            <ConsumptionReport startDate={dateRange.from} endDate={dateRange.to} />
+            <SalesProfitabilityReport startDate={dateRange.from} endDate={dateRange.to} />
+          </>
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">
-            <UtensilsCrossed className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
-            <p className="text-xl">Selecciona un rango de fechas para ver el reporte de consumo.</p>
+            <DollarSign className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
+            <p className="text-xl">Selecciona un rango de fechas para ver los reportes financieros.</p>
           </div>
         )}
       </div>

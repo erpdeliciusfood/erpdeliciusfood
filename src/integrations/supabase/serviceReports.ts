@@ -4,7 +4,7 @@ import { ServiceReport, ServiceReportFormValues } from "@/types";
 export const getServiceReports = async (): Promise<ServiceReport[]> => {
   const { data, error } = await supabase
     .from("service_reports")
-    .select("*, meal_services(name), platos_vendidos_data:service_report_platos(*, platos(nombre))") // Fetch meal_service name and sold platos data
+    .select("*, meal_services(name), platos_vendidos_data:service_report_platos(*, platos(nombre, precio_venta, costo_produccion))") // Fetch meal_service name and sold platos data including precio_venta and costo_produccion
     .order("report_date", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -45,7 +45,7 @@ export const createServiceReport = async (reportData: ServiceReportFormValues): 
   // Fetch the complete service report with its relations for the return value
   const { data: completeReport, error: fetchError } = await supabase
     .from("service_reports")
-    .select("*, meal_services(name), platos_vendidos_data:service_report_platos(*, platos(nombre))")
+    .select("*, meal_services(name), platos_vendidos_data:service_report_platos(*, platos(nombre, precio_venta, costo_produccion))") // Deep fetch for plato details
     .eq("id", newReport.id)
     .single();
 
@@ -96,7 +96,7 @@ export const updateServiceReport = async (id: string, reportData: ServiceReportF
   // Fetch the complete service report with its relations for the return value
   const { data: completeReport, error: fetchError } = await supabase
     .from("service_reports")
-    .select("*, meal_services(name), platos_vendidos_data:service_report_platos(*, platos(nombre))")
+    .select("*, meal_services(name), platos_vendidos_data:service_report_platos(*, platos(nombre, precio_venta, costo_produccion))") // Deep fetch for plato details
     .eq("id", updatedReport.id)
     .single();
 
