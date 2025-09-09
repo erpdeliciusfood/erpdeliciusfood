@@ -24,15 +24,16 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { EventType, MenuFormValues } from "@/types";
+import { EventType, MenuFormValues, Menu } from "@/types"; // Import Menu type
 import { useEventTypes } from "@/hooks/useEventTypes";
 
 interface MenuDetailsFormSectionProps {
   isLoading: boolean;
   preselectedDate?: Date;
+  initialData?: Menu | null; // NEW PROP
 }
 
-const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoading, preselectedDate }) => {
+const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoading, preselectedDate, initialData }) => {
   const form = useFormContext<MenuFormValues & { menu_type: "daily" | "event" }>();
   const { data: availableEventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
 
@@ -45,15 +46,15 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
       const formattedDate = format(new Date(menuDate), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: es });
       form.setValue("title", formattedDate, { shouldValidate: true });
     } else if (menuType === "event") {
-      // If switching from daily to event, clear the title if it was auto-generated
-      if (form.getValues("title") && menuDate) { // Check if title exists and was likely auto-generated
-        const formattedDate = format(new Date(menuDate), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: es });
-        if (form.getValues("title") === formattedDate) {
-          form.setValue("title", "", { shouldValidate: true });
-        }
+      // If switching from daily to event, and the initialData was a daily menu, clear the title.
+      // For new event menus, title should be empty by default.
+      if (initialData && initialData.menu_date && !initialData.event_type_id) {
+        form.setValue("title", "", { shouldValidate: true });
+      } else if (!initialData && menuDate) { // If it's a new menu and was previously daily, clear title
+        form.setValue("title", "", { shouldValidate: true });
       }
     }
-  }, [menuType, menuDate, form]);
+  }, [menuType, menuDate, form, initialData]); // Added initialData to dependencies
 
   return (
     <>

@@ -15,6 +15,7 @@ import { useMealTypes } from "@/hooks/useMealTypes";
 import { Loader2 } from "lucide-react";
 import MenuDetailsFormSection from "./MenuDetailsFormSection"; // NEW IMPORT
 import PlatosPorServicioFormSection from "./PlatosPorServicioFormSection"; // NEW IMPORT
+import { formatISO } from "date-fns"; // Import formatISO
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -81,8 +82,8 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
   const updateMutation = useUpdateMenu();
 
   const { data: availablePlatos, isLoading: isLoadingPlatos } = usePlatos();
-  const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
-  const { data: availableEventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
+  const { isLoading: isLoadingMealServices } = useMealServices(); // Removed data: availableMealServices as it's not used directly here
+  const { isLoading: isLoadingEventTypes } = useEventTypes(); // Removed data: availableEventTypes as it's not used directly here
   const { data: availableMealTypes, isLoading: isLoadingMealTypes } = useMealTypes();
 
   const form = useForm<MenuFormValues & { menu_type: "daily" | "event" }>({
@@ -150,13 +151,16 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
           <MenuDetailsFormSection
             isLoading={isLoading}
             preselectedDate={preselectedDate}
+            initialData={initialData} // Pass initialData
           />
 
           <PlatosPorServicioFormSection
             isLoading={isLoading}
             availablePlatos={availablePlatos}
             isLoadingPlatos={isLoadingPlatos}
-            availableMealServices={availableMealServices}
+            // availableMealServices is fetched in MenuForm, but passed to PlatosPorServicioFormSection
+            // availableEventTypes is fetched in MenuForm, but passed to MenuDetailsFormSection
+            availableMealServices={useMealServices().data} // Fetch directly here for passing
             isLoadingMealServices={isLoadingMealServices}
             availableMealTypes={availableMealTypes}
             isLoadingMealTypes={isLoadingMealTypes}
