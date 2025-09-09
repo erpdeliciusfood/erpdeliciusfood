@@ -10,7 +10,8 @@ import { usePlatos } from "@/hooks/usePlatos";
 import { useMenus } from "@/hooks/useMenus";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import { useServiceReports } from "@/hooks/useServiceReports";
-import { useStockMovements } from "@/hooks/useStockMovements"; // New import
+import { useStockMovements } from "@/hooks/useStockMovements";
+import LowStockAlerts from "@/components/insumos/LowStockAlerts"; // New import
 
 const Index = () => {
   const { user, session } = useSession();
@@ -20,7 +21,7 @@ const Index = () => {
   const { data: menus, isLoading: isLoadingMenus } = useMenus();
   const { data: eventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
   const { data: serviceReports, isLoading: isLoadingServiceReports } = useServiceReports();
-  const { data: stockMovements, isLoading: isLoadingStockMovements } = useStockMovements(); // New hook
+  const { data: stockMovements, isLoading: isLoadingStockMovements } = useStockMovements();
 
   const userName = profile?.first_name || user?.email || "Usuario";
   const userRole = session?.user?.user_metadata?.role;
@@ -30,7 +31,7 @@ const Index = () => {
   const totalMenus = menus?.length || 0;
   const totalEventTypes = eventTypes?.length || 0;
   const totalServiceReports = serviceReports?.length || 0;
-  const totalStockMovements = stockMovements?.length || 0; // New total
+  const totalStockMovements = stockMovements?.length || 0;
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
@@ -42,6 +43,10 @@ const Index = () => {
         <p className="text-xl text-gray-700 dark:text-gray-300 mb-8">
           Gestiona tus operaciones de restaurante de forma eficiente.
         </p>
+
+        <div className="grid grid-cols-1 gap-6 mb-8">
+          <LowStockAlerts /> {/* New Low Stock Alerts component */}
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mb-8">
           {/* Card for Total Insumos */}
@@ -256,7 +261,7 @@ const Index = () => {
             </Card>
           </Link>
 
-          <Link to="/stock-movements"> {/* New card */}
+          <Link to="/stock-movements">
             <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-2xl font-bold">Movimientos de Stock</CardTitle>
