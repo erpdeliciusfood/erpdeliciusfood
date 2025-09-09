@@ -12,9 +12,7 @@ export const getServiceReports = async (): Promise<ServiceReport[]> => {
         platos(
           id,
           nombre,
-          precio_venta,
-          costo_produccion,
-          markup_percentage
+          costo_produccion
         )
       )
     `)
@@ -66,9 +64,7 @@ export const createServiceReport = async (reportData: ServiceReportFormValues): 
         platos(
           id,
           nombre,
-          precio_venta,
-          costo_produccion,
-          markup_percentage
+          costo_produccion
         )
       )
     `)
@@ -130,9 +126,7 @@ export const updateServiceReport = async (id: string, reportData: ServiceReportF
         platos(
           id,
           nombre,
-          precio_venta,
-          costo_produccion,
-          markup_percentage
+          costo_produccion
         )
       )
     `)
