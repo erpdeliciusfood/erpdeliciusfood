@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Order, OrderFormValues } from "@/types"; // Removed OrderItem
+import { Order, OrderFormValues } from "@/types";
 
-export const getOrders = async (): Promise<Order[]> => {
+export const getCustomerOrders = async (): Promise<Order[]> => {
   const { data, error } = await supabase
     .from("orders")
     .select("*, order_items(*, platos(*))") // Fetch order_items and nested platos
@@ -11,7 +11,7 @@ export const getOrders = async (): Promise<Order[]> => {
   return data;
 };
 
-export const getOrderById = async (id: string): Promise<Order | null> => {
+export const getCustomerOrderById = async (id: string): Promise<Order | null> => {
   const { data, error } = await supabase
     .from("orders")
     .select("*, order_items(*, platos(*))")
@@ -25,7 +25,7 @@ export const getOrderById = async (id: string): Promise<Order | null> => {
   return data;
 };
 
-export const createOrder = async (orderData: OrderFormValues): Promise<Order> => {
+export const createCustomerOrder = async (orderData: OrderFormValues): Promise<Order> => {
   const { customer_name, status, items } = orderData;
 
   // Calculate total amount
@@ -71,7 +71,7 @@ export const createOrder = async (orderData: OrderFormValues): Promise<Order> =>
   return completeOrder;
 };
 
-export const updateOrder = async (id: string, orderData: OrderFormValues): Promise<Order> => {
+export const updateCustomerOrder = async (id: string, orderData: OrderFormValues): Promise<Order> => {
   const { customer_name, status, items } = orderData;
 
   // Calculate total amount
@@ -126,7 +126,7 @@ export const updateOrder = async (id: string, orderData: OrderFormValues): Promi
   return completeOrder;
 };
 
-export const deleteOrder = async (id: string): Promise<void> => {
+export const deleteCustomerOrder = async (id: string): Promise<void> => {
   const { error } = await supabase.from("orders").delete().eq("id", id);
   if (error) throw new Error(error.message);
 };

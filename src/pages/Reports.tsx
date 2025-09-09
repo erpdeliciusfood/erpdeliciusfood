@@ -1,12 +1,12 @@
 import { Loader2, BarChart3 } from "lucide-react";
-import { useOrders } from "@/hooks/useOrders";
+import { useCustomerOrders } from "@/hooks/useOrders"; // Updated hook
 import { useInsumos } from "@/hooks/useInsumos";
 import SalesChart from "@/components/reports/SalesChart";
 import StockOverview from "@/components/reports/StockOverview";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 
 const Reports = () => {
-  const { data: orders, isLoading: isLoadingOrders, isError: isErrorOrders, error: errorOrders } = useOrders();
+  const { data: orders, isLoading: isLoadingOrders, isError: isErrorOrders, error: errorOrders } = useCustomerOrders(); // Updated hook
   const { data: insumos, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos();
 
   if (isLoadingOrders || isLoadingInsumos) {

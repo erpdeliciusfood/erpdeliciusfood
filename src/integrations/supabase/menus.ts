@@ -1,10 +1,10 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Menu, MenuFormValues } from "@/types"; // Removed MenuPlato
+import { Menu, MenuFormValues } from "@/types";
 
 export const getMenus = async (): Promise<Menu[]> => {
   const { data, error } = await supabase
     .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*), meal_services(*))")
+    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))") // Deep fetch for insumos
     .order("menu_date", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -15,7 +15,7 @@ export const getMenus = async (): Promise<Menu[]> => {
 export const getMenuById = async (id: string): Promise<Menu | null> => {
   const { data, error } = await supabase
     .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*), meal_services(*))")
+    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))") // Deep fetch for insumos
     .eq("id", id)
     .single();
 
@@ -60,7 +60,7 @@ export const createMenu = async (menuData: MenuFormValues): Promise<Menu> => {
   // Fetch the complete menu with its relations for the return value
   const { data: completeMenu, error: fetchError } = await supabase
     .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*), meal_services(*))")
+    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))") // Deep fetch for insumos
     .eq("id", newMenu.id)
     .single();
 
@@ -112,7 +112,7 @@ export const updateMenu = async (id: string, menuData: MenuFormValues): Promise<
   // Fetch the complete menu with its relations for the return value
   const { data: completeMenu, error: fetchError } = await supabase
     .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*), meal_services(*))")
+    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))") // Deep fetch for insumos
     .eq("id", updatedMenu.id)
     .single();
 

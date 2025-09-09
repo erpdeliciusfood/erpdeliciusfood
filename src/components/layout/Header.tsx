@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, Utensils, UserCircle2, Home, ChefHat, Package } from "lucide-react"; // Add Package icon for orders
+import { LogOut, Utensils, UserCircle2, Home, ChefHat, Package, CalendarDays, BookText, History, BarChart3, Users, ShoppingBag } from "lucide-react"; // Added ShoppingBag icon
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
@@ -9,6 +9,7 @@ import { ModeToggle } from "./ModeToggle";
 
 const Header: React.FC = () => {
   const { session } = useSession();
+  const userRole = session?.user?.user_metadata?.role;
 
   const handleSignOut = async () => {
     try {
@@ -20,7 +21,7 @@ const Header: React.FC = () => {
   };
 
   if (!session) {
-    return null; // No mostrar el header si no hay sesión (estamos en la página de login)
+    return null;
   }
 
   return (
@@ -43,12 +44,50 @@ const Header: React.FC = () => {
               Platos
             </Button>
           </Link>
-          <Link to="/orders"> {/* New link for Orders */}
+          <Link to="/customer-orders">
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <Package className="mr-2 h-5 w-5" />
-              Pedidos
+              Pedidos Clientes
             </Button>
           </Link>
+          <Link to="/event-types">
+            <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
+              <CalendarDays className="mr-2 h-5 w-5" />
+              Tipos Evento
+            </Button>
+          </Link>
+          <Link to="/menus">
+            <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
+              <BookText className="mr-2 h-5 w-5" />
+              Menús
+            </Button>
+          </Link>
+          <Link to="/purchase-planning"> {/* New link */}
+            <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
+              <ShoppingBag className="mr-2 h-5 w-5" />
+              Compras
+            </Button>
+          </Link>
+          <Link to="/consumption-records">
+            <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
+              <History className="mr-2 h-5 w-5" />
+              Consumo
+            </Button>
+          </Link>
+          <Link to="/reports">
+            <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
+              <BarChart3 className="mr-2 h-5 w-5" />
+              Reportes
+            </Button>
+          </Link>
+          {userRole === 'admin' && (
+            <Link to="/user-management">
+              <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
+                <Users className="mr-2 h-5 w-5" />
+                Usuarios
+              </Button>
+            </Link>
+          )}
           <Link to="/profile">
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <UserCircle2 className="mr-2 h-5 w-5" />

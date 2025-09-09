@@ -1,86 +1,86 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getOrders, getOrderById, createOrder, updateOrder, deleteOrder } from "@/integrations/supabase/orders";
+import { getCustomerOrders, getCustomerOrderById, createCustomerOrder, updateCustomerOrder, deleteCustomerOrder } from "@/integrations/supabase/orders";
 import { Order, OrderFormValues } from "@/types";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
-export const useOrders = () => {
+export const useCustomerOrders = () => {
   return useQuery<Order[], Error>({
-    queryKey: ["orders"],
-    queryFn: getOrders,
+    queryKey: ["customerOrders"],
+    queryFn: getCustomerOrders,
   });
 };
 
-export const useOrder = (id: string) => {
+export const useCustomerOrder = (id: string) => {
   return useQuery<Order | null, Error>({
-    queryKey: ["orders", id],
-    queryFn: () => getOrderById(id),
+    queryKey: ["customerOrders", id],
+    queryFn: () => getCustomerOrderById(id),
     enabled: !!id, // Only run the query if id is available
   });
 };
 
-export const useAddOrder = () => {
+export const useAddCustomerOrder = () => {
   const queryClient = useQueryClient();
   return useMutation<Order, Error, OrderFormValues, { toastId: string }>({
-    mutationFn: createOrder,
+    mutationFn: createCustomerOrder,
     onMutate: () => {
-      const toastId: string = showLoading("Creando pedido...");
+      const toastId: string = showLoading("Creando pedido de cliente...");
       return { toastId };
     },
     onSuccess: (_, __, context) => {
       dismissToast(context.toastId);
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      showSuccess("Pedido creado exitosamente.");
+      queryClient.invalidateQueries({ queryKey: ["customerOrders"] });
+      showSuccess("Pedido de cliente creado exitosamente.");
     },
     onError: (error, __, context) => {
       if (context?.toastId) { // Added optional chaining
         dismissToast(context.toastId);
       }
-      showError(`Error al crear pedido: ${error.message}`);
+      showError(`Error al crear pedido de cliente: ${error.message}`);
     },
   });
 };
 
-export const useUpdateOrder = () => {
+export const useUpdateCustomerOrder = () => {
   const queryClient = useQueryClient();
   return useMutation<Order, Error, { id: string; order: OrderFormValues }, { toastId: string }>({
-    mutationFn: ({ id, order }) => updateOrder(id, order),
+    mutationFn: ({ id, order }) => updateCustomerOrder(id, order),
     onMutate: () => {
-      const toastId: string = showLoading("Actualizando pedido...");
+      const toastId: string = showLoading("Actualizando pedido de cliente...");
       return { toastId };
     },
     onSuccess: (_, { id }, context) => {
       dismissToast(context.toastId);
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      queryClient.invalidateQueries({ queryKey: ["orders", id] }); // Invalidate specific order query
-      showSuccess("Pedido actualizado exitosamente.");
+      queryClient.invalidateQueries({ queryKey: ["customerOrders"] });
+      queryClient.invalidateQueries({ queryKey: ["customerOrders", id] }); // Invalidate specific order query
+      showSuccess("Pedido de cliente actualizado exitosamente.");
     },
     onError: (error, __, context) => {
       if (context?.toastId) { // Added optional chaining
         dismissToast(context.toastId);
       }
-      showError(`Error al actualizar pedido: ${error.message}`);
+      showError(`Error al actualizar pedido de cliente: ${error.message}`);
     },
   });
 };
 
-export const useDeleteOrder = () => {
+export const useDeleteCustomerOrder = () => {
   const queryClient = useQueryClient();
   return useMutation<void, Error, string, { toastId: string }>({
-    mutationFn: deleteOrder,
+    mutationFn: deleteCustomerOrder,
     onMutate: () => {
-      const toastId: string = showLoading("Eliminando pedido...");
+      const toastId: string = showLoading("Eliminando pedido de cliente...");
       return { toastId };
     },
     onSuccess: (_, __, context) => {
       dismissToast(context.toastId);
-      queryClient.invalidateQueries({ queryKey: ["orders"] });
-      showSuccess("Pedido eliminado exitosamente.");
+      queryClient.invalidateQueries({ queryKey: ["customerOrders"] });
+      showSuccess("Pedido de cliente eliminado exitosamente.");
     },
     onError: (error, __, context) => {
       if (context?.toastId) { // Added optional chaining
         dismissToast(context.toastId);
       }
-      showError(`Error al eliminar pedido: ${error.message}`);
+      showError(`Error al eliminar pedido de cliente: ${error.message}`);
     },
   });
 };

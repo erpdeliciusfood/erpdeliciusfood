@@ -8,19 +8,19 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, Package } from "lucide-react"; // Removed UtensilsCrossed
+import { Edit, Trash2, Package } from "lucide-react";
 import { Order } from "@/types";
-import { useDeleteOrder } from "@/hooks/useOrders";
+import { useDeleteCustomerOrder } from "@/hooks/useOrders"; // Updated hook
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
 
-interface OrderListProps {
+interface CustomerOrderListProps { // Renamed interface
   orders: Order[];
   onEdit: (order: Order) => void;
 }
 
-const OrderList: React.FC<OrderListProps> = ({ orders, onEdit }) => {
-  const deleteMutation = useDeleteOrder();
+const CustomerOrderList: React.FC<CustomerOrderListProps> = ({ orders, onEdit }) => { // Renamed component
+  const deleteMutation = useDeleteCustomerOrder(); // Updated hook
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
@@ -43,7 +43,7 @@ const OrderList: React.FC<OrderListProps> = ({ orders, onEdit }) => {
     return (
       <div className="text-center py-10 text-gray-600 dark:text-gray-400">
         <Package className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
-        <p className="text-xl">No hay pedidos registrados.</p>
+        <p className="text-xl">No hay pedidos de clientes registrados.</p>
       </div>
     );
   }
@@ -117,4 +117,4 @@ const OrderList: React.FC<OrderListProps> = ({ orders, onEdit }) => {
   );
 };
 
-export default OrderList;
+export default CustomerOrderList;

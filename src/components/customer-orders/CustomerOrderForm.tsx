@@ -21,7 +21,7 @@ import {
 } from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Order, OrderFormValues, Plato } from "@/types";
-import { useAddOrder, useUpdateOrder } from "@/hooks/useOrders";
+import { useAddCustomerOrder, useUpdateCustomerOrder } from "@/hooks/useOrders"; // Updated hook imports
 import { usePlatos } from "@/hooks/usePlatos";
 import { Loader2, PlusCircle, Trash2 } from "lucide-react";
 
@@ -49,15 +49,15 @@ const formSchema = z.object({
   ).min(1, { message: "Debe añadir al menos un plato al pedido." }),
 });
 
-interface OrderFormProps {
+interface CustomerOrderFormProps { // Renamed interface
   initialData?: Order | null;
   onSuccess: () => void;
   onCancel: () => void;
 }
 
-const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSuccess, onCancel }) => {
-  const addMutation = useAddOrder();
-  const updateMutation = useUpdateOrder();
+const CustomerOrderForm: React.FC<CustomerOrderFormProps> = ({ initialData, onSuccess, onCancel }) => { // Renamed component
+  const addMutation = useAddCustomerOrder(); // Updated hook
+  const updateMutation = useUpdateCustomerOrder(); // Updated hook
   const { data: availablePlatos, isLoading: isLoadingPlatos } = usePlatos();
 
   const form = useForm<OrderFormValues>({
@@ -284,4 +284,4 @@ const OrderForm: React.FC<OrderFormProps> = ({ initialData, onSuccess, onCancel 
   );
 };
 
-export default OrderForm;
+export default CustomerOrderForm;
