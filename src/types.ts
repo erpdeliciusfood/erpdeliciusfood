@@ -10,6 +10,7 @@ export interface Insumo {
   last_price_update: string | null;
   purchase_unit: string;
   conversion_factor: number;
+  min_stock_level: number; // Added
   created_at: string;
 }
 
@@ -22,6 +23,7 @@ export interface InsumoFormValues {
   supplier_phone: string | null;
   purchase_unit: string;
   conversion_factor: number;
+  min_stock_level: number; // Added
 }
 
 export interface Plato {
@@ -144,4 +146,25 @@ export interface Profile {
   avatar_url: string | null;
   updated_at: string | null;
   role: 'user' | 'admin'; // Added role property
+}
+
+// New interfaces for Stock Movements
+export interface StockMovement {
+  id: string;
+  user_id: string;
+  insumo_id: string;
+  movement_type: 'purchase_in' | 'consumption_out' | 'adjustment_in' | 'adjustment_out';
+  quantity_change: number;
+  new_stock_quantity: number;
+  source_document_id: string | null;
+  notes: string | null;
+  created_at: string;
+  insumos?: Insumo; // Optional, for when fetching with relations
+}
+
+export interface StockMovementFormValues {
+  insumo_id: string;
+  movement_type: 'purchase_in' | 'adjustment_in' | 'adjustment_out'; // Consumption_out is handled by Edge Function
+  quantity_change: number;
+  notes: string | null;
 }
