@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -21,7 +21,8 @@ import {
 } from "@/components/ui/select";
 import { Insumo, InsumoFormValues } from "@/types";
 import { useAddInsumo, useUpdateInsumo } from "@/hooks/useInsumos";
-import { Loader2 } from "lucide-react";
+import { Loader2, Info } from "lucide-react"; // Import Info icon
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip"; // Import Tooltip components
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -90,6 +91,7 @@ const predefinedConversions: { [purchaseUnit: string]: { [baseUnit: string]: num
 const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCancel }) => {
   const addMutation = useAddInsumo();
   const updateMutation = useUpdateInsumo();
+  const [isConversionFactorEditable, setIsConversionFactorEditable] = useState(true); // New state for editability
 
   const form = useForm<InsumoFormValues>({
     resolver: zodResolver(formSchema),
@@ -122,6 +124,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         supplier_name: initialData.supplier_name || "",
         supplier_phone: initialData.supplier_phone || "",
       });
+      setIsConversionFactorEditable(true); // Always editable when editing an existing item
     } else {
       form.reset({
         nombre: "",
@@ -134,27 +137,31 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         supplier_name: "",
         supplier_phone: "",
       });
+      setIsConversionFactorEditable(true); // Editable by default for new items
     }
   }, [initialData, form]);
 
   // Effect to suggest conversion factor based on selected units
   useEffect(() => {
-    if (purchaseUnit && baseUnit) {
+    if (!initialData && purchaseUnit && baseUnit) { // Only suggest for new items
       const suggestedFactor = predefinedConversions[purchaseUnit]?.[baseUnit];
       if (suggestedFactor !== undefined) {
-        // If a predefined conversion exists, suggest it
         form.setValue("conversion_factor", suggestedFactor, { shouldValidate: true });
+        setIsConversionFactorEditable(false); // Disable if a suggestion is found
       } else if (purchaseUnit === baseUnit) {
-        // If units are the same, default to 1.0
         form.setValue("conversion_factor", 1.0, { shouldValidate: true });
+        setIsConversionFactorEditable(false); // Disable if units are the same
       } else {
         // For non-standard or unknown conversions, keep current value or default to 1.0 if it's 0
         if (form.getValues("conversion_factor") === 0) {
           form.setValue("conversion_factor", 1.0, { shouldValidate: true });
         }
+        setIsConversionFactorEditable(true); // Enable if no suggestion or different units
       }
+    } else if (initialData) {
+      setIsConversionFactorEditable(true); // Always editable when editing existing data
     }
-  }, [purchaseUnit, baseUnit, form]);
+  }, [purchaseUnit, baseUnit, form, initialData]);
 
 
   const onSubmit = async (values: InsumoFormValues) => {
@@ -242,7 +249,35 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
           name="conversion_factor"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Factor de Conversión (Unidad de Compra a Unidad Base)</FormLabel>
+              <div className="flex items-center space-x-2">
+                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                  Factor de Conversión (Unidad de Compra a Unidad Base)
+                </FormLabel>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Info className="h-4 w-4 text-gray-500 dark:text-gray-400 cursor-help" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs text-sm p-2 bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 border border-gray-200 dark:border-gray-600 rounded-md shadow-md">
+                      <p>Define cuántas unidades base hay en una unidad de compra.</p>
+                      <p className="mt-1">Ejemplo: Si compras "1 kg" de papas y tu unidad base es "g", el factor de conversión sería "1000" (1 kg = 1000 g).</p>
+                      <p className="mt-1">Si las unidades son iguales (ej. "unidad" a "unidad"), el factor es "1".</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+                {!isConversionFactorEditable && (
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setIsConversionFactorEditable(true)}
+                    className="ml-auto h-8 text-sm"
+                    disabled={isLoading}
+                  >
+                    Editar
+                  </Button>
+                )}
+              </div>
               <FormControl>
                 <Input
                   type="number"
@@ -251,7 +286,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
                   {...field}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
                   className="h-12 text-base"
-                  disabled={isLoading}
+                  disabled={isLoading || !isConversionFactorEditable} // Disable based on state
                 />
               </FormControl>
               <FormMessage />
