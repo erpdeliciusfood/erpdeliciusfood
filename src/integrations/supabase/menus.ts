@@ -38,10 +38,14 @@ export const getMenuById = async (id: string): Promise<Menu | null> => {
 export const createMenu = async (menuData: MenuFormValues): Promise<Menu> => {
   const { title, menu_date, event_type_id, description, platos_por_servicio } = menuData;
 
+  // Get authenticated user ID
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) throw new Error("User not authenticated.");
+
   // Insert the main menu
   const { data: newMenu, error: menuError } = await supabase
     .from("menus")
-    .insert({ title, menu_date, event_type_id, description })
+    .insert({ title, menu_date, event_type_id, description, user_id: user.id }) // Added user.id here
     .select()
     .single();
 

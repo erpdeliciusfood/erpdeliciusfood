@@ -13,7 +13,7 @@ import { Menu } from "@/types";
 import { useDeleteMenu } from "@/hooks/useMenus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 // import { format } from "date-fns"; // Removed unused import
-import { es } from "date-fns/locale"; // 'es' is not directly used in this component, but 'format' (if used) would need it. Since format is removed, 'es' can also be removed.
+// import { es } from "date-fns/locale"; // 'es' is not directly used in this component, but 'format' (if used) would need it. Since format is removed, 'es' can also be removed.
 
 interface DailyMenuListProps {
   menus: Menu[];
