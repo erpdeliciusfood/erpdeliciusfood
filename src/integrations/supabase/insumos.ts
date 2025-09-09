@@ -8,7 +8,10 @@ export const getInsumos = async (): Promise<Insumo[]> => {
 };
 
 export const createInsumo = async (insumo: InsumoFormValues): Promise<Insumo> => {
-  const { data, error } = await supabase.from("insumos").insert(insumo).select().single();
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) throw new Error("User not authenticated.");
+
+  const { data, error } = await supabase.from("insumos").insert({ ...insumo, user_id: user.id }).select().single();
   if (error) throw new Error(error.message);
   return data;
 };
