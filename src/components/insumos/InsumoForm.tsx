@@ -37,11 +37,17 @@ const formSchema = z.object({
   }).max(99999.99, {
     message: "El costo unitario no debe exceder 99999.99.",
   }),
-  stock_quantity: z.coerce.number().min(0, { // New field validation
+  stock_quantity: z.coerce.number().min(0, {
     message: "La cantidad de stock no puede ser negativa.",
   }).max(999999, {
     message: "La cantidad de stock no debe exceder 999999.",
   }),
+  supplier_name: z.string().max(100, {
+    message: "El nombre del proveedor no debe exceder los 100 caracteres.",
+  }).nullable(),
+  supplier_phone: z.string().max(20, {
+    message: "El teléfono del proveedor no debe exceder los 20 caracteres.",
+  }).nullable(),
 });
 
 interface InsumoFormProps {
@@ -64,7 +70,9 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
       nombre: "",
       unidad_medida: "",
       costo_unitario: 0,
-      stock_quantity: 0, // Default value for new field
+      stock_quantity: 0,
+      supplier_name: null,
+      supplier_phone: null,
     },
   });
 
@@ -74,7 +82,9 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         nombre: initialData.nombre,
         unidad_medida: initialData.unidad_medida,
         costo_unitario: initialData.costo_unitario,
-        stock_quantity: initialData.stock_quantity, // Set initial value for new field
+        stock_quantity: initialData.stock_quantity,
+        supplier_name: initialData.supplier_name || null,
+        supplier_phone: initialData.supplier_phone || null,
       });
     } else {
       form.reset({
@@ -82,6 +92,8 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         unidad_medida: "",
         costo_unitario: 0,
         stock_quantity: 0,
+        supplier_name: null,
+        supplier_phone: null,
       });
     }
   }, [initialData, form]);
@@ -176,6 +188,44 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
                   placeholder="Ej. 100"
                   {...field}
                   onChange={(e) => field.onChange(parseInt(e.target.value))}
+                  className="h-12 text-base"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="supplier_name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre del Proveedor (Opcional)</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Ej. Distribuidora La Huerta"
+                  {...field}
+                  value={field.value || ""}
+                  className="h-12 text-base"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="supplier_phone"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Teléfono del Proveedor (Opcional)</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Ej. +51 987 654 321"
+                  {...field}
+                  value={field.value || ""}
                   className="h-12 text-base"
                   disabled={isLoading}
                 />
