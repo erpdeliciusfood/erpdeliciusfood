@@ -47,9 +47,7 @@ const ProfileForm: React.FC = () => {
   }, [profile, form]);
 
   const onSubmit = async (values: ProfileFormValues) => {
-    // For the current user's profile, we don't pass userId explicitly,
-    // as the useUpdateProfile hook will default to the session user's ID.
-    await updateProfileMutation.mutateAsync({ profileData: values });
+    await updateProfileMutation.mutateAsync(values);
   };
 
   const isLoading = isProfileLoading || updateProfileMutation.isPending;

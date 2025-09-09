@@ -12,10 +12,10 @@ serve(async (req) => {
   }
 
   try {
-    const { service_report_id, user_id } = await req.json(); // Changed from order_id to service_report_id
+    const { order_id, user_id } = await req.json();
 
-    if (!service_report_id || !user_id) {
-      return new Response(JSON.stringify({ error: 'Missing service_report_id or user_id' }), {
+    if (!order_id || !user_id) {
+      return new Response(JSON.stringify({ error: 'Missing order_id or user_id' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 400,
       });
@@ -27,13 +27,11 @@ serve(async (req) => {
       Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
     );
 
-    // First, we need to revert any previous stock deductions for this report
-    // This is crucial for updates to prevent double deduction or incorrect stock.
-    // We'll fetch the previous state of insumos related to this report and add back their quantities.
-    const { data: previousPlatosVendidos, error: prevPlatosError } = await supabaseAdmin
-      .from('service_report_platos')
+    // Fetch order items with nested plato_insumos and insumos
+    const { data: orderItems, error: orderItemsError } = await supabaseAdmin
+      .from('order_items')
       .select(`
-        quantity_sold,
+        quantity,
         platos (
           plato_insumos (
             cantidad_necesaria,
@@ -44,80 +42,31 @@ serve(async (req) => {
           )
         )
       `)
-      .eq('service_report_id', service_report_id);
+      .eq('order_id', order_id);
 
-    if (prevPlatosError) {
-      console.error('Error fetching previous sold platos for stock reversal:', prevPlatosError);
-      // Continue, but log the error. We don't want to block the new deduction if reversal fails.
-    } else if (previousPlatosVendidos && previousPlatosVendidos.length > 0) {
-      const reversalUpdates = [];
-      for (const pv of previousPlatosVendidos) {
-        const platoInsumos = pv.platos?.plato_insumos;
-        if (platoInsumos) {
-          for (const pi of platoInsumos) {
-            const insumo = pi.insumos;
-            if (insumo) {
-              const previouslyDeductedQuantity = pi.cantidad_necesaria * pv.quantity_sold;
-              reversalUpdates.push({
-                id: insumo.id,
-                stock_quantity: insumo.stock_quantity + previouslyDeductedQuantity, // Add back to stock
-              });
-            }
-          }
-        }
-      }
-      if (reversalUpdates.length > 0) {
-        const { error: reversalUpdateError } = await supabaseAdmin
-          .from('insumos')
-          .upsert(reversalUpdates, { onConflict: 'id' });
-        if (reversalUpdateError) {
-          console.error('Error reverting previous insumo stock:', reversalUpdateError);
-        } else {
-          console.log('Previous stock successfully reverted for service report:', service_report_id);
-        }
-      }
-    }
-
-    // Now, fetch the current sold platos for the new deduction
-    const { data: currentPlatosVendidos, error: currentPlatosError } = await supabaseAdmin
-      .from('service_report_platos')
-      .select(`
-        quantity_sold,
-        platos (
-          plato_insumos (
-            cantidad_necesaria,
-            insumos (
-              id,
-              stock_quantity
-            )
-          )
-        )
-      `)
-      .eq('service_report_id', service_report_id);
-
-    if (currentPlatosError) {
-      console.error('Error fetching current sold platos:', currentPlatosError);
-      return new Response(JSON.stringify({ error: currentPlatosError.message }), {
+    if (orderItemsError) {
+      console.error('Error fetching order items:', orderItemsError);
+      return new Response(JSON.stringify({ error: orderItemsError.message }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
       });
     }
 
-    if (!currentPlatosVendidos || currentPlatosVendidos.length === 0) {
-      return new Response(JSON.stringify({ message: 'No sold platos found for this service report.' }), {
+    if (!orderItems || orderItems.length === 0) {
+      return new Response(JSON.stringify({ message: 'No order items found for this order.' }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 200,
       });
     }
 
     const updates = [];
-    for (const pv of currentPlatosVendidos) {
-      const platoInsumos = pv.platos?.plato_insumos;
+    for (const item of orderItems) {
+      const platoInsumos = item.platos?.plato_insumos;
       if (platoInsumos) {
         for (const pi of platoInsumos) {
           const insumo = pi.insumos;
           if (insumo) {
-            const requiredQuantity = pi.cantidad_necesaria * pv.quantity_sold;
+            const requiredQuantity = pi.cantidad_necesaria * item.quantity;
             const newStock = insumo.stock_quantity - requiredQuantity;
             updates.push({
               id: insumo.id,

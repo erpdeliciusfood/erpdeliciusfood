@@ -16,10 +16,10 @@ export const getEventTypes = async (): Promise<EventType[]> => {
   return data;
 };
 
-export const createEventType = async (eventType: EventTypeFormValues, userId: string): Promise<EventType> => {
+export const createEventType = async (eventType: EventTypeFormValues): Promise<EventType> => {
   const { data, error } = await supabase
     .from("event_types")
-    .insert({ ...eventType, user_id: userId })
+    .insert(eventType)
     .select()
     .single();
 
@@ -27,12 +27,11 @@ export const createEventType = async (eventType: EventTypeFormValues, userId: st
   return data;
 };
 
-export const updateEventType = async (id: string, eventType: EventTypeFormValues, userId: string): Promise<EventType> => {
+export const updateEventType = async (id: string, eventType: EventTypeFormValues): Promise<EventType> => {
   const { data, error } = await supabase
     .from("event_types")
     .update(eventType)
     .eq("id", id)
-    .eq("user_id", userId)
     .select()
     .single();
 
@@ -40,12 +39,11 @@ export const updateEventType = async (id: string, eventType: EventTypeFormValues
   return data;
 };
 
-export const deleteEventType = async (id: string, userId: string): Promise<void> => {
+export const deleteEventType = async (id: string): Promise<void> => {
   const { error } = await supabase
     .from("event_types")
     .delete()
-    .eq("id", id)
-    .eq("user_id", userId);
+    .eq("id", id);
 
   if (error) throw new Error(error.message);
 };

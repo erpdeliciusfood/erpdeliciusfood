@@ -12,7 +12,6 @@ import { Edit, Trash2, UtensilsCrossed } from "lucide-react";
 import { Plato } from "@/types";
 import { useDeletePlato } from "@/hooks/usePlatos";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { Badge } from "@/components/ui/badge"; // Import Badge for markup percentage
 
 interface PlatoListProps {
   platos: Plato[];
@@ -26,19 +25,18 @@ const PlatoList: React.FC<PlatoListProps> = ({ platos, onEdit }) => {
     deleteMutation.mutate(id);
   };
 
-  // This function is now redundant as costo_produccion is stored, but kept for reference if needed
-  // const calculateProductionCost = (plato: Plato): number => {
-  //   if (!plato.plato_insumos || plato.plato_insumos.length === 0) {
-  //     return 0;
-  //   }
-  //   return plato.plato_insumos.reduce((totalCost, platoInsumo) => {
-  //     const insumo = platoInsumo.insumos; // Access the nested insumo object
-  //     if (insumo) {
-  //       return totalCost + (insumo.costo_unitario * platoInsumo.cantidad_necesaria);
-  //     }
-  //     return totalCost;
-  //   }, 0);
-  // };
+  const calculateProductionCost = (plato: Plato): number => {
+    if (!plato.plato_insumos || plato.plato_insumos.length === 0) {
+      return 0;
+    }
+    return plato.plato_insumos.reduce((totalCost, platoInsumo) => {
+      const insumo = platoInsumo.insumos; // Access the nested insumo object
+      if (insumo) {
+        return totalCost + (insumo.costo_unitario * platoInsumo.cantidad_necesaria);
+      }
+      return totalCost;
+    }, 0);
+  };
 
   if (platos.length === 0) {
     return (
@@ -56,25 +54,19 @@ const PlatoList: React.FC<PlatoListProps> = ({ platos, onEdit }) => {
           <TableRow>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Nombre</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Descripción</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Producción (S/)</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Margen (%)</TableHead> {/* New column */}
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Producción (S/)</TableHead> {/* New column */}
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Precio de Venta (S/)</TableHead>
             <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {platos.map((plato) => {
-            // const productionCost = calculateProductionCost(plato); // Now using stored costo_produccion
-            const productionCost = plato.costo_produccion;
-            const markupPercentageDisplay = (plato.markup_percentage * 100).toFixed(0); // Convert decimal to percentage for display
+            const productionCost = calculateProductionCost(plato);
             return (
               <TableRow key={plato.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
                 <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{plato.nombre}</TableCell>
                 <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{plato.descripcion || "N/A"}</TableCell>
-                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {productionCost.toFixed(2)}</TableCell>
-                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
-                  <Badge variant="secondary">{markupPercentageDisplay}%</Badge>
-                </TableCell>
+                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {productionCost.toFixed(2)}</TableCell> {/* Display production cost */}
                 <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {plato.precio_venta.toFixed(2)}</TableCell>
                 <TableCell className="flex justify-center space-x-2 py-3 px-6">
                   <Button

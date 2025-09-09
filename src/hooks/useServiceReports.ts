@@ -2,7 +2,6 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getServiceReports, createServiceReport, updateServiceReport, deleteServiceReport } from "@/integrations/supabase/serviceReports";
 import { ServiceReport, ServiceReportFormValues } from "@/types";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
-import { useSession } from "@/contexts/SessionContext";
 
 export const useServiceReports = () => {
   return useQuery<ServiceReport[], Error>({
@@ -13,14 +12,8 @@ export const useServiceReports = () => {
 
 export const useAddServiceReport = () => {
   const queryClient = useQueryClient();
-  const { user } = useSession();
-
-  // Update the variables type to include meals_sold, as it's added in the form before mutation
-  return useMutation<ServiceReport, Error, ServiceReportFormValues & { meals_sold: number }, { toastId: string }>({
-    mutationFn: async (reportData) => {
-      if (!user?.id) throw new Error("User not authenticated.");
-      return createServiceReport(reportData, user.id);
-    },
+  return useMutation<ServiceReport, Error, ServiceReportFormValues, { toastId: string }>({
+    mutationFn: createServiceReport,
     onMutate: () => {
       const toastId: string = showLoading("Añadiendo reporte de servicio...");
       return { toastId };
@@ -41,14 +34,8 @@ export const useAddServiceReport = () => {
 
 export const useUpdateServiceReport = () => {
   const queryClient = useQueryClient();
-  const { user } = useSession();
-
-  // Update the variables type to include meals_sold, as it's added in the form before mutation
-  return useMutation<ServiceReport, Error, { id: string; report: ServiceReportFormValues & { meals_sold: number } }, { toastId: string }>({
-    mutationFn: async ({ id, report }) => {
-      if (!user?.id) throw new Error("User not authenticated.");
-      return updateServiceReport(id, report, user.id);
-    },
+  return useMutation<ServiceReport, Error, { id: string; report: ServiceReportFormValues }, { toastId: string }>({
+    mutationFn: ({ id, report }) => updateServiceReport(id, report),
     onMutate: () => {
       const toastId: string = showLoading("Actualizando reporte de servicio...");
       return { toastId };
@@ -70,13 +57,8 @@ export const useUpdateServiceReport = () => {
 
 export const useDeleteServiceReport = () => {
   const queryClient = useQueryClient();
-  const { user } = useSession();
-
   return useMutation<void, Error, string, { toastId: string }>({
-    mutationFn: async (id) => {
-      if (!user?.id) throw new Error("User not authenticated.");
-      return deleteServiceReport(id, user.id);
-    },
+    mutationFn: deleteServiceReport,
     onMutate: () => {
       const toastId: string = showLoading("Eliminando reporte de servicio...");
       return { toastId };

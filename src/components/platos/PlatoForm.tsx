@@ -34,15 +34,10 @@ const formSchema = z.object({
   descripcion: z.string().max(500, {
     message: "La descripción no debe exceder los 500 caracteres.",
   }).nullable(),
-  // precio_venta: z.coerce.number().min(0.01, { // Removed direct price input
-  //   message: "El precio de venta debe ser mayor a 0.",
-  // }).max(99999.99, {
-  //   message: "El precio de venta no debe exceder 99999.99.",
-  // }),
-  markup_percentage: z.coerce.number().min(0, { // New field for markup percentage
-    message: "El margen de ganancia no puede ser negativo.",
-  }).max(500, { // Max 500% markup
-    message: "El margen de ganancia no debe exceder 500%.",
+  precio_venta: z.coerce.number().min(0.01, {
+    message: "El precio de venta debe ser mayor a 0.",
+  }).max(99999.99, {
+    message: "El precio de venta no debe exceder 99999.99.",
   }),
   insumos: z.array(
     z.object({
@@ -72,8 +67,7 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
     defaultValues: {
       nombre: "",
       descripcion: "",
-      // precio_venta: 0, // Removed
-      markup_percentage: 30, // Default markup percentage
+      precio_venta: 0,
       insumos: [{ insumo_id: "", cantidad_necesaria: 0 }],
     },
   });
@@ -88,8 +82,7 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
       form.reset({
         nombre: initialData.nombre,
         descripcion: initialData.descripcion || "",
-        // precio_venta: initialData.precio_venta, // Removed
-        markup_percentage: initialData.markup_percentage * 100, // Convert decimal to percentage for display
+        precio_venta: initialData.precio_venta,
         insumos: initialData.plato_insumos?.map(pi => ({
           insumo_id: pi.insumo_id,
           cantidad_necesaria: pi.cantidad_necesaria,
@@ -99,24 +92,17 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
       form.reset({
         nombre: "",
         descripcion: "",
-        // precio_venta: 0, // Removed
-        markup_percentage: 30,
+        precio_venta: 0,
         insumos: [{ insumo_id: "", cantidad_necesaria: 0 }],
       });
     }
   }, [initialData, form]);
 
   const onSubmit = async (values: PlatoFormValues) => {
-    // Convert markup_percentage from user input (e.g., 30) to decimal (e.g., 0.3)
-    const submitValues = {
-      ...values,
-      markup_percentage: values.markup_percentage / 100,
-    };
-
     if (initialData) {
-      await updateMutation.mutateAsync({ id: initialData.id, plato: submitValues });
+      await updateMutation.mutateAsync({ id: initialData.id, plato: values });
     } else {
-      await addMutation.mutateAsync(submitValues);
+      await addMutation.mutateAsync(values);
     }
     onSuccess();
   };
@@ -163,8 +149,7 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
             </FormItem>
           )}
         />
-        {/* Removed direct precio_venta input */}
-        {/* <FormField
+        <FormField
           control={form.control}
           name="precio_venta"
           render={({ field }) => (
@@ -175,27 +160,6 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
                   type="number"
                   step="0.01"
                   placeholder="Ej. 25.50"
-                  {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        /> */}
-        <FormField
-          control={form.control}
-          name="markup_percentage"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Margen de Ganancia (%)</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="1"
-                  placeholder="Ej. 30"
                   {...field}
                   onChange={(e) => field.onChange(parseFloat(e.target.value))}
                   className="h-12 text-base"
@@ -233,7 +197,7 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
                         <SelectContent>
                           {availableInsumos?.map((insumo: Insumo) => (
                             <SelectItem key={insumo.id} value={insumo.id}>
-                              {insumo.nombre} ({insumo.base_unit}) {/* Changed to base_unit */}
+                              {insumo.nombre} ({insumo.unidad_medida})
                             </SelectItem>
                           ))}
                         </SelectContent>

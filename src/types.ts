@@ -2,9 +2,7 @@ export interface Insumo {
   id: string;
   user_id: string;
   nombre: string;
-  base_unit: string; // Renamed from unidad_medida
-  purchase_unit: string; // New field
-  conversion_factor: number; // New field
+  unidad_medida: string;
   costo_unitario: number;
   stock_quantity: number;
   supplier_name: string | null;
@@ -15,9 +13,7 @@ export interface Insumo {
 
 export interface InsumoFormValues {
   nombre: string;
-  base_unit: string; // Renamed from unidad_medida
-  purchase_unit: string; // New field
-  conversion_factor: number; // New field
+  unidad_medida: string;
   costo_unitario: number;
   stock_quantity: number;
   supplier_name: string | null;
@@ -29,9 +25,7 @@ export interface Plato {
   user_id: string;
   nombre: string;
   descripcion: string | null;
-  precio_venta: number; // This will now be a calculated field
-  costo_produccion: number; // New: Calculated production cost
-  markup_percentage: number; // New: Percentage for profit margin (e.g., 0.3 for 30%)
+  precio_venta: number;
   created_at: string;
   plato_insumos?: PlatoInsumo[];
 }
@@ -39,8 +33,7 @@ export interface Plato {
 export interface PlatoFormValues {
   nombre: string;
   descripcion: string | null;
-  // precio_venta: number; // Removed: No longer directly input by user
-  markup_percentage: number; // New: User inputs this percentage
+  precio_venta: number;
   insumos: { insumo_id: string; cantidad_necesaria: number }[];
 }
 
@@ -58,17 +51,17 @@ export interface ServiceReport {
   id: string;
   user_id: string;
   report_date: string; // Date string (e.g., 'YYYY-MM-DD')
-  meal_service_id: string; // Link to the meal service
+  meal_service_id: string;
   tickets_issued: number;
-  meals_sold: number; // Total meals sold, can be derived from platos_vendidos_data
+  meals_sold: number;
   additional_services_revenue: number;
   notes: string | null;
   created_at: string;
   meal_services?: MealService; // Optional, for when fetching with relations
-  platos_vendidos_data?: ServiceReportPlato[]; // New: details of platos sold
+  service_report_platos?: ServiceReportPlato[]; // New: Optional, for when fetching with relations
 }
 
-export interface ServiceReportPlato {
+export interface ServiceReportPlato { // New interface
   id: string;
   service_report_id: string;
   plato_id: string;
@@ -81,38 +74,13 @@ export interface ServiceReportFormValues {
   report_date: string;
   meal_service_id: string;
   tickets_issued: number;
-  // meals_sold: number; // Removed: This will be calculated dynamically
+  meals_sold: number;
   additional_services_revenue: number;
   notes: string | null;
-  platos_vendidos: { plato_id: string; quantity_sold: number }[]; // New: array of sold dishes
+  platos_vendidos: { plato_id: string; quantity_sold: number }[]; // New: For form submission
 }
 
-// New interface for Consumption Records
-export interface ConsumptionRecord {
-  id: string;
-  user_id: string;
-  service_report_id: string;
-  insumo_id: string;
-  quantity_consumed: number;
-  consumed_at: string;
-  insumos?: Insumo; // Optional, for when fetching with relations
-  service_reports?: ServiceReport; // Optional, for when fetching with relations
-}
-
-// New interface for Stock Movement Report
-export interface StockMovementRecord {
-  id: string;
-  insumo_id: string;
-  insumo_nombre: string;
-  purchase_unit: string;
-  date: string; // Date of the movement
-  type: 'initial' | 'in' | 'out'; // 'initial' for starting stock, 'in' for additions, 'out' for consumption
-  quantity: number;
-  source_id?: string; // e.g., service_report_id for 'out' movements
-  current_stock_after_movement: number; // Stock after this specific movement
-}
-
-// Existing interfaces for Menu Management
+// New interfaces for Menu Management
 export interface MealService {
   id: string;
   name: string;
@@ -169,6 +137,5 @@ export interface Profile {
   last_name: string | null;
   avatar_url: string | null;
   updated_at: string | null;
-  role: 'user' | 'admin';
-  email?: string; // Added email field
+  role: 'user' | 'admin'; // Added role property
 }

@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Plato, PlatoFormValues } from "@/types"; // Removed Insumo import
+import { Plato, PlatoFormValues } from "@/types"; // Removed PlatoInsumo
 
 export const getPlatos = async (): Promise<Plato[]> => {
   const { data, error } = await supabase
@@ -25,48 +25,13 @@ export const getPlatoById = async (id: string): Promise<Plato | null> => {
   return data;
 };
 
-// Helper function to calculate production cost
-const calculatePlatoCost = async (insumosData: { insumo_id: string; cantidad_necesaria: number }[]): Promise<number> => {
-  let totalCost = 0;
-  if (insumosData && insumosData.length > 0) {
-    const insumoIds = insumosData.map(item => item.insumo_id);
-    const { data: fetchedInsumos, error: insumosError } = await supabase
-      .from("insumos")
-      .select("id, costo_unitario, conversion_factor") // Fetch conversion_factor
-      .in("id", insumoIds);
-
-    if (insumosError) throw new Error(`Failed to fetch insumo costs: ${insumosError.message}`);
-
-    const insumoDetailsMap = new Map<string, { costo_unitario: number; conversion_factor: number }>();
-    fetchedInsumos.forEach(insumo => insumoDetailsMap.set(insumo.id, { costo_unitario: insumo.costo_unitario, conversion_factor: insumo.conversion_factor }));
-
-    for (const item of insumosData) {
-      const details = insumoDetailsMap.get(item.insumo_id);
-      if (details) {
-        // Convert cantidad_necesaria (in base_unit) to purchase_unit using conversion_factor
-        const quantityInPurchaseUnit = item.cantidad_necesaria * details.conversion_factor;
-        totalCost += details.costo_unitario * quantityInPurchaseUnit;
-      } else {
-        console.warn(`Detalles de insumo no encontrados para el insumo ID: ${item.insumo_id}`);
-      }
-    }
-  }
-  return totalCost;
-};
-
-export const createPlato = async (platoData: PlatoFormValues, userId: string): Promise<Plato> => {
-  const { nombre, descripcion, markup_percentage, insumos } = platoData;
-
-  // Calculate production cost
-  const costo_produccion = await calculatePlatoCost(insumos);
-
-  // Calculate sales price
-  const precio_venta = costo_produccion * (1 + markup_percentage);
+export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> => {
+  const { nombre, descripcion, precio_venta, insumos } = platoData;
 
   // Insert the main plato
   const { data: newPlato, error: platoError } = await supabase
     .from("platos")
-    .insert({ nombre, descripcion, precio_venta, costo_produccion, markup_percentage, user_id: userId })
+    .insert({ nombre, descripcion, precio_venta })
     .select()
     .single();
 
@@ -86,6 +51,8 @@ export const createPlato = async (platoData: PlatoFormValues, userId: string): P
       .insert(platoInsumosToInsert);
 
     if (platoInsumoError) {
+      // If insumo insertion fails, consider rolling back plato creation or handling appropriately
+      // For now, we'll just throw the error
       throw new Error(`Failed to add insumos to plato: ${platoInsumoError.message}`);
     }
   }
@@ -102,21 +69,14 @@ export const createPlato = async (platoData: PlatoFormValues, userId: string): P
   return completePlato;
 };
 
-export const updatePlato = async (id: string, platoData: PlatoFormValues, userId: string): Promise<Plato> => {
-  const { nombre, descripcion, markup_percentage, insumos } = platoData;
-
-  // Calculate production cost
-  const costo_produccion = await calculatePlatoCost(insumos);
-
-  // Calculate sales price
-  const precio_venta = costo_produccion * (1 + markup_percentage);
+export const updatePlato = async (id: string, platoData: PlatoFormValues): Promise<Plato> => {
+  const { nombre, descripcion, precio_venta, insumos } = platoData;
 
   // Update the main plato
   const { data: updatedPlato, error: platoError } = await supabase
     .from("platos")
-    .update({ nombre, descripcion, precio_venta, costo_produccion, markup_percentage })
+    .update({ nombre, descripcion, precio_venta })
     .eq("id", id)
-    .eq("user_id", userId) // Ensure user owns the plato
     .select()
     .single();
 
@@ -160,7 +120,7 @@ export const updatePlato = async (id: string, platoData: PlatoFormValues, userId
   return completePlato;
 };
 
-export const deletePlato = async (id: string, userId: string): Promise<void> => {
-  const { error } = await supabase.from("platos").delete().eq("id", id).eq("user_id", userId);
+export const deletePlato = async (id: string): Promise<void> => {
+  const { error } = await supabase.from("platos").delete().eq("id", id);
   if (error) throw new Error(error.message);
 };

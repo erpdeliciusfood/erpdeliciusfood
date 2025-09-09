@@ -11,7 +11,6 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription, // Added FormDescription import
 } from "@/components/ui/form";
 import {
   Select,
@@ -30,36 +29,18 @@ const formSchema = z.object({
   }).max(50, {
     message: "El nombre no debe exceder los 50 caracteres.",
   }),
-  base_unit: z.string().min(1, { // Renamed from unidad_medida
-    message: "Debe seleccionar una unidad base.",
-  }),
-  purchase_unit: z.string().min(1, { // New field
-    message: "Debe seleccionar una unidad de compra.",
-  }),
-  conversion_factor: z.coerce.number().min(0.000001, { // New field
-    message: "El factor de conversión debe ser mayor a 0.",
-  }).max(1000000, {
-    message: "El factor de conversión no debe exceder 1,000,000.",
+  unidad_medida: z.string().min(1, {
+    message: "Debe seleccionar una unidad de medida.",
   }),
   costo_unitario: z.coerce.number().min(0.01, {
     message: "El costo unitario debe ser mayor a 0.",
   }).max(99999.99, {
     message: "El costo unitario no debe exceder 99999.99.",
   }),
-  stock_quantity: z.coerce.number().min(0, {
+  stock_quantity: z.coerce.number().min(0, { // New field validation
     message: "La cantidad de stock no puede ser negativa.",
   }).max(999999, {
     message: "La cantidad de stock no debe exceder 999999.",
-  }),
-  supplier_name: z.string().min(1, {
-    message: "El nombre del proveedor es requerido.",
-  }).max(100, {
-    message: "El nombre del proveedor no debe exceder los 100 caracteres.",
-  }),
-  supplier_phone: z.string().min(1, {
-    message: "El teléfono del proveedor es requerido.",
-  }).max(20, {
-    message: "El teléfono del proveedor no debe exceder los 20 caracteres.",
   }),
 });
 
@@ -81,13 +62,9 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
     resolver: zodResolver(formSchema),
     defaultValues: initialData || {
       nombre: "",
-      base_unit: "",
-      purchase_unit: "",
-      conversion_factor: 1.0,
+      unidad_medida: "",
       costo_unitario: 0,
-      stock_quantity: 0,
-      supplier_name: "",
-      supplier_phone: "",
+      stock_quantity: 0, // Default value for new field
     },
   });
 
@@ -95,24 +72,16 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
     if (initialData) {
       form.reset({
         nombre: initialData.nombre,
-        base_unit: initialData.base_unit,
-        purchase_unit: initialData.purchase_unit,
-        conversion_factor: initialData.conversion_factor,
+        unidad_medida: initialData.unidad_medida,
         costo_unitario: initialData.costo_unitario,
-        stock_quantity: initialData.stock_quantity,
-        supplier_name: initialData.supplier_name || "",
-        supplier_phone: initialData.supplier_phone || "",
+        stock_quantity: initialData.stock_quantity, // Set initial value for new field
       });
     } else {
       form.reset({
         nombre: "",
-        base_unit: "",
-        purchase_unit: "",
-        conversion_factor: 1.0,
+        unidad_medida: "",
         costo_unitario: 0,
         stock_quantity: 0,
-        supplier_name: "",
-        supplier_phone: "",
       });
     }
   }, [initialData, form]);
@@ -151,14 +120,14 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         />
         <FormField
           control={form.control}
-          name="base_unit"
+          name="unidad_medida"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Unidad Base (para recetas)</FormLabel>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Unidad de Medida</FormLabel>
               <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
                 <FormControl>
                   <SelectTrigger className="h-12 text-base">
-                    <SelectValue placeholder="Selecciona una unidad base" />
+                    <SelectValue placeholder="Selecciona una unidad" />
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
@@ -169,54 +138,6 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
                   ))}
                 </SelectContent>
               </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="purchase_unit"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Unidad de Compra</FormLabel>
-              <Select onValueChange={field.onChange} defaultValue={field.value} disabled={isLoading}>
-                <FormControl>
-                  <SelectTrigger className="h-12 text-base">
-                    <SelectValue placeholder="Selecciona una unidad de compra" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {UNIDADES_MEDIDA.map((unidad) => (
-                    <SelectItem key={unidad} value={unidad}>
-                      {unidad}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="conversion_factor"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Factor de Conversión (Base a Compra)</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.000001"
-                  placeholder="Ej. 0.001 (para g a kg)"
-                  {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormDescription className="text-sm text-gray-600 dark:text-gray-400">
-                Cantidad de unidad de compra por una unidad base. Ej: si 1g = 0.001kg, el factor es 0.001.
-              </FormDescription>
               <FormMessage />
             </FormItem>
           )}
@@ -226,7 +147,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
           name="costo_unitario"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Costo Unitario (S/ por Unidad de Compra)</FormLabel>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Costo Unitario (S/)</FormLabel>
               <FormControl>
                 <Input
                   type="number"
@@ -247,7 +168,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
           name="stock_quantity"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad en Stock (en Unidad de Compra)</FormLabel>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad en Stock</FormLabel>
               <FormControl>
                 <Input
                   type="number"
@@ -255,44 +176,6 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
                   placeholder="Ej. 100"
                   {...field}
                   onChange={(e) => field.onChange(parseInt(e.target.value))}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="supplier_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre del Proveedor</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Ej. Distribuidora La Huerta"
-                  {...field}
-                  value={field.value || ""}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="supplier_phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Teléfono del Proveedor</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Ej. +51 987 654 321"
-                  {...field}
-                  value={field.value || ""}
                   className="h-12 text-base"
                   disabled={isLoading}
                 />

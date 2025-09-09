@@ -14,7 +14,6 @@ import { useDeleteServiceReport } from "@/hooks/useServiceReports";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Badge } from "@/components/ui/badge";
 
 interface ServiceReportListProps {
   reports: ServiceReport[];
@@ -44,7 +43,6 @@ const ServiceReportList: React.FC<ServiceReportListProps> = ({ reports, onEdit }
           <TableRow>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Fecha</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Servicio</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Platos Vendidos</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Tickets Emitidos</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Colaciones Vendidas</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Ingresos Adicionales (S/)</TableHead>
@@ -59,19 +57,6 @@ const ServiceReportList: React.FC<ServiceReportListProps> = ({ reports, onEdit }
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
                 {report.meal_services?.name || "N/A"}
-              </TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
-                {report.platos_vendidos_data && report.platos_vendidos_data.length > 0 ? (
-                  <div className="flex flex-wrap gap-1">
-                    {report.platos_vendidos_data.map((pv) => (
-                      <Badge key={pv.id} variant="secondary" className="text-sm">
-                        {pv.platos?.nombre || "Plato Desconocido"} ({pv.quantity_sold})
-                      </Badge>
-                    ))}
-                  </div>
-                ) : (
-                  <span className="text-gray-500">Ninguno</span>
-                )}
               </TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
                 {report.tickets_issued}
