@@ -5,6 +5,7 @@ import StockOverview from "@/components/reports/StockOverview";
 import ConsumptionReport from "@/components/reports/ConsumptionReport";
 import SalesProfitabilityReport from "@/components/reports/SalesProfitabilityReport";
 import FinancialOverviewReport from "@/components/reports/FinancialOverviewReport"; // New import
+import StockMovementReport from "@/components/reports/StockMovementReport"; // New import
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -157,6 +158,7 @@ const Reports = () => {
           <>
             <ConsumptionReport startDate={dateRange.from} endDate={dateRange.to} />
             <SalesProfitabilityReport startDate={dateRange.from} endDate={dateRange.to} />
+            <StockMovementReport startDate={dateRange.from} endDate={dateRange.to} /> {/* New report */}
           </>
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">

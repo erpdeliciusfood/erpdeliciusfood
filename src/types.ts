@@ -99,6 +99,19 @@ export interface ConsumptionRecord {
   service_reports?: ServiceReport; // Optional, for when fetching with relations
 }
 
+// New interface for Stock Movement Report
+export interface StockMovementRecord {
+  id: string;
+  insumo_id: string;
+  insumo_nombre: string;
+  purchase_unit: string;
+  date: string; // Date of the movement
+  type: 'initial' | 'in' | 'out'; // 'initial' for starting stock, 'in' for additions, 'out' for consumption
+  quantity: number;
+  source_id?: string; // e.g., service_report_id for 'out' movements
+  current_stock_after_movement: number; // Stock after this specific movement
+}
+
 // Existing interfaces for Menu Management
 export interface MealService {
   id: string;
