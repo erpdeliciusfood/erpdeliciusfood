@@ -25,6 +25,19 @@ const PlatoList: React.FC<PlatoListProps> = ({ platos, onEdit }) => {
     deleteMutation.mutate(id);
   };
 
+  const calculateProductionCost = (plato: Plato): number => {
+    if (!plato.plato_insumos || plato.plato_insumos.length === 0) {
+      return 0;
+    }
+    return plato.plato_insumos.reduce((totalCost, platoInsumo) => {
+      const insumo = platoInsumo.insumos; // Access the nested insumo object
+      if (insumo) {
+        return totalCost + (insumo.costo_unitario * platoInsumo.cantidad_necesaria);
+      }
+      return totalCost;
+    }, 0);
+  };
+
   if (platos.length === 0) {
     return (
       <div className="text-center py-10 text-gray-600 dark:text-gray-400">
@@ -41,56 +54,61 @@ const PlatoList: React.FC<PlatoListProps> = ({ platos, onEdit }) => {
           <TableRow>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Nombre</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Descripción</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Producción (S/)</TableHead> {/* New column */}
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Precio de Venta (S/)</TableHead>
             <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
-          {platos.map((plato) => (
-            <TableRow key={plato.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
-              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{plato.nombre}</TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{plato.descripcion || "N/A"}</TableCell>
-              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {plato.precio_venta.toFixed(2)}</TableCell>
-              <TableCell className="flex justify-center space-x-2 py-3 px-6">
-                <Button
-                  variant="outline"
-                  size="icon"
-                  onClick={() => onEdit(plato)}
-                  className="h-10 w-10 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150 ease-in-out"
-                >
-                  <Edit className="h-5 w-5 text-blue-600" />
-                </Button>
-                <AlertDialog>
-                  <AlertDialogTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      className="h-10 w-10 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition-colors duration-150 ease-in-out"
-                    >
-                      <Trash2 className="h-5 w-5 text-red-600" />
-                    </Button>
-                  </AlertDialogTrigger>
-                  <AlertDialogContent className="p-6">
-                    <AlertDialogHeader>
-                      <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
-                      <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                        Esta acción no se puede deshacer. Esto eliminará permanentemente el plato <span className="font-semibold">{plato.nombre}</span> y sus insumos asociados de nuestros servidores.
-                      </AlertDialogDescription>
-                    </AlertDialogHeader>
-                    <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
-                      <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
-                      <AlertDialogAction
-                        onClick={() => handleDelete(plato.id)}
-                        className="w-full sm:w-auto px-6 py-3 text-lg bg-destructive hover:bg-destructive-foreground text-destructive-foreground hover:text-destructive transition-colors duration-200 ease-in-out"
+          {platos.map((plato) => {
+            const productionCost = calculateProductionCost(plato);
+            return (
+              <TableRow key={plato.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
+                <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{plato.nombre}</TableCell>
+                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{plato.descripcion || "N/A"}</TableCell>
+                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {productionCost.toFixed(2)}</TableCell> {/* Display production cost */}
+                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {plato.precio_venta.toFixed(2)}</TableCell>
+                <TableCell className="flex justify-center space-x-2 py-3 px-6">
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => onEdit(plato)}
+                    className="h-10 w-10 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150 ease-in-out"
+                  >
+                    <Edit className="h-5 w-5 text-blue-600" />
+                  </Button>
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="icon"
+                        className="h-10 w-10 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition-colors duration-150 ease-in-out"
                       >
-                        Eliminar
-                      </AlertDialogAction>
-                    </AlertDialogFooter>
-                  </AlertDialogContent>
-                </AlertDialog>
-              </TableCell>
-            </TableRow>
-          ))}
+                        <Trash2 className="h-5 w-5 text-red-600" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="p-6">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
+                        <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
+                          Esta acción no se puede deshacer. Esto eliminará permanentemente el plato <span className="font-semibold">{plato.nombre}</span> y sus insumos asociados de nuestros servidores.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
+                        <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDelete(plato.id)}
+                          className="w-full sm:w-auto px-6 py-3 text-lg bg-destructive hover:bg-destructive-foreground text-destructive-foreground hover:text-destructive transition-colors duration-200 ease-in-out"
+                        >
+                          Eliminar
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                </TableCell>
+              </TableRow>
+            );
+          })}
         </TableBody>
       </Table>
     </div>
