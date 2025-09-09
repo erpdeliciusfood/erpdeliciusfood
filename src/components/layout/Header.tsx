@@ -5,6 +5,7 @@ import { LogOut, Utensils, UserCircle2, Home } from "lucide-react";
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
+import { ModeToggle } from "./ModeToggle"; // Import the ModeToggle component
 
 const Header: React.FC = () => {
   const { session } = useSession();
@@ -50,6 +51,7 @@ const Header: React.FC = () => {
             <LogOut className="mr-2 h-5 w-5" />
             Cerrar Sesión
           </Button>
+          <ModeToggle /> {/* Add the ModeToggle here */}
         </nav>
       </div>
     </header>
