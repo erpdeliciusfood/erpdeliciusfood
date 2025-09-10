@@ -28,18 +28,18 @@ const UserList: React.FC<UserListProps> = ({ users }) => {
 
   const handleRoleChange = async (userId: string, newRole: 'user' | 'admin') => {
     try {
+      // The useUpdateProfile hook gets the userId from the session,
+      // so we only need to pass the profile data to update.
+      // We pass the existing first_name and last_name to avoid overwriting them with null.
       const userToUpdate = users.find(u => u.id === userId);
       if (!userToUpdate) {
         showError("Usuario no encontrado para actualizar.");
         return;
       }
       await updateProfileMutation.mutateAsync({
-        profileData: {
-          first_name: userToUpdate.first_name,
-          last_name: userToUpdate.last_name,
-          role: newRole
-        },
-        targetUserId: userId, // Pass the specific user ID to update
+        first_name: userToUpdate.first_name,
+        last_name: userToUpdate.last_name,
+        role: newRole
       });
       showSuccess("Rol de usuario actualizado exitosamente.");
     } catch (error: any) {

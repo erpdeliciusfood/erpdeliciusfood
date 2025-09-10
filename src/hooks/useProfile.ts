@@ -34,19 +34,18 @@ export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
   const { user } = useSession();
 
-  return useMutation<Profile, Error, { profileData: ProfileFormValues; targetUserId?: string }, { toastId: string }>({
-    mutationFn: ({ profileData, targetUserId }) => {
-      const userIdToUpdate = targetUserId || user?.id;
-      if (!userIdToUpdate) throw new Error("User not authenticated or target user ID not provided.");
-      return updateProfile(userIdToUpdate, profileData);
+  return useMutation<Profile, Error, ProfileFormValues, { toastId: string }>({
+    mutationFn: (profileData) => {
+      if (!user?.id) throw new Error("User not authenticated.");
+      return updateProfile(user.id, profileData);
     },
     onMutate: () => {
       const toastId: string = showLoading("Actualizando perfil...");
       return { toastId };
     },
-    onSuccess: (_, variables, context) => {
+    onSuccess: (_, __, context) => {
       dismissToast(context.toastId);
-      queryClient.invalidateQueries({ queryKey: ["profile", variables.targetUserId || user?.id] });
+      queryClient.invalidateQueries({ queryKey: ["profile", user?.id] });
       queryClient.invalidateQueries({ queryKey: ["allProfiles"] }); // Invalidate all profiles cache as well
       showSuccess("Perfil actualizado exitosamente.");
     },
