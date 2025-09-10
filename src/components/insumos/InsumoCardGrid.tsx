@@ -23,8 +23,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Dialog } from "@/components/ui/dialog";
-import InsumoSupplierDetailsDialog from "./InsumoSupplierDetailsDialog";
+import { Sheet, SheetTrigger } from "@/components/ui/sheet"; // Changed from Dialog
+import InsumoSupplierDetailsSheet from "./InsumoSupplierDetailsSheet"; // Changed import
 
 interface InsumoCardGridProps {
   insumos: Insumo[];
@@ -33,7 +33,7 @@ interface InsumoCardGridProps {
 
 const InsumoCardGrid: React.FC<InsumoCardGridProps> = ({ insumos, onEdit }) => {
   const deleteMutation = useDeleteInsumo();
-  const [isSupplierDetailsDialogOpen, setIsSupplierDetailsDialogOpen] = useState(false);
+  const [isSupplierDetailsSheetOpen, setIsSupplierDetailsSheetOpen] = useState(false); // Changed state name
   const [selectedInsumoForDetails, setSelectedInsumoForDetails] = useState<Insumo | null>(null);
 
   const handleDelete = (id: string) => {
@@ -42,11 +42,11 @@ const InsumoCardGrid: React.FC<InsumoCardGridProps> = ({ insumos, onEdit }) => {
 
   const handleOpenSupplierDetails = (insumo: Insumo) => {
     setSelectedInsumoForDetails(insumo);
-    setIsSupplierDetailsDialogOpen(true);
+    setIsSupplierDetailsSheetOpen(true); // Changed state setter
   };
 
   const handleCloseSupplierDetails = () => {
-    setIsSupplierDetailsDialogOpen(false);
+    setIsSupplierDetailsSheetOpen(false); // Changed state setter
     setSelectedInsumoForDetails(null);
   };
 
@@ -99,14 +99,24 @@ const InsumoCardGrid: React.FC<InsumoCardGridProps> = ({ insumos, onEdit }) => {
             >
               <Edit className="h-6 w-6 text-blue-600" />
             </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={() => handleOpenSupplierDetails(insumo)}
-              className="h-12 w-12 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out"
-            >
-              <Building2 className="h-6 w-6 text-gray-600 dark:text-gray-300" />
-            </Button>
+            <Sheet open={isSupplierDetailsSheetOpen && selectedInsumoForDetails?.id === insumo.id} onOpenChange={setIsSupplierDetailsSheetOpen}> {/* Changed from Dialog */}
+              <SheetTrigger asChild> {/* Changed from DialogTrigger */}
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleOpenSupplierDetails(insumo)}
+                  className="h-12 w-12 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out"
+                >
+                  <Building2 className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+                </Button>
+              </SheetTrigger>
+              {selectedInsumoForDetails && (
+                <InsumoSupplierDetailsSheet // Changed component name
+                  insumo={selectedInsumoForDetails}
+                  onClose={handleCloseSupplierDetails}
+                />
+              )}
+            </Sheet>
             <AlertDialog>
               <AlertDialogTrigger asChild>
                 <Button
@@ -138,15 +148,6 @@ const InsumoCardGrid: React.FC<InsumoCardGridProps> = ({ insumos, onEdit }) => {
           </CardFooter>
         </Card>
       ))}
-
-      <Dialog open={isSupplierDetailsDialogOpen} onOpenChange={setIsSupplierDetailsDialogOpen}>
-        {selectedInsumoForDetails && (
-          <InsumoSupplierDetailsDialog
-            insumo={selectedInsumoForDetails}
-            onClose={handleCloseSupplierDetails}
-          />
-        )}
-      </Dialog>
     </div>
   );
 };
