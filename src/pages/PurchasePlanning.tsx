@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { ShoppingBag, CalendarDays, ChevronDown } from "lucide-react";
+import { ShoppingBag, CalendarDays, ChevronDown, PlusCircle } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -9,14 +9,17 @@ import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import PurchaseAnalysis from "@/components/purchase-planning/PurchaseAnalysis";
-import { DateRange } from "react-day-picker"; // Import DateRange type
+import { DateRange } from "react-day-picker";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
 
 const PurchasePlanning = () => {
-  const [dateRange, setDateRange] = useState<DateRange>({ // Use DateRange type here
+  const [dateRange, setDateRange] = useState<DateRange>({
     from: startOfMonth(new Date()),
     to: endOfMonth(new Date()),
   });
   const [periodType, setPeriodType] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('monthly');
+  const [isRegisterPurchaseFormOpen, setIsRegisterPurchaseFormOpen] = useState(false); // New state for manual purchase form
 
   const handlePeriodChange = (period: 'daily' | 'weekly' | 'monthly' | 'custom') => {
     setPeriodType(period);
@@ -39,12 +42,15 @@ const PurchasePlanning = () => {
         break;
       case 'custom':
       default:
-        // Keep current custom range or set a default if none
         fromDate = dateRange.from || startOfMonth(today);
         toDate = dateRange.to || endOfMonth(today);
         break;
     }
     setDateRange({ from: fromDate, to: toDate });
+  };
+
+  const handleRegisterPurchaseFormClose = () => {
+    setIsRegisterPurchaseFormOpen(false);
   };
 
   return (
@@ -112,6 +118,28 @@ const PurchasePlanning = () => {
               </PopoverContent>
             </Popover>
           )}
+          <Dialog open={isRegisterPurchaseFormOpen} onOpenChange={setIsRegisterPurchaseFormOpen}>
+            <DialogTrigger asChild>
+              <Button
+                onClick={() => setIsRegisterPurchaseFormOpen(true)}
+                className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
+              >
+                <PlusCircle className="mr-3 h-6 w-6" />
+                Registrar Compra
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  Registrar Nueva Compra
+                </DialogTitle>
+              </DialogHeader>
+              <PurchaseRecordForm
+                onSuccess={handleRegisterPurchaseFormClose}
+                onCancel={handleRegisterPurchaseFormClose}
+              />
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 

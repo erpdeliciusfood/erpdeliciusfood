@@ -197,3 +197,33 @@ export interface InsumoPriceHistory {
   new_costo_unitario: number;
   changed_at: string;
 }
+
+// Interfaces para Registros de Compra
+export interface PurchaseRecord { 
+  id: string;
+  user_id: string;
+  insumo_id: string;
+  purchase_date: string; // Date string (e.g., 'YYYY-MM-DDTHH:MM:SSZ')
+  quantity_purchased: number;
+  unit_cost_at_purchase: number;
+  total_amount: number;
+  supplier_name_at_purchase: string | null;
+  supplier_phone_at_purchase: string | null;
+  supplier_address_at_purchase: string | null;
+  from_registered_supplier: boolean;
+  notes: string | null;
+  created_at: string;
+}
+
+export interface PurchaseRecordFormValues { 
+  insumo_id: string;
+  purchase_date: string;
+  quantity_purchased: number;
+  unit_cost_at_purchase: number;
+  total_amount: number;
+  supplier_name_at_purchase: string | null;
+  supplier_phone_at_purchase: string | null;
+  supplier_address_at_purchase: string | null;
+  from_registered_supplier: boolean;
+  notes: string | null;
+}

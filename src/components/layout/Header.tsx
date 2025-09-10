@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, Utensils, UserCircle2, Home, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package } from "lucide-react"; // Updated icons, removed ListChecks
+import { LogOut, Utensils, UserCircle2, Home, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText } from "lucide-react"; // Updated icons, added ReceiptText
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
@@ -50,12 +50,6 @@ const Header: React.FC = () => {
               Tipos Evento
             </Button>
           </Link>
-          {/* <Link to="/meal-types"> */} {/* REMOVED LINK */}
-            {/* <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
-              <ListChecks className="mr-2 h-5 w-5" />
-              Tipos Plato
-            </Button>
-          </Link> */}
           <Link to="/menus">
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <BookText className="mr-2 h-5 w-5" />
@@ -71,7 +65,13 @@ const Header: React.FC = () => {
           <Link to="/purchase-planning">
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <ShoppingBag className="mr-2 h-5 w-5" />
-              Compras
+              Planificación Compras
+            </Button>
+          </Link>
+          <Link to="/purchase-records"> {/* NEW: Link to Purchase Records */}
+            <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
+              <ReceiptText className="mr-2 h-5 w-5" />
+              Registros Compra
             </Button>
           </Link>
           <Link to="/stock-movements">

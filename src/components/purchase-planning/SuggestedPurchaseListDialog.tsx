@@ -8,7 +8,7 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, ShoppingBag, PlusCircle, Info } from "lucide-react";
+import { ShoppingBag, PlusCircle, Info } from "lucide-react";
 import { Insumo } from "@/types";
 import PurchaseRecordForm from "./PurchaseRecordForm";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
