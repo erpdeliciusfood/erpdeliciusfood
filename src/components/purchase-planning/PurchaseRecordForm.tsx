@@ -12,7 +12,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
-  FormDescription, // Added FormDescription
+  FormDescription,
 } from "@/components/ui/form";
 import {
   Select,
@@ -94,6 +94,10 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
   const quantityPurchased = form.watch("quantity_purchased");
   const unitCostAtPurchase = form.watch("unit_cost_at_purchase");
   const selectedInsumoId = form.watch("insumo_id");
+
+  // Find the selected insumo to get its purchase_unit
+  const selectedInsumo = availableInsumos?.find(insumo => insumo.id === selectedInsumoId);
+  const purchaseUnit = selectedInsumo?.purchase_unit || "unidad";
 
   useEffect(() => {
     if (initialData) {
@@ -238,7 +242,9 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
           name="quantity_purchased"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad Comprada</FormLabel>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                Cantidad Comprada {selectedInsumoId && `(en ${purchaseUnit})`}
+              </FormLabel>
               <FormControl>
                 <Input
                   type="number"
