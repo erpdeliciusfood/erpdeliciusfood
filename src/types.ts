@@ -36,7 +36,7 @@ export interface Plato {
   nombre: string;
   descripcion: string | null;
   costo_produccion: number;
-  precio_venta: number; // NEW: Added precio_venta
+  // precio_venta: number; // REMOVED: precio_venta is no longer needed
   created_at: string;
   plato_insumos?: PlatoInsumo[];
 }
@@ -44,7 +44,7 @@ export interface Plato {
 export interface PlatoFormValues {
   nombre: string;
   descripcion: string | null;
-  precio_venta: number; // NEW: Added precio_venta
+  // precio_venta: number; // REMOVED: precio_venta is no longer needed
   insumos: { insumo_id: string; cantidad_necesaria: number }[];
 }
 
