@@ -83,7 +83,10 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
         : parseFloat(quantityNeededForPeriodRaw.toFixed(2));
       const quantityNeededForPeriodRoundedUp = quantityNeededForPeriodRaw > 0 && quantityNeededForPeriodRaw % 1 !== 0;
 
-      const purchaseSuggestionRaw = Math.max(0, quantityNeededForPeriodRaw - currentStock);
+      // REVISED: Calculate purchase suggestion to cover menu needs OR reach min stock level
+      const neededToCoverMenus = Math.max(0, quantityNeededForPeriodRaw - currentStock);
+      const neededToReachMinStock = Math.max(0, insumo.min_stock_level - currentStock);
+      const purchaseSuggestionRaw = Math.max(neededToCoverMenus, neededToReachMinStock);
 
       // Rounding for purchase_suggestion
       const purchaseSuggestionRounded = purchaseSuggestionRaw > 0 && purchaseSuggestionRaw % 1 !== 0
@@ -93,7 +96,8 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
 
       const estimatedPurchaseCost = purchaseSuggestionRounded * insumo.costo_unitario;
 
-      if (quantityNeededForPeriodRaw > 0 || currentStock < insumo.min_stock_level) {
+      // Include in the list if there's any purchase suggestion
+      if (purchaseSuggestionRounded > 0) {
         result.push({
           ...insumo,
           quantity_needed_for_period_raw: parseFloat(quantityNeededForPeriodRaw.toFixed(2)),

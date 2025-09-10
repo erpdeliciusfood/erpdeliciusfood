@@ -83,7 +83,10 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
         : parseFloat(quantityNeededForPeriodRaw.toFixed(2)); // Keep 2 decimals if already whole or 0
       const quantityNeededForPeriodRoundedUp = quantityNeededForPeriodRaw > 0 && quantityNeededForPeriodRaw % 1 !== 0;
 
-      const purchaseSuggestionRaw = Math.max(0, quantityNeededForPeriodRaw - currentStock);
+      // REVISED: Calculate purchase suggestion to cover menu needs OR reach min stock level
+      const neededToCoverMenus = Math.max(0, quantityNeededForPeriodRaw - currentStock);
+      const neededToReachMinStock = Math.max(0, insumo.min_stock_level - currentStock);
+      const purchaseSuggestionRaw = Math.max(neededToCoverMenus, neededToReachMinStock);
 
       // Rounding for purchase_suggestion
       const purchaseSuggestionRounded = purchaseSuggestionRaw > 0 && purchaseSuggestionRaw % 1 !== 0
@@ -93,7 +96,8 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
 
       const estimatedPurchaseCost = purchaseSuggestionRounded * insumo.costo_unitario; // Use rounded suggestion for cost calculation
 
-      if (quantityNeededForPeriodRaw > 0 || currentStock < insumo.min_stock_level) { // Show if needed or if stock is below min_stock_level
+      // Include in the list if there's any purchase suggestion
+      if (purchaseSuggestionRounded > 0) {
         result.push({
           ...insumo,
           quantity_needed_for_period_raw: parseFloat(quantityNeededForPeriodRaw.toFixed(2)),
@@ -261,7 +265,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                               </TooltipTrigger>
                               {insumo.purchase_suggestion_rounded_up && (
                                 <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                                  <p>Valor real: {insumo.purchase_suggestion_raw.toFixed(2)} {insumo.purchase_unit}</p>
+                                  <p>Valor real: {insumo.quantity_needed_for_period_raw.toFixed(2)} {insumo.purchase_unit}</p>
                                 </TooltipContent>
                               )}
                             </Tooltip>
@@ -292,7 +296,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
             <div className="text-center py-6 text-gray-600 dark:text-gray-400">
               <ShoppingBag className="mx-auto h-12 w-12 mb-3 text-gray-400 dark:text-gray-600" />
               <p className="text-lg">No se encontraron necesidades de insumos para el periodo seleccionado.</p>
-              <p className="text-md mt-2">Asegúrate de tener menús planificados con platos e insumos para este rango de fechas.</p>
+              <p className="text-md mt-2">Asegúrate de tener menús planificados con recetas e insumos para este rango de fechas.</p> {/* Changed text */}
             </div>
           )}
         </CardContent>
