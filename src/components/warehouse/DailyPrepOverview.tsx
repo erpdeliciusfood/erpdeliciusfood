@@ -10,6 +10,7 @@ import { Badge } from "@/components/ui/badge";
 import { useAddStockMovement } from "@/hooks/useStockMovements";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 interface DailyPrepOverviewProps {
   selectedDate: Date;
@@ -112,15 +113,38 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
         <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
           Necesidades de Insumos para el {formattedDate}
         </CardTitle>
-        <Button
-          onClick={handleDeductStock}
-          disabled={isDeductingStock || aggregatedInsumoNeeds.length === 0 || !allStockSufficient}
-          className="px-6 py-3 text-lg bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
-        >
-          {isDeductingStock && <Loader2 className="mr-2 h-6 w-6 animate-spin" />}
-          <MinusCircle className="mr-3 h-6 w-6" />
-          Deducir Stock para Preparación
-        </Button>
+        <AlertDialog>
+          <AlertDialogTrigger asChild>
+            <Button
+              disabled={isDeductingStock || aggregatedInsumoNeeds.length === 0 || !allStockSufficient}
+              className="px-6 py-3 text-lg bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
+            >
+              {isDeductingStock && <Loader2 className="mr-2 h-6 w-6 animate-spin" />}
+              <MinusCircle className="mr-3 h-6 w-6" />
+              Deducir Stock para Preparación
+            </Button>
+          </AlertDialogTrigger>
+          <AlertDialogContent className="p-6">
+            <AlertDialogHeader>
+              <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Confirmar Deducción de Stock?</AlertDialogTitle>
+              <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
+                Estás a punto de deducir el stock de los insumos necesarios para la preparación diaria del {formattedDate}.
+                Esta acción registrará movimientos de salida en tu inventario.
+                <br/><span className="font-semibold text-red-600 dark:text-red-400">¿Estás seguro de que deseas continuar?</span>
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
+              <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeductStock}
+                className="w-full sm:w-auto px-6 py-3 text-lg bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out"
+              >
+                {isDeductingStock && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                Confirmar Deducción
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </CardHeader>
       <CardContent>
         {aggregatedInsumoNeeds.length > 0 ? (
