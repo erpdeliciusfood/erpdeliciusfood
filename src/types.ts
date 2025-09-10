@@ -148,7 +148,7 @@ export interface Profile {
   last_name: string | null;
   avatar_url: string | null;
   updated_at: string | null;
-  role: 'user' | 'admin'; // Added role property
+  role: 'user' | 'admin' | 'warehouse'; // Added role property
 }
 
 // New interfaces for Stock Movements
@@ -156,7 +156,7 @@ export interface StockMovement {
   id: string;
   user_id: string;
   insumo_id: string;
-  movement_type: 'purchase_in' | 'consumption_out' | 'adjustment_in' | 'adjustment_out';
+  movement_type: 'purchase_in' | 'consumption_out' | 'adjustment_in' | 'adjustment_out' | 'daily_prep_out'; // Added daily_prep_out
   quantity_change: number;
   new_stock_quantity: number;
   source_document_id: string | null;
@@ -167,11 +167,12 @@ export interface StockMovement {
 
 export interface StockMovementFormValues {
   insumo_id: string;
-  movement_type: 'purchase_in' | 'adjustment_in' | 'adjustment_out'; // Consumption_out is handled by Edge Function
+  movement_type: 'purchase_in' | 'adjustment_in' | 'adjustment_out' | 'daily_prep_out'; // Consumption_out is handled by Edge Function
   quantity_change: number; // This will be used for adjustments, or derived for purchase_in
   total_purchase_amount?: number; // New: Total amount of the purchase
   total_purchase_quantity?: number; // New: Total quantity purchased
   notes: string | null;
+  menu_id?: string; // Optional: Link to a menu for daily prep deductions
 }
 
 // New interfaces for Insumo History
@@ -235,4 +236,16 @@ export interface InsumoNeeded extends Insumo {
   purchase_suggestion_rounded: number; // Rounded up value
   purchase_suggestion_rounded_up: boolean; // Flag if rounding occurred
   estimated_purchase_cost: number;
+}
+
+// New interface for aggregated insumo needs for a menu
+export interface AggregatedInsumoNeed {
+  insumo_id: string;
+  insumo_nombre: string;
+  base_unit: string;
+  purchase_unit: string;
+  conversion_factor: number;
+  current_stock_quantity: number; // In purchase_unit
+  total_needed_base_unit: number;
+  total_needed_purchase_unit: number; // Rounded up to nearest whole number for deduction
 }

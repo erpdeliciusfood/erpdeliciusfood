@@ -11,6 +11,7 @@ import {
   FileText,
   Package,
   ReceiptText,
+  Warehouse, // NEW: Import Warehouse icon
 } from "lucide-react";
 
 export const NAV_LINKS = [
@@ -23,6 +24,7 @@ export const NAV_LINKS = [
   { path: "/purchase-planning", label: "Planificación Compras", icon: ShoppingBag },
   { path: "/purchase-records", label: "Registros Compra", icon: ReceiptText },
   { path: "/stock-movements", label: "Movimientos Stock", icon: Package },
+  { path: "/warehouse", label: "Almacén", icon: Warehouse, roles: ["admin", "warehouse"] }, // NEW: Add Warehouse link
   { path: "/reports", label: "Reportes", icon: BarChart3 },
   { path: "/user-management", label: "Usuarios", icon: Users, roles: ["admin"] },
   { path: "/profile", label: "Perfil", icon: UserCircle2 },

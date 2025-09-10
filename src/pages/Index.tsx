@@ -1,7 +1,7 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Utensils, UserCircle2, LayoutDashboard, ChefHat, BookText, CalendarDays, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText } from "lucide-react"; 
+import { Utensils, UserCircle2, LayoutDashboard, ChefHat, BookText, CalendarDays, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText, Warehouse as WarehouseIcon } from "lucide-react"; // Renamed Warehouse to WarehouseIcon to avoid conflict
 import { useSession } from "@/contexts/SessionContext";
 import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -277,6 +277,25 @@ const Index = () => {
               </Button>
             </Card>
           </Link>
+
+          {(userRole === 'admin' || userRole === 'warehouse') && (
+            <Link to="/warehouse">
+              <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                  <CardTitle className="text-2xl font-bold">Gestión de Almacén</CardTitle>
+                  <WarehouseIcon className="h-8 w-8 text-muted-foreground" />
+                </CardHeader>
+                <CardContent>
+                  <CardDescription className="text-lg text-left">
+                    Debita insumos del stock para la preparación diaria de menús.
+                  </CardDescription>
+                </CardContent>
+                <Button className="w-full mt-4 px-8 py-4 text-lg bg-teal-600 hover:bg-teal-700 text-white transition-colors duration-200 ease-in-out">
+                  Ir a Almacén
+                </Button>
+              </Card>
+            </Link>
+          )}
 
           <Link to="/stock-movements">
             <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
