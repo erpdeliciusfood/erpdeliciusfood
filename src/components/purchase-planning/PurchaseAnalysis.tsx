@@ -10,9 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Insumo } from "@/types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetTrigger, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet"; // Changed from Dialog
-import InsumoSupplierDetailsSheet from "@/components/insumos/InsumoSupplierDetailsSheet"; // Changed import
-import SuggestedPurchaseListContent from "@/components/purchase-planning/SuggestedPurchaseListContent";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import InsumoSupplierDetailsDialog from "@/components/insumos/InsumoSupplierDetailsDialog";
+import SuggestedPurchaseListContent from "@/components/purchase-planning/SuggestedPurchaseListContent"; // Updated import
 
 interface PurchaseAnalysisProps {
   startDate: Date;
@@ -34,7 +34,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
   const { data: menus, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenus();
   const { data: allInsumosData, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos(undefined, undefined, 1, 9999); // Renamed to allInsumosData
 
-  const [isSupplierDetailsSheetOpen, setIsSupplierDetailsSheetOpen] = useState(false); // Changed state name
+  const [isSupplierDetailsDialogOpen, setIsSupplierDetailsDialogOpen] = useState(false);
   const [selectedInsumoForDetails, setSelectedInsumoForDetails] = useState<Insumo | null>(null);
   const [isSuggestedPurchaseListOpen, setIsSuggestedPurchaseListOpen] = useState(false); // New state for suggested purchase list dialog
 
@@ -117,11 +117,11 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
 
   const handleOpenSupplierDetails = (insumo: Insumo) => {
     setSelectedInsumoForDetails(insumo);
-    setIsSupplierDetailsSheetOpen(true); // Changed state setter
+    setIsSupplierDetailsDialogOpen(true);
   };
 
   const handleCloseSupplierDetails = () => {
-    setIsSupplierDetailsSheetOpen(false); // Changed state setter
+    setIsSupplierDetailsDialogOpen(false);
     setSelectedInsumoForDetails(null);
   };
 
@@ -177,8 +177,8 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
           <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             Análisis de Compras ({formattedStartDate} - {formattedEndDate})
           </CardTitle>
-          <Sheet open={isSuggestedPurchaseListOpen} onOpenChange={setIsSuggestedPurchaseListOpen}> {/* Changed from Dialog */}
-            <SheetTrigger asChild> {/* Changed from DialogTrigger */}
+          <Dialog open={isSuggestedPurchaseListOpen} onOpenChange={setIsSuggestedPurchaseListOpen}>
+            <DialogTrigger asChild>
               <Button
                 variant="outline"
                 className="px-4 py-2 text-base bg-blue-500 hover:bg-blue-600 text-white transition-colors duration-200 ease-in-out"
@@ -187,19 +187,19 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                 <ShoppingBag className="mr-2 h-4 w-4" />
                 Ver Sugerencias de Compra ({insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0).length})
               </Button>
-            </SheetTrigger>
-            <SheetContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-3xl p-6 max-h-[90vh] overflow-y-auto"> {/* Changed from DialogContent */}
-              <SheetHeader> {/* Changed from DialogHeader */}
-                <SheetTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100"> {/* Changed from DialogTitle */}
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-3xl p-6 max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   Lista de Compras Sugeridas
-                </SheetTitle>
-              </SheetHeader>
+                </DialogTitle>
+              </DialogHeader>
               <SuggestedPurchaseListContent
                 suggestedPurchases={insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0)}
                 onClose={handleCloseSuggestedPurchaseList}
               />
-            </SheetContent>
-          </Sheet>
+            </DialogContent>
+          </Dialog>
         </CardHeader>
         <CardContent>
           {insumosForPurchase.length > 0 ? (
@@ -274,24 +274,14 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                         S/ {insumo.estimated_purchase_cost.toFixed(2)}
                       </TableCell>
                       <TableCell className="text-center py-3 px-6">
-                        <Sheet open={isSupplierDetailsSheetOpen && selectedInsumoForDetails?.id === insumo.id} onOpenChange={setIsSupplierDetailsSheetOpen}> {/* Changed from Dialog */}
-                          <SheetTrigger asChild> {/* Changed from DialogTrigger */}
-                            <Button
-                              variant="outline"
-                              size="icon"
-                              onClick={() => handleOpenSupplierDetails(insumo)}
-                              className="h-10 w-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out"
-                            >
-                              <Building2 className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                            </Button>
-                          </SheetTrigger>
-                          {selectedInsumoForDetails && (
-                            <InsumoSupplierDetailsSheet // Changed component name
-                              insumo={selectedInsumoForDetails}
-                              onClose={handleCloseSupplierDetails}
-                            />
-                          )}
-                        </Sheet>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          onClick={() => handleOpenSupplierDetails(insumo)}
+                          className="h-10 w-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out"
+                        >
+                          <Building2 className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                        </Button>
                       </TableCell>
                     </TableRow>
                   ))}
@@ -307,6 +297,15 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
           )}
         </CardContent>
       </Card>
+
+      <Dialog open={isSupplierDetailsDialogOpen} onOpenChange={setIsSupplierDetailsDialogOpen}>
+        {selectedInsumoForDetails && (
+          <InsumoSupplierDetailsDialog
+            insumo={selectedInsumoForDetails}
+            onClose={handleCloseSupplierDetails}
+          />
+        )}
+      </Dialog>
     </div>
   );
 };

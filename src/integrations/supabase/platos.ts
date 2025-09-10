@@ -27,17 +27,11 @@ const calculatePlatoCosts = async (
   };
 };
 
-export const getPlatos = async (searchTerm?: string): Promise<Plato[]> => { // Added searchTerm parameter
-  let query = supabase
+export const getPlatos = async (): Promise<Plato[]> => {
+  const { data, error } = await supabase
     .from("platos")
     .select("*, plato_insumos(*, insumos(*))") // Fetch plato_insumos and nested insumos
     .order("created_at", { ascending: false });
-
-  if (searchTerm) {
-    query = query.ilike("nombre", `%${searchTerm}%`);
-  }
-
-  const { data, error } = await query;
 
   if (error) throw new Error(error.message);
   return data;
@@ -58,7 +52,7 @@ export const getPlatoById = async (id: string): Promise<Plato | null> => {
 };
 
 export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> => {
-  const { nombre, descripcion, insumos } = platoData;
+  const { nombre, descripcion, precio_venta, insumos } = platoData; // NEW: Added precio_venta
 
   // Get authenticated user ID
   const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -67,10 +61,10 @@ export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> =>
   // Calculate production cost
   const { costo_produccion } = await calculatePlatoCosts(insumos);
 
-  // Insert the main plato with calculated costs and user_id
+  // Insert the main plato with calculated costs, precio_venta and user_id
   const { data: newPlato, error: platoError } = await supabase
     .from("platos")
-    .insert({ nombre, descripcion, costo_produccion, user_id: user.id })
+    .insert({ nombre, descripcion, costo_produccion, precio_venta, user_id: user.id }) // NEW: Added precio_venta
     .select()
     .single();
 
@@ -107,15 +101,15 @@ export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> =>
 };
 
 export const updatePlato = async (id: string, platoData: PlatoFormValues): Promise<Plato> => {
-  const { nombre, descripcion, insumos } = platoData;
+  const { nombre, descripcion, precio_venta, insumos } = platoData; // NEW: Added precio_venta
 
   // Calculate production cost
   const { costo_produccion } = await calculatePlatoCosts(insumos);
 
-  // Update the main plato with calculated costs
+  // Update the main plato with calculated costs and precio_venta
   const { data: updatedPlato, error: platoError } = await supabase
     .from("platos")
-    .update({ nombre, descripcion, costo_produccion })
+    .update({ nombre, descripcion, costo_produccion, precio_venta }) // NEW: Added precio_venta
     .eq("id", id)
     .select()
     .single();

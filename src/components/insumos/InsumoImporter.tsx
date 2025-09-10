@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Download } from "lucide-react";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { InsumoFormValues } from "@/types";
-import * as Papa from "papaparse"; // Import the entire module as Papa
+import * as Papa from "papaparse"; // Changed import to import as namespace
 import * as z from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { createMultipleInsumos } from "@/integrations/supabase/insumos";
@@ -77,7 +77,7 @@ const InsumoImporter: React.FC<InsumoImporterProps> = ({ onSuccess, onCancel }) 
     reader.onload = async (e) => {
       const text = e.target?.result as string;
 
-      (Papa.parse as any)(text, { // Using Papa.parse with type assertion
+      Papa.parse(text, { // Using Papa.parse directly
         header: true,
         skipEmptyLines: true,
         complete: async (results: Papa.ParseResult<any>) => {

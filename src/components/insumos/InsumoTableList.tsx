@@ -23,8 +23,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge";
-import { Sheet, SheetTrigger } from "@/components/ui/sheet"; // Changed from Dialog
-import InsumoSupplierDetailsSheet from "./InsumoSupplierDetailsSheet"; // Changed import
+import { Dialog } from "@/components/ui/dialog";
+import InsumoSupplierDetailsDialog from "./InsumoSupplierDetailsDialog";
 
 interface InsumoTableListProps {
   insumos: Insumo[];
@@ -33,7 +33,7 @@ interface InsumoTableListProps {
 
 const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) => {
   const deleteMutation = useDeleteInsumo();
-  const [isSupplierDetailsSheetOpen, setIsSupplierDetailsSheetOpen] = useState(false); // Changed state name
+  const [isSupplierDetailsDialogOpen, setIsSupplierDetailsDialogOpen] = useState(false);
   const [selectedInsumoForDetails, setSelectedInsumoForDetails] = useState<Insumo | null>(null);
 
   const handleDelete = (id: string) => {
@@ -42,11 +42,11 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
 
   const handleOpenSupplierDetails = (insumo: Insumo) => {
     setSelectedInsumoForDetails(insumo);
-    setIsSupplierDetailsSheetOpen(true); // Changed state setter
+    setIsSupplierDetailsDialogOpen(true);
   };
 
   const handleCloseSupplierDetails = () => {
-    setIsSupplierDetailsSheetOpen(false); // Changed state setter
+    setIsSupplierDetailsDialogOpen(false);
     setSelectedInsumoForDetails(null);
   };
 
@@ -107,24 +107,14 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
                 >
                   <Edit className="h-5 w-5 text-blue-600" />
                 </Button>
-                <Sheet open={isSupplierDetailsSheetOpen && selectedInsumoForDetails?.id === insumo.id} onOpenChange={setIsSupplierDetailsSheetOpen}> {/* Changed from Dialog */}
-                  <SheetTrigger asChild> {/* Changed from DialogTrigger */}
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={() => handleOpenSupplierDetails(insumo)}
-                      className="h-10 w-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out"
-                    >
-                      <Building2 className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                    </Button>
-                  </SheetTrigger>
-                  {selectedInsumoForDetails && (
-                    <InsumoSupplierDetailsSheet // Changed component name
-                      insumo={selectedInsumoForDetails}
-                      onClose={handleCloseSupplierDetails}
-                    />
-                  )}
-                </Sheet>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleOpenSupplierDetails(insumo)}
+                  className="h-10 w-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out"
+                >
+                  <Building2 className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
                     <Button
@@ -158,6 +148,15 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
           ))}
         </TableBody>
       </Table>
+
+      <Dialog open={isSupplierDetailsDialogOpen} onOpenChange={setIsSupplierDetailsDialogOpen}>
+        {selectedInsumoForDetails && (
+          <InsumoSupplierDetailsDialog
+            insumo={selectedInsumoForDetails}
+            onClose={handleCloseSupplierDetails}
+          />
+        )}
+      </Dialog>
     </div>
   );
 };

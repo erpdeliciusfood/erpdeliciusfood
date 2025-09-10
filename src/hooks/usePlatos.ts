@@ -1,14 +1,12 @@
-"use client";
-
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPlatos, getPlatoById, createPlato, updatePlato, deletePlato } from "@/integrations/supabase/platos";
 import { Plato, PlatoFormValues } from "@/types";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
-export const usePlatos = (searchTerm?: string) => { // Added searchTerm parameter
+export const usePlatos = () => {
   return useQuery<Plato[], Error>({
-    queryKey: ["platos", searchTerm], // Include searchTerm in query key
-    queryFn: () => getPlatos(searchTerm), // Pass searchTerm to getPlatos
+    queryKey: ["platos"],
+    queryFn: getPlatos,
   });
 };
 

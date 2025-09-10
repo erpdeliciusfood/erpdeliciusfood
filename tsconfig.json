@@ -19,13 +19,12 @@
     "noUnusedLocals": true,
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true,
-
-    /* Path Aliases */
     "baseUrl": ".",
     "paths": {
       "@/*": ["./src/*"]
     }
   },
-  "include": ["src", "vite.config.ts", "postcss.config.js", "tailwind.config.ts", "eslint.config.js", "capacitor.config.ts"],
-  "references": [{ "path": "./tsconfig.node.json" }, { "path": "./tsconfig.app.json" }]
+  "include": ["src", "vite.config.ts"],
+  "exclude": ["node_modules", "dist", "supabase/functions"],
+  "references": [{ "path": "./tsconfig.node.json" }]
 }

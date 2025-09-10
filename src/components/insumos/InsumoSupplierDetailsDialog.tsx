@@ -1,9 +1,9 @@
 import React, { useEffect } from "react";
 import {
-  SheetContent,
-  SheetHeader,
-  SheetTitle,
-} from "@/components/ui/sheet"; // Changed from Dialog
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Insumo, InsumoSupplierHistory, InsumoPriceHistory, InsumoFormValues } from "@/types";
+import { Insumo, InsumoSupplierHistory, InsumoPriceHistory, InsumoFormValues } from "@/types"; // Import InsumoFormValues
 import { useUpdateInsumo, useInsumoSupplierHistory, useInsumoPriceHistory } from "@/hooks/useInsumos";
 import { Loader2, Building2, DollarSign, History } from "lucide-react";
 import { format } from "date-fns";
@@ -35,12 +35,12 @@ const supplierFormSchema = z.object({
   }).nullable(),
 });
 
-interface InsumoSupplierDetailsSheetProps { // Changed interface name
+interface InsumoSupplierDetailsDialogProps {
   insumo: Insumo;
   onClose: () => void;
 }
 
-const InsumoSupplierDetailsSheet: React.FC<InsumoSupplierDetailsSheetProps> = ({ insumo, onClose }) => { // Changed component name
+const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = ({ insumo, onClose }) => {
   const updateInsumoMutation = useUpdateInsumo();
   const { data: supplierHistory, isLoading: isLoadingSupplierHistory } = useInsumoSupplierHistory(insumo.id);
   const { data: priceHistory, isLoading: isLoadingPriceHistory } = useInsumoPriceHistory(insumo.id);
@@ -84,7 +84,7 @@ const InsumoSupplierDetailsSheet: React.FC<InsumoSupplierDetailsSheetProps> = ({
         insumo: updatedInsumoData,
       });
       showSuccess("Datos del proveedor actualizados exitosamente.");
-      onClose(); // Close sheet on success
+      onClose(); // Close dialog on success
     } catch (error: any) {
       showError(`Error al actualizar el proveedor: ${error.message}`);
     }
@@ -93,12 +93,12 @@ const InsumoSupplierDetailsSheet: React.FC<InsumoSupplierDetailsSheetProps> = ({
   const isUpdating = updateInsumoMutation.isPending;
 
   return (
-    <SheetContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto"> {/* Changed from DialogContent */}
-      <SheetHeader> {/* Changed from DialogHeader */}
-        <SheetTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100"> {/* Changed from DialogTitle */}
+    <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
           Detalles del Proveedor y Historial de {insumo.nombre}
-        </SheetTitle>
-      </SheetHeader>
+        </DialogTitle>
+      </DialogHeader>
       <Tabs defaultValue="current-supplier" className="w-full mt-4">
         <TabsList className="grid w-full grid-cols-2">
           <TabsTrigger value="current-supplier" className="text-base">Proveedor Actual</TabsTrigger>
@@ -238,8 +238,8 @@ const InsumoSupplierDetailsSheet: React.FC<InsumoSupplierDetailsSheetProps> = ({
           </div>
         </TabsContent>
       </Tabs>
-    </SheetContent>
+    </DialogContent>
   );
 };
 
-export default InsumoSupplierDetailsSheet;
+export default InsumoSupplierDetailsDialog;

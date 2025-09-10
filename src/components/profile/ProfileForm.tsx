@@ -47,7 +47,7 @@ const ProfileForm: React.FC = () => {
   }, [profile, form]);
 
   const onSubmit = async (values: ProfileFormValues) => {
-    await updateProfileMutation.mutateAsync(values);
+    await updateProfileMutation.mutateAsync({ profileData: values }); // Wrapped values in profileData
   };
 
   const isLoading = isProfileLoading || updateProfileMutation.isPending;

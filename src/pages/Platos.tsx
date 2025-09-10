@@ -1,22 +1,18 @@
-"use client";
-
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"; // Changed Dialog to Sheet
-import { Loader2, PlusCircle, Search, ChefHat } from "lucide-react";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Loader2, PlusCircle } from "lucide-react";
 import { usePlatos } from "@/hooks/usePlatos";
 import PlatoList from "@/components/platos/PlatoList";
 import PlatoForm from "@/components/platos/PlatoForm";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Plato } from "@/types";
-import { Input } from "@/components/ui/input";
 
 const Platos = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPlato, setEditingPlato] = useState<Plato | null>(null);
-  const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: platos, isLoading, isError, error } = usePlatos(searchTerm);
+  const { data: platos, isLoading, isError, error } = usePlatos();
 
   const handleAddClick = () => {
     setEditingPlato(null);
@@ -55,8 +51,8 @@ const Platos = () => {
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100">Gestión de Platos</h1>
-        <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}> {/* Changed Dialog to Sheet */}
-          <SheetTrigger asChild> {/* Changed DialogTrigger to SheetTrigger */}
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogTrigger asChild>
             <Button
               onClick={handleAddClick}
               className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
@@ -64,31 +60,20 @@ const Platos = () => {
               <PlusCircle className="mr-3 h-6 w-6" />
               Añadir Plato
             </Button>
-          </SheetTrigger>
-          <SheetContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-2xl p-6 max-h-[90vh] overflow-y-auto"> {/* Changed DialogContent to SheetContent */}
-            <SheetHeader> {/* Changed DialogHeader to SheetHeader */}
-              <SheetTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100"> {/* Changed DialogTitle to SheetTitle */}
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-2xl p-6">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {editingPlato ? "Editar Plato" : "Añadir Nuevo Plato"}
-              </SheetTitle>
-            </SheetHeader>
+              </DialogTitle>
+            </DialogHeader>
             <PlatoForm
               initialData={editingPlato}
               onSuccess={handleFormClose}
               onCancel={handleFormClose}
             />
-          </SheetContent>
-        </Sheet>
-      </div>
-
-      <div className="relative flex-grow w-full mb-6">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 dark:text-gray-400" />
-        <Input
-          type="text"
-          placeholder="Buscar plato por nombre..."
-          className="pl-10 pr-4 py-2 h-12 text-base w-full"
-          value={searchTerm}
-          onChange={(e) => setSearchTerm(e.target.value)}
-        />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex-grow">
@@ -96,8 +81,7 @@ const Platos = () => {
           <PlatoList platos={platos} onEdit={handleEditClick} />
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">
-            <ChefHat className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
-            <p className="text-xl mb-4">No hay platos registrados o que coincidan con tu búsqueda. ¡Añade el primero!</p>
+            <p className="text-xl mb-4">No hay platos registrados. ¡Añade el primero!</p>
             <Button
               onClick={handleAddClick}
               className="px-6 py-3 text-lg bg-secondary hover:bg-secondary-foreground text-secondary-foreground hover:text-secondary transition-colors duration-200 ease-in-out"

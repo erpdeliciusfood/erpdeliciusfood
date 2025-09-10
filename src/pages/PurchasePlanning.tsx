@@ -10,7 +10,7 @@ import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import PurchaseAnalysis from "@/components/purchase-planning/PurchaseAnalysis";
 import { DateRange } from "react-day-picker";
-import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"; // Changed Dialog to Sheet
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
 
 const PurchasePlanning = () => {
@@ -118,8 +118,8 @@ const PurchasePlanning = () => {
               </PopoverContent>
             </Popover>
           )}
-          <Sheet open={isRegisterPurchaseFormOpen} onOpenChange={setIsRegisterPurchaseFormOpen}>
-            <SheetTrigger asChild>
+          <Dialog open={isRegisterPurchaseFormOpen} onOpenChange={setIsRegisterPurchaseFormOpen}>
+            <DialogTrigger asChild>
               <Button
                 onClick={() => setIsRegisterPurchaseFormOpen(true)}
                 className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
@@ -127,19 +127,19 @@ const PurchasePlanning = () => {
                 <PlusCircle className="mr-3 h-6 w-6" />
                 Registrar Compra
               </Button>
-            </SheetTrigger>
-            <SheetContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
-              <SheetHeader>
-                <SheetTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   Registrar Nueva Compra
-                </SheetTitle>
-              </SheetHeader>
+                </DialogTitle>
+              </DialogHeader>
               <PurchaseRecordForm
                 onSuccess={handleRegisterPurchaseFormClose}
                 onCancel={handleRegisterPurchaseFormClose}
               />
-            </SheetContent>
-          </Sheet>
+            </DialogContent>
+          </Dialog>
         </div>
       </div>
 
