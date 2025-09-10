@@ -1,3 +1,5 @@
+"use client";
+
 import React from "react";
 import {
   Table,
@@ -8,10 +10,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, UtensilsCrossed } from "lucide-react";
+import { Edit, Trash2, UtensilsCrossed, ChevronDown } from "lucide-react";
 import { Plato } from "@/types";
 import { useDeletePlato } from "@/hooks/usePlatos";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 
 interface PlatoListProps {
   platos: Plato[];
@@ -57,7 +60,6 @@ const PlatoList: React.FC<PlatoListProps> = ({ platos, onEdit }) => {
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Nombre</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Descripción</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Producción (S/)</TableHead>
-            {/* <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Precio de Venta (S/)</TableHead> */} {/* REMOVED */}
             <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -65,50 +67,76 @@ const PlatoList: React.FC<PlatoListProps> = ({ platos, onEdit }) => {
           {platos.map((plato) => {
             const productionCost = calculateProductionCost(plato);
             return (
-              <TableRow key={plato.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
-                <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{plato.nombre}</TableCell>
-                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{plato.descripcion || "N/A"}</TableCell>
-                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {productionCost.toFixed(2)}</TableCell>
-                {/* <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {plato.precio_venta.toFixed(2)}</TableCell> */} {/* REMOVED */}
-                <TableCell className="flex justify-center space-x-2 py-3 px-6">
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={() => onEdit(plato)}
-                    className="h-10 w-10 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150 ease-in-out"
-                  >
-                    <Edit className="h-5 w-5 text-blue-600" />
-                  </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="icon"
-                        className="h-10 w-10 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition-colors duration-150 ease-in-out"
-                      >
-                        <Trash2 className="h-5 w-5 text-red-600" />
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="p-6">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
-                        <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                          Esta acción no se puede deshacer. Esto eliminará permanentemente el plato <span className="font-semibold">{plato.nombre}</span> y sus insumos asociados de nuestros servidores.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
-                        <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(plato.id)}
-                          className="w-full sm:w-auto px-6 py-3 text-lg bg-destructive hover:bg-destructive-foreground text-destructive-foreground hover:text-destructive transition-colors duration-200 ease-in-out"
+              <React.Fragment key={plato.id}>
+                <TableRow className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
+                  <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{plato.nombre}</TableCell>
+                  <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{plato.descripcion || "N/A"}</TableCell>
+                  <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {productionCost.toFixed(2)}</TableCell>
+                  <TableCell className="flex justify-center space-x-2 py-3 px-6">
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => onEdit(plato)}
+                      className="h-10 w-10 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150 ease-in-out"
+                    >
+                      <Edit className="h-5 w-5 text-blue-600" />
+                    </Button>
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-10 w-10 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition-colors duration-150 ease-in-out"
                         >
-                          Eliminar
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
-                </TableCell>
-              </TableRow>
+                          <Trash2 className="h-5 w-5 text-red-600" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="p-6">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
+                          <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente el plato <span className="font-semibold">{plato.nombre}</span> y sus insumos asociados de nuestros servidores.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
+                          <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(plato.id)}
+                            className="w-full sm:w-auto px-6 py-3 text-lg bg-destructive hover:bg-destructive-foreground text-destructive-foreground hover:text-destructive transition-colors duration-200 ease-in-out"
+                          >
+                            Eliminar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  </TableCell>
+                </TableRow>
+                {plato.plato_insumos && plato.plato_insumos.length > 0 && (
+                  <TableRow className="bg-gray-50 dark:bg-gray-700">
+                    <TableCell colSpan={4} className="p-0">
+                      <Accordion type="single" collapsible className="w-full">
+                        <AccordionItem value={`item-${plato.id}`} className="border-none">
+                          <AccordionTrigger className="flex items-center justify-between w-full px-6 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:no-underline hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-150 ease-in-out">
+                            Ver Insumos del Plato
+                            <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
+                          </AccordionTrigger>
+                          <AccordionContent className="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
+                            <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Insumos:</h4>
+                            <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
+                              {plato.plato_insumos.map((pi, idx) => (
+                                <li key={idx} className="text-base">
+                                  <span className="font-medium text-gray-800 dark:text-gray-200">{pi.insumos?.nombre || "Insumo Desconocido"}</span>
+                                  {" "} (Cantidad: {pi.cantidad_necesaria} {pi.insumos?.base_unit || "unidad"})
+                                </li>
+                              ))}
+                            </ul>
+                          </AccordionContent>
+                        </AccordionItem>
+                      </Accordion>
+                    </TableCell>
+                  </TableRow>
+                )}
+              </React.Fragment>
             );
           })}
         </TableBody>

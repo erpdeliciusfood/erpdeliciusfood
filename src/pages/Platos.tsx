@@ -1,18 +1,22 @@
+"use client";
+
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, PlusCircle } from "lucide-react";
+import { Loader2, PlusCircle, Search, ChefHat } from "lucide-react";
 import { usePlatos } from "@/hooks/usePlatos";
 import PlatoList from "@/components/platos/PlatoList";
 import PlatoForm from "@/components/platos/PlatoForm";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Plato } from "@/types";
+import { Input } from "@/components/ui/input";
 
 const Platos = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingPlato, setEditingPlato] = useState<Plato | null>(null);
+  const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: platos, isLoading, isError, error } = usePlatos();
+  const { data: platos, isLoading, isError, error } = usePlatos(searchTerm); // Pass searchTerm to usePlatos
 
   const handleAddClick = () => {
     setEditingPlato(null);
@@ -61,7 +65,7 @@ const Platos = () => {
               Añadir Plato
             </Button>
           </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-2xl p-6">
+          <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {editingPlato ? "Editar Plato" : "Añadir Nuevo Plato"}
@@ -76,12 +80,24 @@ const Platos = () => {
         </Dialog>
       </div>
 
+      <div className="relative flex-grow w-full mb-6">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 dark:text-gray-400" />
+        <Input
+          type="text"
+          placeholder="Buscar plato por nombre..."
+          className="pl-10 pr-4 py-2 h-12 text-base w-full"
+          value={searchTerm}
+          onChange={(e) => setSearchTerm(e.target.value)}
+        />
+      </div>
+
       <div className="flex-grow">
         {platos && platos.length > 0 ? (
           <PlatoList platos={platos} onEdit={handleEditClick} />
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">
-            <p className="text-xl mb-4">No hay platos registrados. ¡Añade el primero!</p>
+            <ChefHat className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
+            <p className="text-xl mb-4">No hay platos registrados o que coincidan con tu búsqueda. ¡Añade el primero!</p>
             <Button
               onClick={handleAddClick}
               className="px-6 py-3 text-lg bg-secondary hover:bg-secondary-foreground text-secondary-foreground hover:text-secondary transition-colors duration-200 ease-in-out"
