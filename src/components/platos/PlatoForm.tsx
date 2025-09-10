@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plato, PlatoFormValues, Insumo } from "@/types";
+import { Plato, PlatoFormValues } from "@/types";
 import { useAddPlato, useUpdatePlato } from "@/hooks/usePlatos";
 import { useInsumos } from "@/hooks/useInsumos";
 import { Loader2, PlusCircle, Trash2 } from "lucide-react";
@@ -50,7 +50,8 @@ interface PlatoFormProps {
 const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel }) => {
   const addMutation = useAddPlato();
   const updateMutation = useUpdatePlato();
-  const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos();
+  // Fetch all insumos by setting a very large pageSize
+  const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos(undefined, undefined, 1, 9999);
 
   const form = useForm<PlatoFormValues>({
     resolver: zodResolver(formSchema),
