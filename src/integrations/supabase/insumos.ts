@@ -28,6 +28,19 @@ export const createInsumo = async (insumo: InsumoFormValues): Promise<Insumo> =>
   return data;
 };
 
+// NEW: Function to create multiple insumos in a batch
+export const createMultipleInsumos = async (insumos: InsumoFormValues[]): Promise<number> => {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) throw new Error("User not authenticated.");
+
+  const insumosWithUserId = insumos.map(insumo => ({ ...insumo, user_id: user.id }));
+
+  const { data, error } = await supabase.from("insumos").insert(insumosWithUserId).select("id");
+
+  if (error) throw new Error(error.message);
+  return data ? data.length : 0;
+};
+
 export const updateInsumo = async (id: string, insumo: InsumoFormValues): Promise<Insumo> => {
   const { data, error } = await supabase.from("insumos").update(insumo).eq("id", id).select().single();
   if (error) throw new Error(error.message);

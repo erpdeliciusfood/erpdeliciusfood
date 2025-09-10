@@ -1,17 +1,20 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, PlusCircle, Search } from "lucide-react"; // Added Search icon
+import { Loader2, PlusCircle, Search, Upload } from "lucide-react"; // Added Search and Upload icons
 import { useInsumos } from "@/hooks/useInsumos";
 import InsumoList from "@/components/insumos/InsumoList";
 import InsumoForm from "@/components/insumos/InsumoForm";
+import InsumoImporter from "@/components/insumos/InsumoImporter"; // Import the new component
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { Input } from "@/components/ui/input"; // Added Input
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Added Select
+import { Input } from "@/components/ui/input";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const INSUMO_CATEGORIES = [
   "Todos", // Option to show all categories
-  "Cereales y Legumbres",
+  "Cereales",
+  "Legumbres",
+  "Carbohidrato / Cereales",
   "Proteínas (Carnes, Aves, Pescados)",
   "Lácteos y Huevos",
   "Verduras y Hortalizas",
@@ -25,9 +28,10 @@ const INSUMO_CATEGORIES = [
 
 const Insumos = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
+  const [isImportFormOpen, setIsImportFormOpen] = useState(false); // New state for import dialog
   const [editingInsumo, setEditingInsumo] = useState(null);
-  const [searchTerm, setSearchTerm] = useState(""); // State for search term
-  const [selectedCategory, setSelectedCategory] = useState("Todos"); // State for category filter
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("Todos");
 
   const { data: insumos, isLoading, isError, error } = useInsumos(searchTerm, selectedCategory === "Todos" ? undefined : selectedCategory);
 
@@ -44,6 +48,10 @@ const Insumos = () => {
   const handleFormClose = () => {
     setIsFormOpen(false);
     setEditingInsumo(null);
+  };
+
+  const handleImportFormClose = () => {
+    setIsImportFormOpen(false);
   };
 
   if (isLoading) {
@@ -68,29 +76,51 @@ const Insumos = () => {
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100">Gestión de Insumos</h1>
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogTrigger asChild>
-            <Button
-              onClick={handleAddClick}
-              className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
-            >
-              <PlusCircle className="mr-3 h-6 w-6" />
-              Añadir Insumo
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                {editingInsumo ? "Editar Insumo" : "Añadir Nuevo Insumo"}
-              </DialogTitle>
-            </DialogHeader>
-            <InsumoForm
-              initialData={editingInsumo}
-              onSuccess={handleFormClose}
-              onCancel={handleFormClose}
-            />
-          </DialogContent>
-        </Dialog>
+        <div className="flex space-x-4">
+          <Dialog open={isImportFormOpen} onOpenChange={setIsImportFormOpen}>
+            <DialogTrigger asChild>
+              <Button
+                onClick={() => setIsImportFormOpen(true)}
+                className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-secondary hover:bg-secondary-foreground text-secondary-foreground hover:text-secondary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
+              >
+                <Upload className="mr-3 h-6 w-6" />
+                Importar Insumos
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  Importar Insumos desde CSV
+                </DialogTitle>
+              </DialogHeader>
+              <InsumoImporter onSuccess={handleImportFormClose} onCancel={handleImportFormClose} />
+            </DialogContent>
+          </Dialog>
+
+          <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <DialogTrigger asChild>
+              <Button
+                onClick={handleAddClick}
+                className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
+              >
+                <PlusCircle className="mr-3 h-6 w-6" />
+                Añadir Insumo
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  {editingInsumo ? "Editar Insumo" : "Añadir Nuevo Insumo"}
+                </DialogTitle>
+              </DialogHeader>
+              <InsumoForm
+                initialData={editingInsumo}
+                onSuccess={handleFormClose}
+                onCancel={handleFormClose}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 mb-6">

@@ -76,7 +76,9 @@ const UNIDADES_COMPRA = [
 ];
 
 const INSUMO_CATEGORIES = [
-  "Cereales y Legumbres",
+  "Cereales",
+  "Legumbres",
+  "Carbohidrato / Cereales",
   "Proteínas (Carnes, Aves, Pescados)",
   "Lácteos y Huevos",
   "Verduras y Hortalizas",
