@@ -9,7 +9,7 @@ import { useAddInsumo, useUpdateInsumo } from "@/hooks/useInsumos";
 import { Loader2 } from "lucide-react";
 import InsumoBasicDetailsFormSection from "./InsumoBasicDetailsFormSection";
 import InsumoStockAndCostFormSection from "./InsumoStockAndCostFormSection";
-import InsumoSupplierFormSection from "./InsumoSupplierFormSection";
+// import InsumoSupplierFormSection from "./InsumoSupplierFormSection"; // REMOVED
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -43,19 +43,19 @@ const formSchema = z.object({
   }).max(999999, {
     message: "El nivel mínimo de stock no debe exceder 999999.",
   }),
-  supplier_name: z.string().max(100, {
-    message: "El nombre del proveedor no debe exceder los 100 caracteres.",
-  }).nullable(),
-  supplier_phone: z.string().nullable().refine((val) => {
-    if (!val) return true; // Allow null or empty string
-    // Regex for +51 followed by 9 digits
-    return /^\+51\d{9}$/.test(val);
-  }, {
-    message: "El teléfono debe empezar con +51 y tener 9 dígitos (ej. +51987654321).",
-  }),
-  supplier_address: z.string().max(255, {
-    message: "La dirección del proveedor no debe exceder los 255 caracteres.",
-  }).nullable(),
+  // supplier_name: z.string().max(100, { // REMOVED
+  //   message: "El nombre del proveedor no debe exceder los 100 caracteres.",
+  // }).nullable(),
+  // supplier_phone: z.string().nullable().refine((val) => { // REMOVED
+  //   if (!val) return true; // Allow null or empty string
+  //   // Regex for +51 followed by 9 digits
+  //   return /^\+51\d{9}$/.test(val);
+  // }, {
+  //   message: "El teléfono debe empezar con +51 y tener 9 dígitos (ej. +51987654321).",
+  // }),
+  // supplier_address: z.string().max(255, { // REMOVED
+  //   message: "La dirección del proveedor no debe exceder los 255 caracteres.",
+  // }).nullable(),
   category: z.string().min(1, {
     message: "Debe seleccionar una categoría.",
   }),
@@ -110,9 +110,9 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
       costo_unitario: 0,
       stock_quantity: 0,
       min_stock_level: 0,
-      supplier_name: "",
-      supplier_phone: "",
-      supplier_address: "",
+      // supplier_name: "", // REMOVED
+      // supplier_phone: "", // REMOVED
+      // supplier_address: "", // REMOVED
       category: "Otros",
     },
   });
@@ -130,9 +130,9 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         costo_unitario: initialData.costo_unitario,
         stock_quantity: initialData.stock_quantity,
         min_stock_level: initialData.min_stock_level,
-        supplier_name: initialData.supplier_name || "",
-        supplier_phone: initialData.supplier_phone || "",
-        supplier_address: initialData.supplier_address || "",
+        // supplier_name: initialData.supplier_name || "", // REMOVED
+        // supplier_phone: initialData.supplier_phone || "", // REMOVED
+        // supplier_address: initialData.supplier_address || "", // REMOVED
         category: initialData.category || "Otros",
       });
       setIsConversionFactorEditable(true);
@@ -145,9 +145,9 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         costo_unitario: 0,
         stock_quantity: 0,
         min_stock_level: 0,
-        supplier_name: "",
-        supplier_phone: "",
-        supplier_address: "",
+        // supplier_name: "", // REMOVED
+        // supplier_phone: "", // REMOVED
+        // supplier_address: "", // REMOVED
         category: "Otros",
       });
       setIsConversionFactorEditable(true);
@@ -198,7 +198,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
             INSUMO_CATEGORIES={INSUMO_CATEGORIES}
           />
           <InsumoStockAndCostFormSection isLoading={isLoading} />
-          <InsumoSupplierFormSection isLoading={isLoading} />
+          {/* <InsumoSupplierFormSection isLoading={isLoading} /> */} {/* REMOVED */}
 
           <div className="flex justify-end space-x-4 pt-4">
             <Button
