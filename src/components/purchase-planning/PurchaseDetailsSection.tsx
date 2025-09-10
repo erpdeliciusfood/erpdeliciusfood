@@ -22,6 +22,7 @@ interface PurchaseDetailsSectionProps {
   selectedInsumoId: string;
   purchaseUnit: string;
   setLastChangedField: (field: 'quantity' | 'unitCost' | 'total' | null) => void;
+  lastChangedField: 'quantity' | 'unitCost' | 'total' | null; // NEW: Add lastChangedField prop
 }
 
 const PurchaseDetailsSection: React.FC<PurchaseDetailsSectionProps> = ({
@@ -29,6 +30,7 @@ const PurchaseDetailsSection: React.FC<PurchaseDetailsSectionProps> = ({
   selectedInsumoId,
   purchaseUnit,
   setLastChangedField,
+  lastChangedField, // NEW: Destructure lastChangedField
 }) => {
   const form = useFormContext<PurchaseRecordFormValues>();
 
@@ -56,11 +58,13 @@ const PurchaseDetailsSection: React.FC<PurchaseDetailsSectionProps> = ({
       }
     };
 
-    // This effect runs on every render, but the calculations only trigger if `lastChangedField` is set
-    // and there's a significant difference to avoid unnecessary re-renders and infinite loops.
-    // The `setLastChangedField` is called in the onChange handlers of the inputs.
-    // This ensures that only one calculation path is active at a time.
-  }, [quantityPurchased, unitCostAtPurchase, totalAmount, form, setLastChangedField]);
+    // Only perform calculation if a field was explicitly marked as last changed
+    if (lastChangedField === 'quantity' || lastChangedField === 'unitCost') {
+      calculateTotal();
+    } else if (lastChangedField === 'total') {
+      calculateUnitCost();
+    }
+  }, [quantityPurchased, unitCostAtPurchase, totalAmount, form, lastChangedField]); // Add lastChangedField to dependencies
 
 
   return (

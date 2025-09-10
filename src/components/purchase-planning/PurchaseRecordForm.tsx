@@ -22,6 +22,7 @@ import { Loader2 } from "lucide-react";
 import { PurchaseRecord, PurchaseRecordFormValues, Insumo } from "@/types";
 import { useAddPurchaseRecord, useUpdatePurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { useInsumos } from "@/hooks/useInsumos";
+import { format } from "date-fns"; // Import format
 
 // Import new modular sections
 import PurchaseDetailsSection from "./PurchaseDetailsSection";
@@ -77,7 +78,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       insumo_id: prefilledInsumoId || "",
-      purchase_date: initialData ? initialData.purchase_date : format(new Date(), "yyyy-MM-dd"),
+      purchase_date: initialData ? format(new Date(initialData.purchase_date), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
       quantity_purchased: prefilledQuantity || 0,
       unit_cost_at_purchase: prefilledUnitCost || 0,
       total_amount: (prefilledQuantity && prefilledUnitCost) ? parseFloat((prefilledQuantity * prefilledUnitCost).toFixed(2)) : 0,
