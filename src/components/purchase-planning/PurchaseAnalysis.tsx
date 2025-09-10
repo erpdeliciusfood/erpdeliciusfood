@@ -54,11 +54,8 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
     const insumoNeedsMap = new Map<string, number>(); // Map<insumoId, totalQuantityNeeded in purchase_unit>
 
     menus.forEach(menu => {
-      // For event menus without a specific date, consider them always.
-      // For daily menus, they are already filtered by the useMenus hook.
-      const isEventMenuWithoutDate = menu.event_type_id && menu.menu_date === null;
-
-      if (isEventMenuWithoutDate || (menu.menu_date && isWithinInterval(parseISO(menu.menu_date), { start: startDate, end: endDate }))) {
+      // Only consider menus that have a specific date within the selected range
+      if (menu.menu_date && isWithinInterval(parseISO(menu.menu_date), { start: startDate, end: endDate })) {
         menu.menu_platos?.forEach(menuPlato => {
           const plato = menuPlato.platos;
           if (plato) {
