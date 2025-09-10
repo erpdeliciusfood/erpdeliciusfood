@@ -31,7 +31,11 @@ interface InsumoNeeded extends Insumo {
 }
 
 const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate }) => {
-  const { data: menus, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenus();
+  // Fetch menus directly filtered by date range for efficiency
+  const { data: menus, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenus(
+    format(startDate, "yyyy-MM-dd"),
+    format(endDate, "yyyy-MM-dd")
+  );
   const { data: allInsumosData, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos(undefined, undefined, 1, 9999); // Renamed to allInsumosData
 
   const [isSupplierDetailsDialogOpen, setIsSupplierDetailsDialogOpen] = useState(false);
@@ -50,10 +54,11 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
     const insumoNeedsMap = new Map<string, number>(); // Map<insumoId, totalQuantityNeeded in purchase_unit>
 
     menus.forEach(menu => {
-      const menuDate = menu.menu_date ? parseISO(menu.menu_date) : null;
-      const isMenuInDateRange = menuDate && isWithinInterval(menuDate, { start: startDate, end: endDate });
+      // For event menus without a specific date, consider them always.
+      // For daily menus, they are already filtered by the useMenus hook.
+      const isEventMenuWithoutDate = menu.event_type_id && menu.menu_date === null;
 
-      if (isMenuInDateRange || (menu.event_type_id && menu.menu_date === null)) { // Consider event menus always if no specific date, or if daily menu is in range
+      if (isEventMenuWithoutDate || (menu.menu_date && isWithinInterval(parseISO(menu.menu_date), { start: startDate, end: endDate }))) {
         menu.menu_platos?.forEach(menuPlato => {
           const plato = menuPlato.platos;
           if (plato) {
@@ -265,7 +270,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                               </TooltipTrigger>
                               {insumo.purchase_suggestion_rounded_up && (
                                 <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                                  <p>Valor real: {insumo.quantity_needed_for_period_raw.toFixed(2)} {insumo.purchase_unit}</p>
+                                  <p>Valor real: {insumo.purchase_suggestion_raw.toFixed(2)} {insumo.purchase_unit}</p>
                                 </TooltipContent>
                               )}
                             </Tooltip>
@@ -295,8 +300,8 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
           ) : (
             <div className="text-center py-6 text-gray-600 dark:text-gray-400">
               <ShoppingBag className="mx-auto h-12 w-12 mb-3 text-gray-400 dark:text-gray-600" />
-              <p className="text-lg">No se encontraron necesidades de insumos para el periodo seleccionado.</p>
-              <p className="text-md mt-2">Asegúrate de tener menús planificados con recetas e insumos para este rango de fechas.</p> {/* Changed text */}
+              <p className="text-lg">No se encontraron necesidades de insumos para el período seleccionado o tu stock actual es suficiente.</p>
+              <p className="text-md mt-2">Asegúrate de tener menús planificados con recetas e insumos para este rango de fechas, o que tus niveles de stock estén por debajo de lo necesario o de tu stock mínimo.</p>
             </div>
           )}
         </CardContent>
