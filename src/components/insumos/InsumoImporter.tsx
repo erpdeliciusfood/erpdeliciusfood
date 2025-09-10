@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Download } from "lucide-react";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { InsumoFormValues } from "@/types";
-import * as Papa from "papaparse"; // Changed import back to namespace import
+import * as Papa from "papaparse"; // Reverted to namespace import
 import * as z from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { createMultipleInsumos } from "@/integrations/supabase/insumos";
@@ -50,7 +50,7 @@ const InsumoImporter: React.FC<InsumoImporterProps> = ({ onSuccess, onCancel }) 
     const headers = "nombre,category,base_unit,purchase_unit,costo_unitario,conversion_factor,stock_quantity,min_stock_level,supplier_name,supplier_phone,supplier_address";
     const exampleRow = "Quinua tricolor,Cereales,gramos,kilo,16.75,1000,0,0,Amagreen / Mayorista Saludable,,";
     const csvContent = [headers, exampleRow].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-t;" });
     const link = document.createElement("a");
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
@@ -77,7 +77,7 @@ const InsumoImporter: React.FC<InsumoImporterProps> = ({ onSuccess, onCancel }) 
     reader.onload = async (e) => {
       const text = e.target?.result as string;
 
-      Papa.parse(text, { // Using Papa.parse
+      Papa.parse(text, { // Using Papa.parse with the namespace
         header: true,
         skipEmptyLines: true,
         complete: async (results: Papa.ParseResult<any>) => {
