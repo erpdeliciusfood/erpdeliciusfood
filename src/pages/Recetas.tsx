@@ -3,10 +3,11 @@ import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
 import { Loader2, PlusCircle, ChefHat } from "lucide-react";
 import { useRecetas } from "@/hooks/useRecetas";
-import RecetaList from "@/components/recetas/RecetaList"; // Corregida la ruta de importación
-import RecetaForm from "@/components/recetas/RecetaForm"; // Corregida la ruta de importación
+import RecetaList from "@/components/recetas/RecetaList";
+import RecetaForm from "@/components/recetas/RecetaForm";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Receta } from "@/types";
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const Recetas = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -49,8 +50,12 @@ const Recetas = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100">Gestión de Recetas</h1>
+      <PageHeaderWithLogo
+        title="Gestión de Recetas"
+        description="Crea y administra tus recetas con los insumos disponibles."
+        icon={ChefHat}
+      />
+      <div className="flex justify-end items-center mb-6"> {/* Adjusted layout for buttons */}
         <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
           <SheetTrigger asChild>
             <Button

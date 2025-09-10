@@ -12,6 +12,7 @@ import { useEventTypes } from "@/hooks/useEventTypes";
 import { useServiceReports } from "@/hooks/useServiceReports";
 import { useStockMovements } from "@/hooks/useStockMovements";
 import LowStockAlerts from "@/components/insumos/LowStockAlerts";
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const Index = () => {
   const { user, session } = useSession();
@@ -36,13 +37,11 @@ const Index = () => {
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
       <div className="text-center bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-4xl w-full">
-        <LayoutDashboard className="mx-auto h-16 w-16 mb-6 text-primary dark:text-primary-foreground" />
-        <h1 className="text-4xl font-bold mb-4 text-gray-900 dark:text-gray-100">
-          ¡Bienvenido, {userName}!
-        </h1>
-        <p className="text-xl text-gray-700 dark:text-gray-300 mb-8">
-          Gestiona tus operaciones de restaurante de forma eficiente.
-        </p>
+        <PageHeaderWithLogo
+          title={`¡Bienvenido, ${userName}!`}
+          description="Gestiona tus operaciones de restaurante de forma eficiente."
+          icon={LayoutDashboard}
+        />
 
         <div className="grid grid-cols-1 gap-6 mb-8">
           <LowStockAlerts />

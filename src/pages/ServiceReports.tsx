@@ -7,6 +7,7 @@ import ServiceReportList from "@/components/service-reports/ServiceReportList";
 import ServiceReportForm from "@/components/service-reports/ServiceReportForm";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { ServiceReport } from "@/types";
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const ServiceReports = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -49,8 +50,12 @@ const ServiceReports = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100">Gestión de Reportes de Servicio</h1>
+      <PageHeaderWithLogo
+        title="Gestión de Reportes de Servicio"
+        description="Registra y consulta los detalles de cada servicio de comida."
+        icon={FileText}
+      />
+      <div className="flex justify-end items-center mb-6"> {/* Adjusted layout for buttons */}
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
             <Button

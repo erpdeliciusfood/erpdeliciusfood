@@ -7,6 +7,7 @@ import PurchaseRecordList from "@/components/purchase-planning/PurchaseRecordLis
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { PurchaseRecord } from "@/types";
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const PurchaseRecords = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -49,8 +50,12 @@ const PurchaseRecords = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100">Gestión de Registros de Compra</h1>
+      <PageHeaderWithLogo
+        title="Gestión de Registros de Compra"
+        description="Consulta y administra el historial de tus compras de insumos."
+        icon={ShoppingBag}
+      />
+      <div className="flex justify-end items-center mb-6"> {/* Adjusted layout for buttons */}
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
             <Button

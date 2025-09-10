@@ -4,11 +4,12 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns"; // Removed isSameDay
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useMenus } from "@/hooks/useMenus";
 import DailyPrepOverview from "@/components/warehouse/DailyPrepOverview";
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const WarehousePage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -42,11 +43,12 @@ const WarehousePage: React.FC = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100 flex items-center">
-          <Warehouse className="mr-4 h-10 w-10 text-primary dark:text-primary-foreground" />
-          Gestión de Almacén (Preparación Diaria)
-        </h1>
+      <PageHeaderWithLogo
+        title="Gestión de Almacén (Preparación Diaria)"
+        description="Selecciona una fecha para ver los menús planificados y gestionar la salida de insumos para la preparación diaria."
+        icon={Warehouse}
+      />
+      <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4"> {/* Adjusted layout for buttons */}
         <div className="flex items-center space-x-2">
           <Popover>
             <PopoverTrigger asChild>
@@ -79,10 +81,6 @@ const WarehousePage: React.FC = () => {
           </Popover>
         </div>
       </div>
-
-      <p className="text-lg text-gray-700 dark:text-gray-300 mb-8">
-        Selecciona una fecha para ver los menús planificados y gestionar la salida de insumos para la preparación diaria.
-      </p>
 
       <div className="flex-grow">
         {selectedDate && hasMenus ? (

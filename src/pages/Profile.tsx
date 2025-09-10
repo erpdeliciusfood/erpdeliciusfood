@@ -5,6 +5,7 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const Profile = () => {
   const { user } = useSession();
@@ -22,10 +23,11 @@ const Profile = () => {
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col items-center">
       <div className="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 md:p-8">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100 flex items-center">
-            <UserCircle2 className="mr-4 h-10 w-10 text-primary dark:text-primary-foreground" />
-            Mi Perfil
-          </h1>
+          <PageHeaderWithLogo
+            title="Mi Perfil"
+            description="Actualiza tu información personal y gestiona tu cuenta."
+            icon={UserCircle2}
+          />
           <Button
             variant="outline"
             onClick={handleSignOut}

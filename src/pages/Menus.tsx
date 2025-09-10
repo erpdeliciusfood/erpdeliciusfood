@@ -1,18 +1,17 @@
 import { useState } from "react";
-import { Loader2, BookText } from "lucide-react"; // Added BookText icon
+import { Loader2, BookText } from "lucide-react";
 import { useMenus } from "@/hooks/useMenus";
 import MenuCalendar from "@/components/menus/MenuCalendar";
-import WeeklyMenuOverview from "@/components/menus/WeeklyMenuOverview"; // New import
+import WeeklyMenuOverview from "@/components/menus/WeeklyMenuOverview";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Menu } from "@/types";
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const Menus = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
-  // We still need useMenus here for the overall page loading state,
-  // but the calendar and overview components will fetch their own data.
   const { isLoading, isError, error } = useMenus();
 
   const handleAddMenu = (date: Date) => {
@@ -47,15 +46,11 @@ const Menus = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100 flex items-center">
-          <BookText className="mr-4 h-10 w-10 text-primary dark:text-primary-foreground" />
-          Gestión de Menús
-        </h1>
-      </div>
-      <p className="text-lg text-gray-700 dark:text-gray-300 mb-8">
-        Planifica y organiza tus menús diarios y para eventos especiales. Selecciona una fecha en el calendario para ver o añadir menús.
-      </p>
+      <PageHeaderWithLogo
+        title="Gestión de Menús"
+        description="Planifica y organiza tus menús diarios y para eventos especiales. Selecciona una fecha en el calendario para ver o añadir menús."
+        icon={BookText}
+      />
 
       <div className="mb-8">
         <WeeklyMenuOverview onAddMenu={handleAddMenu} />

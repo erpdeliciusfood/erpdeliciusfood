@@ -1,10 +1,10 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, PlusCircle, Search, Upload, UtensilsCrossed, LayoutGrid, List } from "lucide-react"; // Added LayoutGrid and List icons
+import { Loader2, PlusCircle, Search, Upload, UtensilsCrossed, LayoutGrid, List, Utensils } from "lucide-react"; // Added Utensils icon
 import { useInsumos } from "@/hooks/useInsumos";
 import InsumoCardGrid from "@/components/insumos/InsumoCardGrid";
-import InsumoTableList from "@/components/insumos/InsumoTableList"; // NEW: Import InsumoTableList
+import InsumoTableList from "@/components/insumos/InsumoTableList";
 import InsumoForm from "@/components/insumos/InsumoForm";
 import InsumoImporter from "@/components/insumos/InsumoImporter";
 import { MadeWithDyad } from "@/components/made-with-dyad";
@@ -12,7 +12,8 @@ import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Insumo } from "@/types";
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
-import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group"; // NEW: Import ToggleGroup
+import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const INSUMO_CATEGORIES = [
   "Todos",
@@ -90,53 +91,56 @@ const Insumos = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100">Gestión de Insumos</h1>
-        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
-          <Dialog open={isImportFormOpen} onOpenChange={setIsImportFormOpen}>
-            <DialogTrigger asChild>
-              <Button
-                onClick={() => setIsImportFormOpen(true)}
-                className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-secondary hover:bg-secondary-foreground text-secondary-foreground hover:text-secondary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
-              >
-                <Upload className="mr-3 h-6 w-6" />
-                Importar Insumos
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  Importar Insumos desde CSV
-                </DialogTitle>
-              </DialogHeader>
-              <InsumoImporter onSuccess={handleImportFormClose} onCancel={handleImportFormClose} />
-            </DialogContent>
-          </Dialog>
+      <PageHeaderWithLogo
+        title="Gestión de Insumos"
+        description="Administra tus ingredientes, unidades de medida y costos."
+        icon={Utensils}
+      />
 
-          <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogTrigger asChild>
-              <Button
-                onClick={handleAddClick}
-                className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
-              >
-                <PlusCircle className="mr-3 h-6 w-6" />
-                Añadir Insumo
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  {editingInsumo ? "Editar Insumo" : "Añadir Nuevo Insumo"}
-                </DialogTitle>
-              </DialogHeader>
-              <InsumoForm
-                initialData={editingInsumo}
-                onSuccess={handleFormClose}
-                onCancel={handleFormClose}
-              />
-            </DialogContent>
-          </Dialog>
-        </div>
+      <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4">
+        <Dialog open={isImportFormOpen} onOpenChange={setIsImportFormOpen}>
+          <DialogTrigger asChild>
+            <Button
+              onClick={() => setIsImportFormOpen(true)}
+              className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-secondary hover:bg-secondary-foreground text-secondary-foreground hover:text-secondary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
+            >
+              <Upload className="mr-3 h-6 w-6" />
+              Importar Insumos
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                Importar Insumos desde CSV
+              </DialogTitle>
+            </DialogHeader>
+            <InsumoImporter onSuccess={handleImportFormClose} onCancel={handleImportFormClose} />
+          </DialogContent>
+        </Dialog>
+
+        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <DialogTrigger asChild>
+            <Button
+              onClick={handleAddClick}
+              className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
+            >
+              <PlusCircle className="mr-3 h-6 w-6" />
+              Añadir Insumo
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                {editingInsumo ? "Editar Insumo" : "Añadir Nuevo Insumo"}
+              </DialogTitle>
+            </DialogHeader>
+            <InsumoForm
+              initialData={editingInsumo}
+              onSuccess={handleFormClose}
+              onCancel={handleFormClose}
+            />
+          </DialogContent>
+        </Dialog>
       </div>
 
       <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">

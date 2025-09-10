@@ -6,6 +6,7 @@ import { useStockMovements } from "@/hooks/useStockMovements";
 import StockMovementList from "@/components/stock-movements/StockMovementList";
 import StockMovementForm from "@/components/stock-movements/StockMovementForm";
 import { MadeWithDyad } from "@/components/made-with-dyad";
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const StockMovements = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -40,8 +41,12 @@ const StockMovements = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100">Gestión de Movimientos de Stock</h1>
+      <PageHeaderWithLogo
+        title="Gestión de Movimientos de Stock"
+        description="Registra entradas y salidas manuales de inventario."
+        icon={Package}
+      />
+      <div className="flex justify-end items-center mb-6"> {/* Adjusted layout for buttons */}
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
             <Button

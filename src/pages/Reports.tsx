@@ -13,6 +13,7 @@ import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { DateRange } from "react-day-picker";
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const Reports = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -21,7 +22,7 @@ const Reports = () => {
   });
   const [periodType, setPeriodType] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('monthly');
 
-  const { data: insumoData, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos(); // Renamed to insumoData
+  const { data: insumoData, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos();
 
   const handlePeriodChange = (period: 'daily' | 'weekly' | 'monthly' | 'custom') => {
     setPeriodType(period);
@@ -75,13 +76,14 @@ const Reports = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100 flex items-center">
-          <BarChart3 className="mr-4 h-10 w-10 text-primary dark:text-primary-foreground" />
-          Reportes y Análisis
-        </h1>
-        <div className="flex items-center space-x-2">
-          <DropdownMenu>
+      <PageHeaderWithLogo
+        title="Reportes y Análisis"
+        description="Visualiza el estado de tu inventario, consumo y finanzas."
+        icon={BarChart3}
+      />
+
+      <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4"> {/* Adjusted layout for buttons */}
+        <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
                 {periodType === 'daily' && 'Hoy'}
@@ -138,7 +140,6 @@ const Reports = () => {
               </PopoverContent>
             </Popover>
           )}
-        </div>
       </div>
 
       <div className="grid grid-cols-1 gap-8 mb-8">
@@ -153,7 +154,7 @@ const Reports = () => {
             <p className="text-xl">Selecciona un rango de fechas para ver los reportes financieros.</p>
           </div>
         )}
-        {insumoData?.data && <StockOverview insumos={insumoData.data} lowStockThreshold={10} />} {/* Access .data here */}
+        {insumoData?.data && <StockOverview insumos={insumoData.data} lowStockThreshold={10} />}
       </div>
 
       <MadeWithDyad />

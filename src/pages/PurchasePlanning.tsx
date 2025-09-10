@@ -12,6 +12,7 @@ import PurchaseAnalysis from "@/components/purchase-planning/PurchaseAnalysis";
 import { DateRange } from "react-day-picker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const PurchasePlanning = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -19,7 +20,7 @@ const PurchasePlanning = () => {
     to: endOfMonth(new Date()),
   });
   const [periodType, setPeriodType] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('monthly');
-  const [isRegisterPurchaseFormOpen, setIsRegisterPurchaseFormOpen] = useState(false); // New state for manual purchase form
+  const [isRegisterPurchaseFormOpen, setIsRegisterPurchaseFormOpen] = useState(false);
 
   const handlePeriodChange = (period: 'daily' | 'weekly' | 'monthly' | 'custom') => {
     setPeriodType(period);
@@ -55,13 +56,13 @@ const PurchasePlanning = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
-      <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
-        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100 flex items-center">
-          <ShoppingBag className="mr-4 h-10 w-10 text-primary dark:text-primary-foreground" />
-          Planificación de Compras
-        </h1>
-        <div className="flex items-center space-x-2">
-          <DropdownMenu>
+      <PageHeaderWithLogo
+        title="Planificación de Compras"
+        description="Analiza las necesidades de insumos según tus menús y stock."
+        icon={ShoppingBag}
+      />
+      <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4"> {/* Adjusted layout for buttons */}
+        <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
                 {periodType === 'daily' && 'Hoy'}
@@ -140,7 +141,6 @@ const PurchasePlanning = () => {
               />
             </DialogContent>
           </Dialog>
-        </div>
       </div>
 
       <div className="flex-grow">

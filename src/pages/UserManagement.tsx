@@ -4,6 +4,7 @@ import UserList from "@/components/user-management/UserList";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { useSession } from "@/contexts/SessionContext";
 import { Navigate } from "react-router-dom";
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const UserManagement = () => {
   const { session, isLoading: isSessionLoading } = useSession();
@@ -43,12 +44,11 @@ const UserManagement = () => {
 
   return (
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
-      <div className="flex justify-between items-center mb-6">
-        <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100 flex items-center">
-          <Users className="mr-4 h-10 w-10 text-primary dark:text-primary-foreground" />
-          Gestión de Usuarios
-        </h1>
-      </div>
+      <PageHeaderWithLogo
+        title="Gestión de Usuarios"
+        description="Administra los roles de los usuarios de tu aplicación."
+        icon={Users}
+      />
 
       <div className="flex-grow">
         {profiles && profiles.length > 0 ? (
