@@ -23,13 +23,11 @@ interface DailyMenuListProps {
 
 const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
   const deleteMutation = useDeleteMenu();
-  const { data: _availableMealServices } = useMealServices(); // Removed isLoadingMealServices
+  const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
   };
-
-  const MEAL_SERVICES_ORDER = ["desayuno", "almuerzo", "cena", "merienda"]; // Standard meal services to check and order by
 
   if (menus.length === 0) {
     return (
@@ -55,13 +53,13 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
         <TableBody>
           {menus.map((menu) => {
             const mealServiceStatus: { [key: string]: boolean } = {};
-            MEAL_SERVICES_ORDER.forEach(type => {
-              mealServiceStatus[type] = false; // Initialize all to false
+            availableMealServices?.forEach(service => {
+              mealServiceStatus[service.name.toLowerCase()] = false; // Initialize all to false
             });
 
             menu.menu_platos?.forEach(mp => {
               const serviceName = mp.meal_services?.name?.toLowerCase();
-              if (serviceName && MEAL_SERVICES_ORDER.includes(serviceName)) {
+              if (serviceName && availableMealServices?.some(s => s.name.toLowerCase() === serviceName)) {
                 mealServiceStatus[serviceName] = true;
               }
             });
@@ -98,19 +96,22 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                     ) : "N/A"}
                   </TableCell>
                   <TableCell className="py-3 px-6">
-                    {/* Removed isLoadingMealServices check as it's no longer passed */}
+                    {isLoadingMealServices ? (
+                      <div className="flex items-center text-gray-500 dark:text-gray-400">Cargando servicios...</div>
+                    ) : (
                       <div className="flex flex-wrap gap-1">
-                        {MEAL_SERVICES_ORDER.map(type => (
+                        {availableMealServices?.map(service => (
                           <Badge
-                            key={type}
-                            variant={mealServiceStatus[type] ? "default" : "secondary"}
-                            className={`capitalize ${mealServiceStatus[type] ? "bg-green-500 hover:bg-green-600" : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"}`}
+                            key={service.id}
+                            variant={mealServiceStatus[service.name.toLowerCase()] ? "default" : "secondary"}
+                            className={`capitalize ${mealServiceStatus[service.name.toLowerCase()] ? "bg-green-500 hover:bg-green-600" : "bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300"}`}
                           >
-                            {type}
-                            {mealServiceStatus[type] ? <CheckCircle2 className="ml-1 h-3 w-3" /> : <span className="ml-1 text-red-500">✕</span>}
+                            {service.name}
+                            {mealServiceStatus[service.name.toLowerCase()] ? <CheckCircle2 className="ml-1 h-3 w-3" /> : <span className="ml-1 text-red-500">✕</span>}
                           </Badge>
                         ))}
                       </div>
+                    )}
                   </TableCell>
                   <TableCell className="flex justify-center space-x-2 py-3 px-6">
                     <Button
@@ -163,9 +164,10 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                           <AccordionContent className="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
                             <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Detalles de Platos:</h4>
                             {Object.entries(platosGroupedByServiceAndCategory || {}).sort(([serviceA], [serviceB]) => {
-                              // Sort services by predefined order
-                              const indexA = MEAL_SERVICES_ORDER.indexOf(serviceA.toLowerCase());
-                              const indexB = MEAL_SERVICES_ORDER.indexOf(serviceB.toLowerCase());
+                              // Sort services by their names from availableMealServices
+                              const serviceNames = availableMealServices?.map(s => s.name.toLowerCase()) || [];
+                              const indexA = serviceNames.indexOf(serviceA.toLowerCase());
+                              const indexB = serviceNames.indexOf(serviceB.toLowerCase());
                               if (indexA === -1) return 1; // Unknown services last
                               if (indexB === -1) return -1;
                               return indexA - indexB;
