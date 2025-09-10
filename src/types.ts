@@ -213,6 +213,7 @@ export interface PurchaseRecord {
   from_registered_supplier: boolean;
   notes: string | null;
   created_at: string;
+  insumos?: Insumo; // NEW: Added insumos relation
 }
 
 export interface PurchaseRecordFormValues { 

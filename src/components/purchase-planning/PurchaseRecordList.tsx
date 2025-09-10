@@ -58,10 +58,10 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                 {format(new Date(record.purchase_date), "PPP", { locale: es })}
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
-                {record.insumo_id} {/* You might want to fetch insumo name here */}
+                {record.insumos?.nombre || "Insumo Desconocido"} {/* Display insumo name */}
               </TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
-                {record.quantity_purchased.toFixed(2)}
+                {record.quantity_purchased.toFixed(2)} {record.insumos?.purchase_unit || "unidad"}
               </TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
                 S/ {record.unit_cost_at_purchase.toFixed(2)}
@@ -106,7 +106,7 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                     <AlertDialogHeader>
                       <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
                       <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                        Esta acción no se puede deshacer. Esto eliminará permanentemente el registro de compra de {record.insumo_id} del {format(new Date(record.purchase_date), "PPP", { locale: es })} de nuestros servidores.
+                        Esta acción no se puede deshacer. Esto eliminará permanentemente el registro de compra de {record.insumos?.nombre || "Insumo Desconocido"} del {format(new Date(record.purchase_date), "PPP", { locale: es })} de nuestros servidores.
                         <br/><span className="font-semibold text-red-600 dark:text-red-400">Nota: Esto NO revertirá los cambios de stock o costo del insumo.</span>
                       </AlertDialogDescription>
                     </AlertDialogHeader>

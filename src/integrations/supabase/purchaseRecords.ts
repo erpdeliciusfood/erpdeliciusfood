@@ -5,7 +5,7 @@ import { createStockMovement } from "./stockMovements"; // Import the stock move
 export const getPurchaseRecords = async (): Promise<PurchaseRecord[]> => {
   const { data, error } = await supabase
     .from("purchase_records")
-    .select("*")
+    .select("*, insumos(id, nombre, purchase_unit)") // Fetch related insumo data
     .order("purchase_date", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -39,7 +39,16 @@ export const createPurchaseRecord = async (
     notes: `Compra registrada: ${newRecord.notes || 'N/A'}`,
   });
 
-  return newRecord;
+  // Fetch the complete record with insumo details for the return value
+  const { data: completeRecord, error: fetchError } = await supabase
+    .from("purchase_records")
+    .select("*, insumos(id, nombre, purchase_unit)")
+    .eq("id", newRecord.id)
+    .single();
+
+  if (fetchError) throw new Error(`Failed to fetch complete purchase record: ${fetchError.message}`);
+
+  return completeRecord;
 };
 
 export const updatePurchaseRecord = async (
@@ -59,7 +68,16 @@ export const updatePurchaseRecord = async (
   if (recordError) throw new Error(recordError.message);
   if (!updatedRecord) throw new Error("Failed to update purchase record.");
 
-  return updatedRecord;
+  // Fetch the complete record with insumo details for the return value
+  const { data: completeRecord, error: fetchError } = await supabase
+    .from("purchase_records")
+    .select("*, insumos(id, nombre, purchase_unit)")
+    .eq("id", updatedRecord.id)
+    .single();
+
+  if (fetchError) throw new Error(`Failed to fetch complete purchase record: ${fetchError.message}`);
+
+  return completeRecord;
 };
 
 export const deletePurchaseRecord = async (id: string): Promise<void> => {
