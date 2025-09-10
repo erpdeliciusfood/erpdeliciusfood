@@ -1,7 +1,7 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Utensils, UserCircle2, LayoutDashboard, ChefHat, BookText, CalendarDays, BarChart3, Users, ShoppingBag, FileText, Package } from "lucide-react"; // Updated icons, removed ListChecks
+import { Utensils, UserCircle2, LayoutDashboard, ChefHat, BookText, CalendarDays, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText } from "lucide-react"; // Updated icons, removed ListChecks
 import { useSession } from "@/contexts/SessionContext";
 import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -9,7 +9,6 @@ import { useInsumos } from "@/hooks/useInsumos";
 import { usePlatos } from "@/hooks/usePlatos";
 import { useMenus } from "@/hooks/useMenus";
 import { useEventTypes } from "@/hooks/useEventTypes";
-// import { useMealTypes } from "@/hooks/useMealTypes"; // REMOVED: Import useMealTypes
 import { useServiceReports } from "@/hooks/useServiceReports";
 import { useStockMovements } from "@/hooks/useStockMovements";
 import LowStockAlerts from "@/components/insumos/LowStockAlerts";
@@ -21,7 +20,6 @@ const Index = () => {
   const { data: platos, isLoading: isLoadingPlatos } = usePlatos();
   const { data: menus, isLoading: isLoadingMenus } = useMenus();
   const { data: eventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
-  // const { data: mealTypes, isLoading: isLoadingMealTypes } = useMealTypes(); // REMOVED: Fetch meal types
   const { data: serviceReports, isLoading: isLoadingServiceReports } = useServiceReports();
   const { data: stockMovements, isLoading: isLoadingStockMovements } = useStockMovements();
 
@@ -32,7 +30,6 @@ const Index = () => {
   const totalPlatos = platos?.length || 0;
   const totalMenus = menus?.length || 0;
   const totalEventTypes = eventTypes?.length || 0;
-  // const totalMealTypes = mealTypes?.length || 0; // REMOVED: Total meal types
   const totalServiceReports = serviceReports?.length || 0;
   const totalStockMovements = stockMovements?.length || 0;
 
@@ -124,24 +121,6 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          {/* REMOVED: Card for Total Meal Types */}
-          {/* <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out h-full flex flex-col justify-between">
-            <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-2xl font-bold">Tipos de Plato</CardTitle>
-              <ListChecks className="h-8 w-8 text-muted-foreground" />
-            </CardHeader>
-            <CardContent>
-              {isLoadingMealTypes ? (
-                <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md" />
-              ) : (
-                <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalMealTypes}</div>
-              )}
-              <CardDescription className="text-lg text-left mt-2">
-                Categorías de platos para tus menús.
-              </CardDescription>
-            </CardContent>
-          </Card> */}
-
           {/* Card for Total Service Reports */}
           <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out h-full flex flex-col justify-between">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -231,24 +210,6 @@ const Index = () => {
             </Card>
           </Link>
 
-          {/* REMOVED: Link to Meal Types */}
-          {/* <Link to="/meal-types">
-            <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
-              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-2xl font-bold">Gestión de Tipos de Plato</CardTitle>
-                <ListChecks className="h-8 w-8 text-muted-foreground" />
-              </CardHeader>
-              <CardContent>
-                <CardDescription className="text-lg text-left">
-                  Categoriza tus platos para una mejor organización del menú.
-                </CardDescription>
-              </CardContent>
-              <Button className="w-full mt-4 px-8 py-4 text-lg bg-cyan-600 hover:bg-cyan-700 text-white transition-colors duration-200 ease-in-out">
-                Ir a Tipos de Plato
-              </Button>
-            </Card>
-          </Link> */}
-
           <Link to="/menus">
             <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -296,6 +257,23 @@ const Index = () => {
               </CardContent>
               <Button className="w-full mt-4 px-8 py-4 text-lg bg-pink-600 hover:bg-pink-700 text-white transition-colors duration-200 ease-in-out">
                 Ir a Compras
+              </Button>
+            </Card>
+          </Link>
+
+          <Link to="/purchase-records">
+            <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
+              <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
+                <CardTitle className="text-2xl font-bold">Registros de Compra</CardTitle>
+                <ReceiptText className="h-8 w-8 text-muted-foreground" />
+              </CardHeader>
+              <CardContent>
+                <CardDescription className="text-lg text-left">
+                  Revisa el historial de todas tus compras de insumos.
+                </CardDescription>
+              </CardContent>
+              <Button className="w-full mt-4 px-8 py-4 text-lg bg-rose-600 hover:bg-rose-700 text-white transition-colors duration-200 ease-in-out">
+                Ir a Registros de Compra
               </Button>
             </Card>
           </Link>
