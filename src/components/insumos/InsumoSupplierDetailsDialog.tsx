@@ -30,6 +30,9 @@ const supplierFormSchema = z.object({
   }, {
     message: "El teléfono debe empezar con +51 y tener 9 dígitos (ej. +51987654321).",
   }),
+  supplier_address: z.string().max(255, { // NEW: Added supplier_address to schema
+    message: "La dirección del proveedor no debe exceder los 255 caracteres.",
+  }).nullable(),
 });
 
 interface InsumoSupplierDetailsDialogProps {
@@ -47,6 +50,7 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
     defaultValues: {
       supplier_name: insumo.supplier_name || "",
       supplier_phone: insumo.supplier_phone || "",
+      supplier_address: insumo.supplier_address || "", // NEW: Set default value
     },
   });
 
@@ -54,6 +58,7 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
     form.reset({
       supplier_name: insumo.supplier_name || "",
       supplier_phone: insumo.supplier_phone || "",
+      supplier_address: insumo.supplier_address || "", // NEW: Reset value
     });
   }, [insumo, form]);
 
@@ -65,6 +70,7 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
           ...insumo, // Keep existing insumo data
           supplier_name: values.supplier_name,
           supplier_phone: values.supplier_phone,
+          supplier_address: values.supplier_address, // NEW: Pass new address
         },
       });
       showSuccess("Datos del proveedor actualizados exitosamente.");
@@ -116,6 +122,19 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
                 <p className="text-red-500 text-sm mt-1">{form.formState.errors.supplier_phone.message}</p>
               )}
             </div>
+            <div>
+              <Label htmlFor="supplier_address" className="text-base font-semibold text-gray-800 dark:text-gray-200">Dirección del Proveedor</Label>
+              <Input
+                id="supplier_address"
+                placeholder="Ej. Av. Los Girasoles 123, Lima"
+                {...form.register("supplier_address")}
+                className="h-10 text-base mt-1"
+                disabled={isUpdating}
+              />
+              {form.formState.errors.supplier_address && (
+                <p className="text-red-500 text-sm mt-1">{form.formState.errors.supplier_address.message}</p>
+              )}
+            </div>
             <div className="flex justify-end space-x-2 pt-2">
               <Button type="button" variant="outline" onClick={onClose} disabled={isUpdating}>
                 Cancelar
@@ -148,6 +167,8 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
                       <TableHead className="text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Fecha</TableHead>
                       <TableHead className="text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Proveedor Anterior</TableHead>
                       <TableHead className="text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Proveedor Nuevo</TableHead>
+                      <TableHead className="text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Dirección Anterior</TableHead>
+                      <TableHead className="text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Dirección Nueva</TableHead>
                     </TableRow>
                   </TableHeader>
                   <TableBody>
@@ -158,6 +179,8 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
                         </TableCell>
                         <TableCell className="text-sm text-gray-700 dark:text-gray-300">{entry.old_supplier_name || "N/A"}</TableCell>
                         <TableCell className="text-sm text-gray-700 dark:text-gray-300">{entry.new_supplier_name || "N/A"}</TableCell>
+                        <TableCell className="text-sm text-gray-700 dark:text-gray-300">{entry.old_supplier_address || "N/A"}</TableCell>
+                        <TableCell className="text-sm text-gray-700 dark:text-gray-300">{entry.new_supplier_address || "N/A"}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

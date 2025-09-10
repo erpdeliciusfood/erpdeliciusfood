@@ -7,6 +7,7 @@ export interface Insumo {
   stock_quantity: number;
   supplier_name: string | null;
   supplier_phone: string | null;
+  supplier_address: string | null; // NEW: Added supplier_address
   last_price_update: string | null;
   purchase_unit: string;
   conversion_factor: number;
@@ -22,6 +23,7 @@ export interface InsumoFormValues {
   stock_quantity: number;
   supplier_name: string | null;
   supplier_phone: string | null;
+  supplier_address: string | null; // NEW: Added supplier_address
   purchase_unit: string;
   conversion_factor: number;
   min_stock_level: number;
@@ -183,6 +185,8 @@ export interface InsumoSupplierHistory {
   new_supplier_name: string | null;
   old_supplier_phone: string | null;
   new_supplier_phone: string | null;
+  old_supplier_address: string | null; // NEW: Added old_supplier_address
+  new_supplier_address: string | null; // NEW: Added new_supplier_address
   changed_at: string;
 }
 

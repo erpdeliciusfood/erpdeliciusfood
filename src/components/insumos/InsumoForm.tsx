@@ -66,6 +66,9 @@ const formSchema = z.object({
   }, {
     message: "El teléfono debe empezar con +51 y tener 9 dígitos (ej. +51987654321).",
   }),
+  supplier_address: z.string().max(255, { // NEW: Added supplier_address to schema
+    message: "La dirección del proveedor no debe exceder los 255 caracteres.",
+  }).nullable(),
   category: z.string().min(1, {
     message: "Debe seleccionar una categoría.",
   }), // Added category to schema
@@ -126,6 +129,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
       min_stock_level: 0,
       supplier_name: "",
       supplier_phone: "",
+      supplier_address: "", // NEW: Default value for new field
       category: "Otros", // Default category
     },
   });
@@ -145,6 +149,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         min_stock_level: initialData.min_stock_level,
         supplier_name: initialData.supplier_name || "",
         supplier_phone: initialData.supplier_phone || "",
+        supplier_address: initialData.supplier_address || "", // NEW: Set initial value
         category: initialData.category || "Otros", // Set initial category
       });
       setIsConversionFactorEditable(true); // Always editable when editing an existing item
@@ -160,6 +165,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         min_stock_level: 0,
         supplier_name: "",
         supplier_phone: "",
+        supplier_address: "", // NEW: Default value for new field
         category: "Otros", // Default category for new items
       });
       setIsConversionFactorEditable(true); // Editable by default for new items
@@ -453,6 +459,25 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
               <FormControl>
                 <Input
                   placeholder="Ej. +51987654321"
+                  {...field}
+                  value={field.value || ""}
+                  className="h-12 text-base"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+        <FormField
+          control={form.control}
+          name="supplier_address" // NEW: Added supplier_address field
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Dirección del Proveedor (Opcional)</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Ej. Av. Los Girasoles 123, Lima"
                   {...field}
                   value={field.value || ""}
                   className="h-12 text-base"
