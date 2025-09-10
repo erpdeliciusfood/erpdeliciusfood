@@ -1,12 +1,18 @@
 import { Auth } from '@supabase/auth-ui-react';
 import { ThemeSupa } from '@supabase/auth-ui-shared';
 import { supabase } from '@/integrations/supabase/client';
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // Import PageHeaderWithLogo
+import { UserCircle2 } from "lucide-react"; // Import an icon for the login page
 
 const Login = () => {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
       <div className="w-full max-w-md bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg">
-        <h1 className="text-3xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">Iniciar Sesión</h1>
+        <PageHeaderWithLogo
+          title="Iniciar Sesión"
+          description="Accede a tu cuenta para gestionar tu restaurante."
+          icon={UserCircle2}
+        />
         <Auth
           supabaseClient={supabase}
           providers={[]} // Puedes añadir 'google', 'github', etc. aquí si los configuras en Supabase
