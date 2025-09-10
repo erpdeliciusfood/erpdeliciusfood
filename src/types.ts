@@ -218,10 +218,10 @@ export interface PurchaseRecord {
   supplier_address_at_purchase: string | null;
   from_registered_supplier: boolean;
   notes: string | null;
-  created_at: string;
-  insumos?: Insumo;
+  insumos?: Insumo; // NEW: Added insumos relationship
 }
 
+// NEW: Interface for the form values when creating/updating a PurchaseRecord
 export interface PurchaseRecordFormValues {
   insumo_id: string;
   purchase_date: string;
@@ -245,5 +245,5 @@ export interface InsumoNeeded extends Insumo {
   purchase_suggestion_rounded: number;
   purchase_suggestion_rounded_up: boolean;
   estimated_purchase_cost: number;
-  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both';
+  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert';
 }

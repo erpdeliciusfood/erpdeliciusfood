@@ -21,7 +21,7 @@ interface InsumoNeeded extends Insumo {
   purchase_suggestion_rounded: number;
   purchase_suggestion_rounded_up: boolean;
   estimated_purchase_cost: number;
-  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both'; // NEW: Reason for suggestion
+  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert'; // NEW: Reason for suggestion
 }
 
 interface SuggestedPurchaseListContentProps {
@@ -137,7 +137,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
     onClose(); // Close the dialog, which will trigger parent re-fetch
   };
 
-  const getReasonBadge = (reason: 'menu_demand' | 'min_stock_level' | 'both') => {
+  const getReasonBadge = (reason: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert') => {
     switch (reason) {
       case 'menu_demand':
         return <Badge variant="outline" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">Demanda de Menú</Badge>;
@@ -145,6 +145,8 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
         return <Badge variant="outline" className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300">Stock Mínimo</Badge>;
       case 'both':
         return <Badge variant="outline" className="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">Ambos</Badge>;
+      case 'zero_stock_alert': // NEW: Badge for zero_stock_alert
+        return <Badge variant="destructive" className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">Stock Cero</Badge>;
       default:
         return <Badge variant="secondary">Desconocido</Badge>;
     }

@@ -28,7 +28,7 @@ interface InsumoNeeded extends Insumo {
   purchase_suggestion_rounded: number; // Rounded up value
   purchase_suggestion_rounded_up: boolean; // Flag if rounding occurred
   estimated_purchase_cost: number;
-  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both'; // NEW: Reason for suggestion
+  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert'; // NEW: Reason for suggestion
 }
 
 const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate }) => {
@@ -90,10 +90,10 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
       // REVISED: Calculate purchase suggestion to cover menu needs OR reach min stock level
       const neededToCoverMenus = Math.max(0, quantityNeededForPeriodRaw - currentStock);
       const neededToReachMinStock = Math.max(0, minStockLevel - currentStock); // Use minStockLevel
-      const purchaseSuggestionRaw = Math.max(neededToCoverMenus, neededToReachMinStock);
+      
+      let purchaseSuggestionRaw = Math.max(neededToCoverMenus, neededToReachMinStock);
+      let reason: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert' = 'menu_demand';
 
-      // Determine reason for purchase suggestion
-      let reason: 'menu_demand' | 'min_stock_level' | 'both' = 'menu_demand';
       const isMenuDriven = quantityNeededForPeriodRaw > currentStock;
       const isMinStockDriven = minStockLevel > currentStock;
 
@@ -103,6 +103,9 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
         reason = 'menu_demand';
       } else if (isMinStockDriven) {
         reason = 'min_stock_level';
+      } else if (currentStock <= 0 && purchaseSuggestionRaw === 0) { // NEW: If stock is zero or negative, and no other reason triggered a suggestion
+        purchaseSuggestionRaw = 1; // Suggest at least 1 unit to get out of zero stock
+        reason = 'zero_stock_alert';
       }
 
 
@@ -155,7 +158,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
     // queryClient.invalidateQueries({ queryKey: ["insumos"] });
   };
 
-  const getReasonBadge = (reason: 'menu_demand' | 'min_stock_level' | 'both') => {
+  const getReasonBadge = (reason: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert') => {
     switch (reason) {
       case 'menu_demand':
         return <Badge variant="outline" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">Demanda de Menú</Badge>;
@@ -163,6 +166,8 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
         return <Badge variant="outline" className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300">Stock Mínimo</Badge>;
       case 'both':
         return <Badge variant="outline" className="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">Ambos</Badge>;
+      case 'zero_stock_alert': // NEW: Badge for zero_stock_alert
+        return <Badge variant="destructive" className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">Stock Cero</Badge>;
       default:
         return <Badge variant="secondary">Desconocido</Badge>;
     }
