@@ -3,17 +3,13 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form } from "@/components/ui/form";
 import { Insumo, InsumoFormValues } from "@/types";
-import { useAddInsumo, useUpdateInsumo, useInsumos } from "@/hooks/useInsumos"; // Import useInsumos
-import { Loader2, Search, AlertTriangle } from "lucide-react";
+import { useAddInsumo, useUpdateInsumo } from "@/hooks/useInsumos";
+import { Loader2 } from "lucide-react";
 import InsumoBasicDetailsFormSection from "./InsumoBasicDetailsFormSection";
 import InsumoStockAndCostFormSection from "./InsumoStockAndCostFormSection";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { cn, normalizeString } from "@/lib/utils"; // Import normalizeString
-import { showSuccess, showError } from "@/utils/toast";
-import { INSUMO_CATEGORIES, UNIDADES_BASE, UNIDADES_COMPRA, PREDEFINED_CONVERSIONS } from "@/constants/insumoConstants"; // Import constants
+// import InsumoSupplierFormSection from "./InsumoSupplierFormSection"; // REMOVED
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -47,18 +43,19 @@ const formSchema = z.object({
   }).max(999999, {
     message: "El nivel mínimo de stock no debe exceder 999999.",
   }),
-  supplier_name: z.string().max(100, {
-    message: "El nombre del proveedor no debe exceder los 100 caracteres.",
-  }).nullable(),
-  supplier_phone: z.string().nullable().refine((val) => {
-    if (!val) return true;
-    return /^\+51\d{9}$/.test(val);
-  }, {
-    message: "El teléfono debe empezar con +51 y tener 9 dígitos (ej. +51987654321).",
-  }),
-  supplier_address: z.string().max(255, {
-    message: "La dirección del proveedor no debe exceder los 255 caracteres.",
-  }).nullable(),
+  // supplier_name: z.string().max(100, { // REMOVED
+  //   message: "El nombre del proveedor no debe exceder los 100 caracteres.",
+  // }).nullable(),
+  // supplier_phone: z.string().nullable().refine((val) => { // REMOVED
+  //   if (!val) return true; // Allow null or empty string
+  //   // Regex for +51 followed by 9 digits
+  //   return /^\+51\d{9}$/.test(val);
+  // }, {
+  //   message: "El teléfono debe empezar con +51 y tener 9 dígitos (ej. +51987654321).",
+  // }),
+  // supplier_address: z.string().max(255, { // REMOVED
+  //   message: "La dirección del proveedor no debe exceder los 255 caracteres.",
+  // }).nullable(),
   category: z.string().min(1, {
     message: "Debe seleccionar una categoría.",
   }),
@@ -70,13 +67,38 @@ interface InsumoFormProps {
   onCancel: () => void;
 }
 
+const UNIDADES_BASE = [
+  "g", "ml", "unidad", "cucharadita", "cucharada", "taza", "onza", "libra"
+];
+
+const UNIDADES_COMPRA = [
+  "kg", "litro", "unidad", "atado", "manojo", "caja", "paquete", "botella", "lata", "saco", "galón"
+];
+
+const INSUMO_CATEGORIES = [
+  "Cereales y Legumbres",
+  "Proteínas (Carnes, Aves, Pescados)",
+  "Lácteos y Huevos",
+  "Verduras y Hortalizas",
+  "Frutas",
+  "Grasas y Aceites",
+  "Condimentos y Especias",
+  "Panadería y Pastelería",
+  "Bebidas",
+  "Otros",
+];
+
+// Predefined common conversions (Purchase Unit to Base Unit)
+const predefinedConversions: { [purchaseUnit: string]: { [baseUnit: string]: number } } = {
+  "kg": { "g": 1000 },
+  "litro": { "ml": 1000 },
+  "unidad": { "unidad": 1 },
+};
+
 const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCancel }) => {
   const addMutation = useAddInsumo();
   const updateMutation = useUpdateInsumo();
   const [isConversionFactorEditable, setIsConversionFactorEditable] = useState(true);
-  const [openCombobox, setOpenCombobox] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
-  const { data: allInsumos, isLoading: isLoadingAllInsumos } = useInsumos(); // Fetch all insumos for suggestions
 
   const form = useForm<InsumoFormValues>({
     resolver: zodResolver(formSchema),
@@ -88,16 +110,15 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
       costo_unitario: 0,
       stock_quantity: 0,
       min_stock_level: 0,
-      supplier_name: "",
-      supplier_phone: "",
-      supplier_address: "",
+      // supplier_name: "", // REMOVED
+      // supplier_phone: "", // REMOVED
+      // supplier_address: "", // REMOVED
       category: "Otros",
     },
   });
 
   const purchaseUnit = form.watch("purchase_unit");
   const baseUnit = form.watch("base_unit");
-  const currentNombre = form.watch("nombre");
 
   useEffect(() => {
     if (initialData) {
@@ -109,13 +130,12 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         costo_unitario: initialData.costo_unitario,
         stock_quantity: initialData.stock_quantity,
         min_stock_level: initialData.min_stock_level,
-        supplier_name: initialData.supplier_name || "",
-        supplier_phone: initialData.supplier_phone || "",
-        supplier_address: initialData.supplier_address || "",
+        // supplier_name: initialData.supplier_name || "", // REMOVED
+        // supplier_phone: initialData.supplier_phone || "", // REMOVED
+        // supplier_address: initialData.supplier_address || "", // REMOVED
         category: initialData.category || "Otros",
       });
       setIsConversionFactorEditable(true);
-      setSearchTerm(initialData.nombre); // Set search term to initial data name
     } else {
       form.reset({
         nombre: "",
@@ -125,19 +145,18 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         costo_unitario: 0,
         stock_quantity: 0,
         min_stock_level: 0,
-        supplier_name: "",
-        supplier_phone: "",
-        supplier_address: "",
+        // supplier_name: "", // REMOVED
+        // supplier_phone: "", // REMOVED
+        // supplier_address: "", // REMOVED
         category: "Otros",
       });
       setIsConversionFactorEditable(true);
-      setSearchTerm("");
     }
   }, [initialData, form]);
 
   useEffect(() => {
     if (!initialData && purchaseUnit && baseUnit) {
-      const suggestedFactor = PREDEFINED_CONVERSIONS[purchaseUnit]?.[baseUnit];
+      const suggestedFactor = predefinedConversions[purchaseUnit]?.[baseUnit];
       if (suggestedFactor !== undefined) {
         form.setValue("conversion_factor", suggestedFactor, { shouldValidate: true });
         setIsConversionFactorEditable(false);
@@ -156,123 +175,20 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
   }, [purchaseUnit, baseUnit, form, initialData]);
 
   const onSubmit = async (values: InsumoFormValues) => {
-    try {
-      if (initialData) {
-        await updateMutation.mutateAsync({ id: initialData.id, insumo: values });
-      } else {
-        await addMutation.mutateAsync(values);
-      }
-      onSuccess();
-    } catch (error: any) {
-      showError(`Error al guardar insumo: ${error.message}`);
+    if (initialData) {
+      await updateMutation.mutateAsync({ id: initialData.id, insumo: values });
+    } else {
+      await addMutation.mutateAsync(values);
     }
+    onSuccess();
   };
 
-  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingAllInsumos;
-
-  const filteredInsumos = allInsumos?.filter(insumo =>
-    normalizeString(insumo.nombre).includes(normalizeString(searchTerm))
-  ).slice(0, 10); // Limit suggestions to 10
-
-  const isSimilarInsumoFound = filteredInsumos && filteredInsumos.some(
-    insumo => normalizeString(insumo.nombre) === normalizeString(currentNombre) && insumo.id !== initialData?.id
-  );
-
-  const handleSelectInsumo = (selectedInsumo: Insumo) => {
-    form.reset({
-      nombre: selectedInsumo.nombre,
-      base_unit: selectedInsumo.base_unit,
-      purchase_unit: selectedInsumo.purchase_unit,
-      conversion_factor: selectedInsumo.conversion_factor,
-      costo_unitario: selectedInsumo.costo_unitario,
-      stock_quantity: selectedInsumo.stock_quantity,
-      min_stock_level: selectedInsumo.min_stock_level,
-      supplier_name: selectedInsumo.supplier_name || "",
-      supplier_phone: selectedInsumo.supplier_phone || "",
-      supplier_address: selectedInsumo.supplier_address || "",
-      category: selectedInsumo.category || "Otros",
-    });
-    setSearchTerm(selectedInsumo.nombre);
-    setOpenCombobox(false);
-    showSuccess(`Formulario pre-llenado con datos de "${selectedInsumo.nombre}".`);
-  };
+  const isLoading = addMutation.isPending || updateMutation.isPending;
 
   return (
     <FormProvider {...form}>
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-2">
-          <FormField
-            control={form.control}
-            name="nombre"
-            render={({ field }) => (
-              <FormItem className="flex flex-col">
-                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre del Insumo</FormLabel>
-                <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
-                  <PopoverTrigger asChild>
-                    <FormControl>
-                      <Button
-                        variant="outline"
-                        role="combobox"
-                        className={cn(
-                          "w-full justify-between h-12 text-base",
-                          !field.value && "text-muted-foreground"
-                        )}
-                        disabled={isLoading}
-                      >
-                        {field.value
-                          ? allInsumos?.find((insumo) => insumo.nombre === field.value)?.nombre
-                          : "Selecciona o escribe un insumo..."}
-                        <Search className="ml-2 h-4 w-4 shrink-0 opacity-50" />
-                      </Button>
-                    </FormControl>
-                  </PopoverTrigger>
-                  <PopoverContent className="w-[--radix-popover-trigger-width] p-0">
-                    <Command>
-                      <CommandInput
-                        placeholder="Buscar insumo..."
-                        value={searchTerm}
-                        onValueChange={(value) => {
-                          setSearchTerm(value);
-                          field.onChange(value); // Update form field as well
-                        }}
-                        disabled={isLoading}
-                      />
-                      <CommandList>
-                        {isLoadingAllInsumos ? (
-                          <CommandEmpty>
-                            <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                            <p className="mt-2">Cargando insumos...</p>
-                          </CommandEmpty>
-                        ) : filteredInsumos && filteredInsumos.length > 0 ? (
-                          <CommandGroup>
-                            {filteredInsumos.map((insumo) => (
-                              <CommandItem
-                                value={insumo.nombre}
-                                key={insumo.id}
-                                onSelect={() => handleSelectInsumo(insumo)}
-                              >
-                                {insumo.nombre}
-                              </CommandItem>
-                            ))}
-                          </CommandGroup>
-                        ) : (
-                          <CommandEmpty>No se encontraron insumos.</CommandEmpty>
-                        )}
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-                <FormMessage />
-                {currentNombre && !initialData && !isSimilarInsumoFound && filteredInsumos && filteredInsumos.length > 0 && (
-                  <div className="flex items-center text-orange-600 dark:text-orange-400 text-sm mt-2">
-                    <AlertTriangle className="h-4 w-4 mr-2" />
-                    <p>Ya existe un insumo similar. ¿Deseas crear "{currentNombre}" como uno nuevo o usar una de las sugerencias?</p>
-                  </div>
-                )}
-              </FormItem>
-            )}
-          />
-
           <InsumoBasicDetailsFormSection
             isLoading={isLoading}
             isConversionFactorEditable={isConversionFactorEditable}
@@ -282,6 +198,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
             INSUMO_CATEGORIES={INSUMO_CATEGORIES}
           />
           <InsumoStockAndCostFormSection isLoading={isLoading} />
+          {/* <InsumoSupplierFormSection isLoading={isLoading} /> */} {/* REMOVED */}
 
           <div className="flex justify-end space-x-4 pt-4">
             <Button

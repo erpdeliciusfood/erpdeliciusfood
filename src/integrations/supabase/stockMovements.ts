@@ -14,7 +14,7 @@ export const getStockMovements = async (): Promise<StockMovement[]> => {
 export const createStockMovement = async (
   movementData: StockMovementFormValues
 ): Promise<StockMovement> => {
-  const { insumo_id, movement_type, quantity_change, total_purchase_amount, total_purchase_quantity, notes, menu_id } = movementData;
+  const { insumo_id, movement_type, quantity_change, total_purchase_amount, total_purchase_quantity, notes } = movementData;
 
   // First, get the current stock and cost of the insumo
   const { data: currentInsumo, error: fetchInsumoError } = await supabase
@@ -27,33 +27,24 @@ export const createStockMovement = async (
   if (!currentInsumo) throw new Error("Insumo not found.");
 
   let newStockQuantity = currentInsumo.stock_quantity;
-  let newCostoUnitario = currentInsumo.costo_unitario; // Keep current cost for non-purchase movements
+  let newCostoUnitario = currentInsumo.costo_unitario;
   let actualQuantityChange = quantity_change; // This will be the value recorded in stock_movements
 
-  // Handle different movement types
+  // Handle 'purchase_in' movement type
   if (movement_type === "purchase_in") {
-    if (total_purchase_amount === undefined || total_purchase_amount <= 0) {
+    if (total_purchase_amount === undefined || total_purchase_quantity === undefined || total_purchase_quantity <= 0) {
       throw new Error("Monto total y cantidad comprada son requeridos para entradas por compra.");
-    }
-    if (total_purchase_quantity === undefined || total_purchase_quantity <= 0) {
-      throw new Error("La cantidad comprada es requerida para entradas por compra.");
     }
     // Calculate new costo_unitario based on the purchase
     newCostoUnitario = total_purchase_amount / total_purchase_quantity;
     newStockQuantity += total_purchase_quantity;
     actualQuantityChange = total_purchase_quantity; // The change recorded is the total purchased
   } else if (movement_type === "adjustment_in") {
-    if (quantity_change === undefined || quantity_change <= 0) {
-      throw new Error("La cantidad de cambio es requerida para ajustes de entrada.");
-    }
-    newStockQuantity += quantity_change;
-    actualQuantityChange = quantity_change;
-  } else if (movement_type === "adjustment_out" || movement_type === "daily_prep_out") { // Handle daily_prep_out here
-    if (quantity_change === undefined || quantity_change <= 0) {
-      throw new Error("La cantidad de cambio es requerida para ajustes/salidas.");
-    }
-    newStockQuantity -= quantity_change;
-    actualQuantityChange = -quantity_change; // Record as negative for deduction
+    newStockQuantity += quantity_change!; // Use non-null assertion as schema ensures it's present
+    actualQuantityChange = quantity_change!;
+  } else if (movement_type === "adjustment_out") {
+    newStockQuantity -= quantity_change!; // Use non-null assertion as schema ensures it's present
+    actualQuantityChange = -quantity_change!; // Record as negative for deduction
   }
   // 'consumption_out' is handled by the Edge Function, so it's not part of this client-side creation
 
@@ -80,7 +71,6 @@ export const createStockMovement = async (
       quantity_change: parseFloat(actualQuantityChange.toFixed(2)), // Use the actual calculated change
       new_stock_quantity: parseFloat(updatedInsumo.stock_quantity.toFixed(2)), // Use the actual updated stock
       notes,
-      source_document_id: menu_id, // Link to menu_id if provided
     })
     .select("*, insumos(id, nombre, purchase_unit, base_unit, conversion_factor)")
     .single();

@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Package, ArrowDown, ArrowUp } from "lucide-react";
+import { Package, ArrowDown, ArrowUp } from "lucide-react"; // 'RefreshCcw' removed
 import { StockMovement } from "@/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";

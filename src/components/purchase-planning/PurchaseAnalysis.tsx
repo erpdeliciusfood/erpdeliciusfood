@@ -7,16 +7,27 @@ import { es } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Insumo, InsumoNeeded } from "@/types"; // Import InsumoNeeded
+import { Insumo } from "@/types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import InsumoSupplierDetailsDialog from "@/components/insumos/InsumoSupplierDetailsDialog";
-import SuggestedPurchaseListContent from "@/components/purchase-planning/SuggestedPurchaseListContent";
+import SuggestedPurchaseListContent from "@/components/purchase-planning/SuggestedPurchaseListContent"; // Updated import
 
 interface PurchaseAnalysisProps {
   startDate: Date;
   endDate: Date;
+}
+
+interface InsumoNeeded extends Insumo {
+  quantity_needed_for_period_raw: number; // Original calculated value
+  quantity_needed_for_period_rounded: number; // Rounded up value
+  quantity_needed_for_period_rounded_up: boolean; // Flag if rounding occurred
+  current_stock: number;
+  purchase_suggestion_raw: number; // Original calculated value
+  purchase_suggestion_rounded: number; // Rounded up value
+  purchase_suggestion_rounded_up: boolean; // Flag if rounding occurred
+  estimated_purchase_cost: number;
 }
 
 const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate }) => {
@@ -250,7 +261,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                               </TooltipTrigger>
                               {insumo.purchase_suggestion_rounded_up && (
                                 <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                                  <p>Valor real: {insumo.purchase_suggestion_raw.toFixed(2)} {insumo.purchase_unit}</p>
+                                  <p>Valor real: {insumo.quantity_needed_for_period_raw.toFixed(2)} {insumo.purchase_unit}</p>
                                 </TooltipContent>
                               )}
                             </Tooltip>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, PlusCircle } from "lucide-react";
+import { Loader2, PlusCircle } from "lucide-react"; // Removed CalendarDays
 import { useEventTypes } from "@/hooks/useEventTypes";
 import EventTypeList from "@/components/event-types/EventTypeList";
 import EventTypeForm from "@/components/event-types/EventTypeForm";

@@ -18,19 +18,38 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MealService, MenuFormValues, Plato } from "@/types"; 
-import { DISH_CATEGORIES } from "@/constants/menuConstants"; // Import DISH_CATEGORIES
+import { MealService, MenuFormValues, Plato } from "@/types"; // Removed MealType
 
 interface PlatosPorServicioFormSectionProps {
   isLoading: boolean;
   availablePlatos: Plato[] | undefined;
   availableMealServices: MealService[] | undefined;
+  // availableMealTypes: MealType[] | undefined; // REMOVED
 }
+
+const DISH_CATEGORIES = [
+  "Desayuno / Merienda",
+  "Entrada",
+  "Sopa / Crema",
+  "Ensalada Fría",
+  "Ensalada Caliente",
+  "Plato de Fondo - Carnes",
+  "Plato de Fondo - Aves",
+  "Plato de Fondo - Pescados y Mariscos",
+  "Plato de Fondo - Pastas y Arroces",
+  "Plato de Fondo - Vegetariano / Vegano",
+  "Acompañamiento / Guarnición",
+  "Postre",
+  "Bebida",
+  "Dieta Blanda",
+  "Otra Opción",
+];
 
 const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> = ({
   isLoading,
   availablePlatos,
   availableMealServices,
+  // availableMealTypes, // REMOVED
 }) => {
   const form = useFormContext<MenuFormValues>();
   const { fields, append, remove } = useFieldArray({
@@ -185,7 +204,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
           variant="outline"
           onClick={() => append({ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 })} // NEW: dish_category
           className="w-full mt-4 px-6 py-3 text-lg"
-          disabled={isLoading || !availablePlatos || availablePlatos.length === 0 || !availableMealServices || availableMealServices.length === 0}
+          disabled={isLoading || !availablePlatos || availablePlatos.length === 0 || !availableMealServices || availableMealServices.length === 0} // Removed availableMealTypes check
         >
           <PlusCircle className="mr-2 h-5 w-5" />
           Añadir Plato a Servicio

@@ -19,14 +19,17 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       if (currentSession) {
         setSession(currentSession);
         setUser(currentSession.user);
+        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+          navigate('/'); // Redirigir a la página principal después de iniciar sesión
+        }
       } else {
         setSession(null);
         setUser(null);
-        // The ProtectedRoute now handles redirection.
+        navigate('/login'); // Redirigir a la página de login si no hay sesión
       }
       setIsLoading(false);
     });

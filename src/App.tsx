@@ -1,3 +1,4 @@
+import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
@@ -15,8 +16,7 @@ import Reports from "./pages/Reports";
 import UserManagement from "./pages/UserManagement";
 import PurchasePlanning from "./pages/PurchasePlanning";
 import StockMovements from "./pages/StockMovements";
-import PurchaseRecords from "./pages/PurchaseRecords";
-import Warehouse from "./pages/Warehouse"; // NEW: Import Warehouse
+import PurchaseRecords from "./pages/PurchaseRecords"; // NEW: Import PurchaseRecords
 import { SessionContextProvider, useSession } from "./contexts/SessionContext";
 import Header from "./components/layout/Header";
 import { ThemeProvider } from "./contexts/ThemeProvider";
@@ -56,8 +56,7 @@ const AppRoutes = () => (
     <Route path="/user-management" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
     <Route path="/purchase-planning" element={<ProtectedRoute><PurchasePlanning /></ProtectedRoute>} />
     <Route path="/stock-movements" element={<ProtectedRoute><StockMovements /></ProtectedRoute>} />
-    <Route path="/purchase-records" element={<ProtectedRoute><PurchaseRecords /></ProtectedRoute>} />
-    <Route path="/warehouse" element={<ProtectedRoute><Warehouse /></ProtectedRoute>} /> {/* NEW: Add Warehouse route */}
+    <Route path="/purchase-records" element={<ProtectedRoute><PurchaseRecords /></ProtectedRoute>} /> {/* NEW: Add PurchaseRecords route */}
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
     <Route path="*" element={<NotFound />} />
@@ -68,6 +67,7 @@ const App = () => (
   <QueryClientProvider client={queryClient}>
     <ThemeProvider defaultTheme="system" storageKey="vite-ui-theme">
       <TooltipProvider>
+        <Toaster />
         <Sonner />
         <BrowserRouter>
           <SessionContextProvider>

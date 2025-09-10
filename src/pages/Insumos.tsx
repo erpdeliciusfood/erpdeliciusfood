@@ -8,17 +8,28 @@ import InsumoForm from "@/components/insumos/InsumoForm";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Input } from "@/components/ui/input"; // Added Input
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Added Select
-import { INSUMO_CATEGORIES } from "@/constants/insumoConstants"; // Import INSUMO_CATEGORIES
 
-const ALL_CATEGORIES_OPTION = "Todos"; // Option to show all categories
+const INSUMO_CATEGORIES = [
+  "Todos", // Option to show all categories
+  "Cereales y Legumbres",
+  "Proteínas (Carnes, Aves, Pescados)",
+  "Lácteos y Huevos",
+  "Verduras y Hortalizas",
+  "Frutas",
+  "Grasas y Aceites",
+  "Condimentos y Especias",
+  "Panadería y Pastelería",
+  "Bebidas",
+  "Otros",
+];
 
 const Insumos = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingInsumo, setEditingInsumo] = useState(null);
   const [searchTerm, setSearchTerm] = useState(""); // State for search term
-  const [selectedCategory, setSelectedCategory] = useState(ALL_CATEGORIES_OPTION); // State for category filter
+  const [selectedCategory, setSelectedCategory] = useState("Todos"); // State for category filter
 
-  const { data: insumos, isLoading, isError, error } = useInsumos(searchTerm, selectedCategory === ALL_CATEGORIES_OPTION ? undefined : selectedCategory);
+  const { data: insumos, isLoading, isError, error } = useInsumos(searchTerm, selectedCategory === "Todos" ? undefined : selectedCategory);
 
   const handleAddClick = () => {
     setEditingInsumo(null);
@@ -98,9 +109,6 @@ const Insumos = () => {
             <SelectValue placeholder="Filtrar por categoría" />
           </SelectTrigger>
           <SelectContent>
-            <SelectItem value={ALL_CATEGORIES_OPTION}>
-              {ALL_CATEGORIES_OPTION}
-            </SelectItem>
             {INSUMO_CATEGORIES.map((category) => (
               <SelectItem key={category} value={category}>
                 {category}
