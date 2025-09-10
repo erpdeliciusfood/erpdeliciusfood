@@ -2,14 +2,13 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Download } from "lucide-react"; // Removed Upload, FileText
+import { Loader2, Download } from "lucide-react";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
-// Removed: import { useAddInsumo } from "@/hooks/useInsumos";
 import { InsumoFormValues } from "@/types";
-import * as Papa from "papaparse"; // For CSV parsing
-import * as z from "zod"; // For validation
+import { parse } from "papaparse"; // Changed import from * as Papa to { parse }
+import * as z from "zod";
 import { useQueryClient } from "@tanstack/react-query";
-import { createMultipleInsumos } from "@/integrations/supabase/insumos"; // New function for batch insert
+import { createMultipleInsumos } from "@/integrations/supabase/insumos";
 
 // Define the schema for a single row in the CSV
 const csvRowSchema = z.object({
@@ -73,15 +72,15 @@ const InsumoImporter: React.FC<InsumoImporterProps> = ({ onSuccess, onCancel }) 
     setIsProcessing(true);
     const toastId = showLoading("Procesando archivo e importando insumos...");
 
-    Papa.parse(file, {
+    parse(file, { // Changed Papa.parse to parse
       header: true,
       skipEmptyLines: true,
-      complete: async (results: Papa.ParseResult<any>) => { // Explicitly type results
+      complete: async (results: Papa.ParseResult<any>) => {
         const parsedData = results.data;
         const errors: { row: number; message: string }[] = [];
         const validInsumos: InsumoFormValues[] = [];
 
-        parsedData.forEach((row: any, index: number) => { // Explicitly type index
+        parsedData.forEach((row: any, index: number) => {
           const rowNumber = index + 2; // +1 for 0-indexed array, +1 for header row
           try {
             // Clean up empty strings to null for optional fields
@@ -127,7 +126,7 @@ const InsumoImporter: React.FC<InsumoImporterProps> = ({ onSuccess, onCancel }) 
           const importedCount = await createMultipleInsumos(validInsumos);
           dismissToast(toastId);
           showSuccess(`Se importaron ${importedCount} insumos exitosamente.`);
-          queryClient.invalidateQueries({ queryKey: ["insumos"] }); // Refresh the insumos list
+          queryClient.invalidateQueries({ queryKey: ["insumos"] });
           onSuccess();
         } catch (dbError: any) {
           dismissToast(toastId);
@@ -137,7 +136,7 @@ const InsumoImporter: React.FC<InsumoImporterProps> = ({ onSuccess, onCancel }) 
           setIsProcessing(false);
         }
       },
-      error: (error: Papa.ParseError) => { // Explicitly type error
+      error: (error: Papa.ParseError) => {
         dismissToast(toastId);
         showError(`Error al parsear el archivo CSV: ${error.message}`);
         console.error("Error de PapaParse:", error);

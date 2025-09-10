@@ -23,7 +23,14 @@ export const createInsumo = async (insumo: InsumoFormValues): Promise<Insumo> =>
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) throw new Error("User not authenticated.");
 
-  const { data, error } = await supabase.from("insumos").insert({ ...insumo, user_id: user.id }).select().single();
+  // Ensure non-nullable fields are not null
+  const processedInsumo = {
+    ...insumo,
+    supplier_name: insumo.supplier_name || '',
+    supplier_phone: insumo.supplier_phone || '',
+  };
+
+  const { data, error } = await supabase.from("insumos").insert({ ...processedInsumo, user_id: user.id }).select().single();
   if (error) throw new Error(error.message);
   return data;
 };
@@ -33,7 +40,13 @@ export const createMultipleInsumos = async (insumos: InsumoFormValues[]): Promis
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) throw new Error("User not authenticated.");
 
-  const insumosWithUserId = insumos.map(insumo => ({ ...insumo, user_id: user.id }));
+  const insumosWithUserId = insumos.map(insumo => ({
+    ...insumo,
+    user_id: user.id,
+    // Ensure non-nullable fields are not null by defaulting to empty string
+    supplier_name: insumo.supplier_name || '',
+    supplier_phone: insumo.supplier_phone || '',
+  }));
 
   const { data, error } = await supabase.from("insumos").insert(insumosWithUserId).select("id");
 
@@ -42,7 +55,14 @@ export const createMultipleInsumos = async (insumos: InsumoFormValues[]): Promis
 };
 
 export const updateInsumo = async (id: string, insumo: InsumoFormValues): Promise<Insumo> => {
-  const { data, error } = await supabase.from("insumos").update(insumo).eq("id", id).select().single();
+  // Ensure non-nullable fields are not null
+  const processedInsumo = {
+    ...insumo,
+    supplier_name: insumo.supplier_name || '',
+    supplier_phone: insumo.supplier_phone || '',
+  };
+
+  const { data, error } = await supabase.from("insumos").update(processedInsumo).eq("id", id).select().single();
   if (error) throw new Error(error.message);
   return data;
 };
