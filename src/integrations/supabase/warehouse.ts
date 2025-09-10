@@ -18,7 +18,7 @@ interface PlatoInsumoFromQuery {
 }
 
 interface PlatoFromQuery {
-  plato_insumos: PlatoInsumoFromQuery[] | null;
+  plato_insumos: PlatoInsumoFromQuery[] | null; // Changed to array to match Supabase's return structure
 }
 
 interface MenuPlatoFromQuery {
