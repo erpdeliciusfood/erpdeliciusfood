@@ -158,7 +158,7 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
           </CardHeader>
           <CardContent className="space-y-4">
             {fields.map((field, index) => (
-              <div key={field.id} className="flex flex-col md:flex-row gap-4 items-end border-b pb-4 last:border-b-0 last:pb-0">
+              <div key={field.id} className="flex flex-col md:flex-row gap-4 items-end p-4 border rounded-lg shadow-sm bg-gray-50 dark:bg-gray-700/30"> {/* Added styling for visual separation */}
                 <FormField
                   control={form.control}
                   name={`insumos.${index}.insumo_id`}
