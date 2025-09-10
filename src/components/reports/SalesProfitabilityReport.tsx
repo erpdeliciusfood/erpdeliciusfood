@@ -58,20 +58,20 @@ const SalesProfitabilityReport: React.FC<SalesProfitabilityReportProps> = ({ sta
         const currentDayData = dailyDataMap.get(formattedReportDate) || { revenue: 0, cogs: 0 };
 
         // Calculate revenue from meals sold and additional services
-        let mealsRevenue = 0;
         let mealsCogs = 0;
         report.service_report_platos?.forEach(pv => {
           const plato = pv.platos;
           if (plato) {
-            mealsRevenue += plato.precio_venta * pv.quantity_sold;
+            // Removed plato.precio_venta from revenue calculation
             mealsCogs += plato.costo_produccion * pv.quantity_sold;
           }
         });
 
-        currentDayData.revenue += mealsRevenue + report.additional_services_revenue;
+        // Revenue now only includes additional services revenue
+        currentDayData.revenue += report.additional_services_revenue;
         currentDayData.cogs += mealsCogs;
         
-        overallRevenue += mealsRevenue + report.additional_services_revenue;
+        overallRevenue += report.additional_services_revenue;
         overallCogs += mealsCogs;
 
         dailyDataMap.set(formattedReportDate, currentDayData);
