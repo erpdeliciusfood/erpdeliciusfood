@@ -14,7 +14,7 @@ export const getStockMovements = async (): Promise<StockMovement[]> => {
 export const createStockMovement = async (
   movementData: StockMovementFormValues
 ): Promise<StockMovement> => {
-  const { insumo_id, movement_type, quantity_change, total_purchase_amount, total_purchase_quantity, notes } = movementData;
+  const { insumo_id, movement_type, quantity_change, total_purchase_amount, total_purchase_quantity, notes, menu_id } = movementData;
 
   // First, get the current stock and cost of the insumo
   const { data: currentInsumo, error: fetchInsumoError } = await supabase
@@ -28,7 +28,7 @@ export const createStockMovement = async (
 
   let newStockQuantity = currentInsumo.stock_quantity;
   let newCostoUnitario = currentInsumo.costo_unitario;
-  let actualQuantityChange = quantity_change; // This will be the value recorded in stock_movements
+  let actualQuantityChange: number = 0; // Initialize to 0 to prevent 'possibly undefined' error
 
   // Handle 'purchase_in' movement type
   if (movement_type === "purchase_in") {
@@ -42,7 +42,7 @@ export const createStockMovement = async (
   } else if (movement_type === "adjustment_in") {
     newStockQuantity += quantity_change!; // Use non-null assertion as schema ensures it's present
     actualQuantityChange = quantity_change!;
-  } else if (movement_type === "adjustment_out") {
+  } else if (movement_type === "adjustment_out" || movement_type === "daily_prep_out") { // NEW: Handle daily_prep_out
     newStockQuantity -= quantity_change!; // Use non-null assertion as schema ensures it's present
     actualQuantityChange = -quantity_change!; // Record as negative for deduction
   }
@@ -71,6 +71,7 @@ export const createStockMovement = async (
       quantity_change: parseFloat(actualQuantityChange.toFixed(2)), // Use the actual calculated change
       new_stock_quantity: parseFloat(updatedInsumo.stock_quantity.toFixed(2)), // Use the actual updated stock
       notes,
+      menu_id: menu_id || null, // NEW: Include menu_id
     })
     .select("*, insumos(id, nombre, purchase_unit, base_unit, conversion_factor)")
     .single();

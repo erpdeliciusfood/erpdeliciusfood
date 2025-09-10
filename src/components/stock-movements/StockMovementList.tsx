@@ -7,7 +7,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Package, ArrowDown, ArrowUp } from "lucide-react"; // 'RefreshCcw' removed
+import { Package, ArrowDown, ArrowUp } from "lucide-react";
 import { StockMovement } from "@/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -37,6 +37,8 @@ const StockMovementList: React.FC<StockMovementListProps> = ({ stockMovements })
         return <Badge className="bg-blue-500 hover:bg-blue-600 text-white">Ajuste de Entrada</Badge>;
       case 'adjustment_out':
         return <Badge className="bg-orange-500 hover:bg-orange-600 text-white">Ajuste de Salida</Badge>;
+      case 'daily_prep_out': // NEW: Badge for daily_prep_out
+        return <Badge className="bg-purple-500 hover:bg-purple-600 text-white">Salida por Prep. Diaria</Badge>;
       default:
         return <Badge variant="secondary">Desconocido</Badge>;
     }

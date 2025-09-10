@@ -27,7 +27,7 @@ import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   insumo_id: z.string().min(1, { message: "Debe seleccionar un insumo." }),
-  movement_type: z.enum(["purchase_in", "adjustment_in", "adjustment_out"], {
+  movement_type: z.enum(["purchase_in", "adjustment_in", "adjustment_out"], { // Removed 'daily_prep_out' from manual options
     required_error: "Debe seleccionar un tipo de movimiento.",
   }),
   quantity_change: z.coerce.number().min(0.01, {

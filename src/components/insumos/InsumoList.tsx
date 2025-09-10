@@ -13,7 +13,7 @@ import { Insumo } from "@/types";
 import { useDeleteInsumo } from "@/hooks/useInsumos";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge"; // Import Badge
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"; // Import Dialog components
+import { Dialog } from "@/components/ui/dialog"; // Only import Dialog
 import InsumoSupplierDetailsDialog from "./InsumoSupplierDetailsDialog"; // Import the supplier details dialog
 
 interface InsumoListProps {
