@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ShoppingBag, PlusCircle, Info, Loader2 } from "lucide-react";
-import { Insumo } from "@/types";
+import { InsumoNeeded } from "@/types"; // Removed Insumo import
 import PurchaseRecordForm from "./PurchaseRecordForm";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -11,17 +11,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useAddPurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
-
-interface InsumoNeeded extends Insumo {
-  quantity_needed_for_period_raw: number;
-  quantity_needed_for_period_rounded: number;
-  quantity_needed_for_period_rounded_up: boolean;
-  current_stock: number;
-  purchase_suggestion_raw: number;
-  purchase_suggestion_rounded: number;
-  purchase_suggestion_rounded_up: boolean;
-  estimated_purchase_cost: number;
-}
 
 interface SuggestedPurchaseListContentProps {
   suggestedPurchases: InsumoNeeded[];

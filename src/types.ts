@@ -225,3 +225,14 @@ export interface PurchaseRecordFormValues {
   from_registered_supplier: boolean;
   notes: string | null;
 }
+
+export interface InsumoNeeded extends Insumo {
+  quantity_needed_for_period_raw: number; // Original calculated value
+  quantity_needed_for_period_rounded: number; // Rounded up value
+  quantity_needed_for_period_rounded_up: boolean; // Flag if rounding occurred
+  current_stock: number;
+  purchase_suggestion_raw: number; // Original calculated value
+  purchase_suggestion_rounded: number; // Rounded up value
+  purchase_suggestion_rounded_up: boolean; // Flag if rounding occurred
+  estimated_purchase_cost: number;
+}
