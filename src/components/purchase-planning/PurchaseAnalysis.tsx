@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from "react";
 import { useMenus } from "@/hooks/useMenus";
 import { useInsumos } from "@/hooks/useInsumos";
-import { Loader2, ShoppingBag, DollarSign, Info, Building2 } from "lucide-react"; // Removed Phone icon
+import { Loader2, ShoppingBag, DollarSign, Info, Building2 } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -10,8 +10,9 @@ import { Badge } from "@/components/ui/badge";
 import { Insumo } from "@/types";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { Dialog } from "@/components/ui/dialog"; // Removed DialogTrigger and DialogContent
-import InsumoSupplierDetailsDialog from "@/components/insumos/InsumoSupplierDetailsDialog"; // New import
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import InsumoSupplierDetailsDialog from "@/components/insumos/InsumoSupplierDetailsDialog";
+import SuggestedPurchaseListContent from "@/components/purchase-planning/SuggestedPurchaseListContent"; // Updated import
 
 interface PurchaseAnalysisProps {
   startDate: Date;
@@ -35,6 +36,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
 
   const [isSupplierDetailsDialogOpen, setIsSupplierDetailsDialogOpen] = useState(false);
   const [selectedInsumoForDetails, setSelectedInsumoForDetails] = useState<Insumo | null>(null);
+  const [isSuggestedPurchaseListOpen, setIsSuggestedPurchaseListOpen] = useState(false); // New state for suggested purchase list dialog
 
   const isLoading = isLoadingMenus || isLoadingInsumos;
   const isError = isErrorMenus || isErrorInsumos;
@@ -123,6 +125,13 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
     setSelectedInsumoForDetails(null);
   };
 
+  const handleCloseSuggestedPurchaseList = () => {
+    setIsSuggestedPurchaseListOpen(false);
+    // Optionally, refetch data for PurchaseAnalysis if needed after purchases are made
+    // queryClient.invalidateQueries({ queryKey: ["menus"] });
+    // queryClient.invalidateQueries({ queryKey: ["insumos"] });
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-10">
@@ -164,10 +173,33 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
       </Card>
 
       <Card className="w-full shadow-lg dark:bg-gray-800">
-        <CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             Análisis de Compras ({formattedStartDate} - {formattedEndDate})
           </CardTitle>
+          <Dialog open={isSuggestedPurchaseListOpen} onOpenChange={setIsSuggestedPurchaseListOpen}>
+            <DialogTrigger asChild>
+              <Button
+                variant="outline"
+                className="px-4 py-2 text-base bg-blue-500 hover:bg-blue-600 text-white transition-colors duration-200 ease-in-out"
+                disabled={insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0).length === 0}
+              >
+                <ShoppingBag className="mr-2 h-4 w-4" />
+                Ver Sugerencias de Compra ({insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0).length})
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-3xl p-6 max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  Lista de Compras Sugeridas
+                </DialogTitle>
+              </DialogHeader>
+              <SuggestedPurchaseListContent
+                suggestedPurchases={insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0)}
+                onClose={handleCloseSuggestedPurchaseList}
+              />
+            </DialogContent>
+          </Dialog>
         </CardHeader>
         <CardContent>
           {insumosForPurchase.length > 0 ? (
@@ -182,7 +214,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Necesidad Periodo</TableHead>
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Sugerencia Compra</TableHead>
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Costo Estimado (S/)</TableHead>
-                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Proveedor</TableHead> {/* New Column */}
+                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Proveedor</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -229,7 +261,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                               </TooltipTrigger>
                               {insumo.purchase_suggestion_rounded_up && (
                                 <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                                  <p>Valor real: {insumo.purchase_suggestion_raw.toFixed(2)} {insumo.purchase_unit}</p>
+                                  <p>Valor real: {insumo.quantity_needed_for_period_raw.toFixed(2)} {insumo.purchase_unit}</p>
                                 </TooltipContent>
                               )}
                             </Tooltip>
