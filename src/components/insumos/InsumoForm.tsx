@@ -117,6 +117,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         min_stock_level: initialData.min_stock_level,
         category: initialData.category || "Otros",
       });
+      // When editing an existing insumo, the conversion factor should always be editable by default.
       setIsConversionFactorEditable(true);
     } else {
       form.reset({
@@ -134,7 +135,10 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
   }, [initialData, form]);
 
   useEffect(() => {
-    if (!initialData && purchaseUnit && baseUnit) {
+    // Check if it's a new insumo being created (either completely new or pre-filled from search)
+    const isNewInsumoBeingCreated = !initialData || !(initialData as Insumo).id;
+
+    if (isNewInsumoBeingCreated && purchaseUnit && baseUnit) {
       const suggestedFactor = predefinedConversions[purchaseUnit]?.[baseUnit];
       if (suggestedFactor !== undefined) {
         form.setValue("conversion_factor", suggestedFactor, { shouldValidate: true });
@@ -143,12 +147,14 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         form.setValue("conversion_factor", 1.0, { shouldValidate: true });
         setIsConversionFactorEditable(false);
       } else {
+        // If no predefined conversion and units are different, allow editing
         if (form.getValues("conversion_factor") === 0) {
           form.setValue("conversion_factor", 1.0, { shouldValidate: true });
         }
         setIsConversionFactorEditable(true);
       }
-    } else if (initialData) {
+    } else if (initialData && (initialData as Insumo).id) {
+      // When editing an existing insumo, the conversion factor should always be editable by default.
       setIsConversionFactorEditable(true);
     }
   }, [purchaseUnit, baseUnit, form, initialData]);
