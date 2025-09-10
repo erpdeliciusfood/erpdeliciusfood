@@ -1,8 +1,10 @@
-import React, { useEffect, useState } from "react";
-import { useForm, FormProvider } from "react-hook-form";
+import React, { useEffect } from "react";
+import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -10,6 +12,7 @@ import {
   FormItem,
   FormLabel,
   FormMessage,
+  FormDescription,
 } from "@/components/ui/form";
 import {
   Select,
@@ -18,16 +21,16 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils";
+import { format, formatISO } from "date-fns";
+import { es } from "date-fns/locale";
 import { PurchaseRecord, PurchaseRecordFormValues, Insumo } from "@/types";
 import { useAddPurchaseRecord, useUpdatePurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { useInsumos } from "@/hooks/useInsumos";
-import { format } from "date-fns"; // Import format
-
-// Import new modular sections
-import PurchaseDetailsSection from "./PurchaseDetailsSection";
-import SupplierDetailsSection from "./SupplierDetailsSection";
-import WhoMadePurchaseSection from "./WhoMadePurchaseSection";
+import { Loader2, CalendarIcon } from "lucide-react";
 
 const formSchema = z.object({
   insumo_id: z.string().min(1, { message: "Debe seleccionar un insumo." }),
@@ -42,12 +45,12 @@ const formSchema = z.object({
   }, { message: "El teléfono debe empezar con +51 y tener 9 dígitos (ej. +51987654321)." }),
   supplier_address_at_purchase: z.string().max(255, { message: "La dirección del proveedor no debe exceder los 255 caracteres." }).nullable(),
   from_registered_supplier: z.boolean(),
-  notes: z.string().max(100, { message: "El nombre no debe exceder los 100 caracteres." }).nullable(),
+  notes: z.string().max(500, { message: "Las notas no deben exceder los 500 caracteres." }).nullable(),
 });
 
 interface PurchaseRecordFormProps {
   initialData?: PurchaseRecord | null;
-  prefilledInsumoId?: string;
+  prefilledInsumoId?: string; // For generating from purchase analysis
   prefilledQuantity?: number;
   prefilledUnitCost?: number;
   prefilledSupplierName?: string;
@@ -70,18 +73,16 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
 }) => {
   const addMutation = useAddPurchaseRecord();
   const updateMutation = useUpdatePurchaseRecord();
-  const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos();
-
-  const [lastChangedField, setLastChangedField] = useState<'quantity' | 'unitCost' | 'total' | null>(null);
+  const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos(); // Renamed to availableInsumosData
 
   const form = useForm<PurchaseRecordFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       insumo_id: prefilledInsumoId || "",
-      purchase_date: initialData ? format(new Date(initialData.purchase_date), "yyyy-MM-dd") : format(new Date(), "yyyy-MM-dd"),
+      purchase_date: format(new Date(), "yyyy-MM-dd"),
       quantity_purchased: prefilledQuantity || 0,
       unit_cost_at_purchase: prefilledUnitCost || 0,
-      total_amount: (prefilledQuantity && prefilledUnitCost) ? parseFloat((prefilledQuantity * prefilledUnitCost).toFixed(2)) : 0,
+      total_amount: (prefilledQuantity && prefilledUnitCost) ? prefilledQuantity * prefilledUnitCost : 0,
       supplier_name_at_purchase: prefilledSupplierName || "",
       supplier_phone_at_purchase: prefilledSupplierPhone || "",
       supplier_address_at_purchase: prefilledSupplierAddress || "",
@@ -90,8 +91,12 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
     },
   });
 
+  const quantityPurchased = form.watch("quantity_purchased");
+  const unitCostAtPurchase = form.watch("unit_cost_at_purchase");
   const selectedInsumoId = form.watch("insumo_id");
-  const selectedInsumo = availableInsumosData?.data.find((insumo: Insumo) => insumo.id === selectedInsumoId);
+
+  // Find the selected insumo to get its purchase_unit
+  const selectedInsumo = availableInsumosData?.data.find((insumo: Insumo) => insumo.id === selectedInsumoId); // Access .data and type insumo
   const purchaseUnit = selectedInsumo?.purchase_unit || "unidad";
 
   useEffect(() => {
@@ -114,7 +119,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         purchase_date: format(new Date(), "yyyy-MM-dd"),
         quantity_purchased: prefilledQuantity || 0,
         unit_cost_at_purchase: prefilledUnitCost || 0,
-        total_amount: (prefilledQuantity && prefilledUnitCost) ? parseFloat((prefilledQuantity * prefilledUnitCost).toFixed(2)) : 0,
+        total_amount: (prefilledQuantity && prefilledUnitCost) ? prefilledQuantity * prefilledUnitCost : 0,
         supplier_name_at_purchase: prefilledSupplierName || "",
         supplier_phone_at_purchase: prefilledSupplierPhone || "",
         supplier_address_at_purchase: prefilledSupplierAddress || "",
@@ -124,13 +129,32 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
     }
   }, [initialData, form, prefilledInsumoId, prefilledQuantity, prefilledUnitCost, prefilledSupplierName, prefilledSupplierPhone, prefilledSupplierAddress]);
 
-  const onSubmit = async (values: PurchaseRecordFormValues) => {
-    const submitValues = { ...values };
+  useEffect(() => {
+    // Auto-calculate total_amount
+    const calculatedTotal = quantityPurchased * unitCostAtPurchase;
+    if (form.getValues("total_amount") !== calculatedTotal) {
+      form.setValue("total_amount", parseFloat(calculatedTotal.toFixed(2)), { shouldValidate: true });
+    }
+  }, [quantityPurchased, unitCostAtPurchase, form]);
 
+  useEffect(() => {
+    // When insumo_id changes, pre-fill supplier details from registered insumo
+    if (selectedInsumoId && !initialData) { // Only for new records, not when editing
+      const selectedInsumo = availableInsumosData?.data.find((insumo: Insumo) => insumo.id === selectedInsumoId); // Access .data and type insumo
+      if (selectedInsumo) {
+        form.setValue("supplier_name_at_purchase", selectedInsumo.supplier_name || "");
+        form.setValue("supplier_phone_at_purchase", selectedInsumo.supplier_phone || "");
+        form.setValue("supplier_address_at_purchase", selectedInsumo.supplier_address || "");
+        form.setValue("from_registered_supplier", true);
+      }
+    }
+  }, [selectedInsumoId, availableInsumosData?.data, form, initialData]); // Add availableInsumosData.data to dependencies
+
+  const onSubmit = async (values: PurchaseRecordFormValues) => {
     if (initialData) {
-      await updateMutation.mutateAsync({ id: initialData.id, record: submitValues });
+      await updateMutation.mutateAsync({ id: initialData.id, record: values });
     } else {
-      await addMutation.mutateAsync(submitValues);
+      await addMutation.mutateAsync(values);
     }
     onSuccess();
   };
@@ -138,77 +162,274 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
   const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingInsumos;
 
   return (
-    <FormProvider {...form}>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-2">
-          <FormField
-            control={form.control}
-            name="insumo_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Insumo</FormLabel>
-                <Select
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                  disabled={isLoading || isLoadingInsumos || !!initialData || !!prefilledInsumoId}
-                >
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-2">
+        <FormField
+          control={form.control}
+          name="insumo_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Insumo</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                disabled={isLoading || isLoadingInsumos || !!initialData || !!prefilledInsumoId} // Disable if editing or prefilled
+              >
+                <FormControl>
+                  <SelectTrigger className="h-12 text-base">
+                    <SelectValue placeholder="Selecciona un insumo" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {availableInsumosData?.data.map((insumo: Insumo) => ( // Access .data and type insumo
+                    <SelectItem key={insumo.id} value={insumo.id}>
+                      {insumo.nombre} ({insumo.purchase_unit})
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="purchase_date"
+          render={({ field }) => (
+            <FormItem className="flex flex-col">
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Fecha de Compra</FormLabel>
+              <Popover>
+                <PopoverTrigger asChild>
                   <FormControl>
-                    <SelectTrigger className="h-12 text-base">
-                      <SelectValue placeholder="Selecciona un insumo" />
-                    </SelectTrigger>
+                    <Button
+                      variant={"outline"}
+                      className={cn(
+                        "w-full pl-3 text-left font-normal h-12 text-base",
+                        !field.value && "text-muted-foreground"
+                      )}
+                      disabled={isLoading}
+                    >
+                      {field.value ? (
+                        format(new Date(field.value), "PPP", { locale: es })
+                      ) : (
+                        <span>Selecciona una fecha</span>
+                      )}
+                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                    </Button>
                   </FormControl>
-                  <SelectContent>
-                    {availableInsumosData?.data.map((insumo: Insumo) => (
-                      <SelectItem key={insumo.id} value={insumo.id}>
-                        {insumo.nombre} ({insumo.purchase_unit})
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-0" align="start">
+                  <Calendar
+                    mode="single"
+                    selected={field.value ? new Date(field.value) : undefined}
+                    onSelect={(date) => field.onChange(date ? formatISO(date, { representation: 'date' }) : null)}
+                    disabled={(date) =>
+                      date > new Date() || date < new Date("1900-01-01") || isLoading
+                    }
+                    initialFocus
+                    locale={es}
+                  />
+                </PopoverContent>
+              </Popover>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <PurchaseDetailsSection
-            isLoading={isLoading}
-            selectedInsumoId={selectedInsumoId}
-            purchaseUnit={purchaseUnit}
-            setLastChangedField={setLastChangedField}
-            lastChangedField={lastChangedField} // Pass lastChangedField as prop
-          />
+        <FormField
+          control={form.control}
+          name="quantity_purchased"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                Cantidad Comprada {selectedInsumoId && `(en ${purchaseUnit})`}
+              </FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="Ej. 10.5"
+                  {...field}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  className="h-12 text-base"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <SupplierDetailsSection
-            isLoading={isLoading}
-            selectedInsumoId={selectedInsumoId}
-            selectedInsumo={selectedInsumo}
-            initialData={initialData}
-          />
+        <FormField
+          control={form.control}
+          name="unit_cost_at_purchase"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Costo Unitario de Compra (S/)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="Ej. 2.50"
+                  {...field}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  className="h-12 text-base"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <WhoMadePurchaseSection isLoading={isLoading} />
+        <FormField
+          control={form.control}
+          name="total_amount"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Monto Total (S/)</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  step="0.01"
+                  placeholder="Ej. 26.25"
+                  {...field}
+                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  className="h-12 text-base"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
 
-          <div className="flex justify-end space-x-4 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onCancel}
-              className="px-6 py-3 text-lg"
-              disabled={isLoading}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              className="px-6 py-3 text-lg bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
-              disabled={isLoading}
-            >
-              {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-              {initialData ? "Guardar Cambios" : "Registrar Compra"}
-            </Button>
-          </div>
-        </form>
-      </Form>
-    </FormProvider>
+        <FormField
+          control={form.control}
+          name="supplier_name_at_purchase"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre del Proveedor (en la compra)</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Ej. Distribuidora La Huerta"
+                  {...field}
+                  value={field.value || ""}
+                  className="h-12 text-base"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="supplier_phone_at_purchase"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Teléfono del Proveedor (en la compra)</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Ej. +51987654321"
+                  {...field}
+                  value={field.value || ""}
+                  className="h-12 text-base"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="supplier_address_at_purchase"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Dirección del Proveedor (en la compra)</FormLabel>
+              <FormControl>
+                <Input
+                  placeholder="Ej. Av. Los Girasoles 123, Lima"
+                  {...field}
+                  value={field.value || ""}
+                  className="h-12 text-base"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="from_registered_supplier"
+          render={({ field }) => (
+            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+              <FormControl>
+                <Checkbox
+                  checked={field.value}
+                  onCheckedChange={field.onChange}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <div className="space-y-1 leading-none">
+                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                  ¿Fue del proveedor registrado para este insumo?
+                </FormLabel>
+                <FormDescription className="text-sm text-gray-600 dark:text-gray-400">
+                  Marca esta casilla si la compra se realizó al proveedor habitual.
+                </FormDescription>
+              </div>
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="notes"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Notas (Opcional)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Detalles adicionales sobre la compra..."
+                  {...field}
+                  value={field.value || ""}
+                  className="min-h-[80px] text-base"
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex justify-end space-x-4 pt-4">
+          <Button
+            type="button"
+            variant="outline"
+            onClick={onCancel}
+            className="px-6 py-3 text-lg"
+            disabled={isLoading}
+          >
+            Cancelar
+          </Button>
+          <Button
+            type="submit"
+            className="px-6 py-3 text-lg bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
+            disabled={isLoading}
+          >
+            {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+            {initialData ? "Guardar Cambios" : "Registrar Compra"}
+          </Button>
+        </div>
+      </form>
+    </Form>
   );
 };
 

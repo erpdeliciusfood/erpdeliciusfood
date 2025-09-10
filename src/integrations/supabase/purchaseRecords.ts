@@ -20,10 +20,9 @@ export const createPurchaseRecord = async (
   if (userError || !user) throw new Error("User not authenticated.");
 
   // Insert the purchase record
-  const { notes, ...restRecordData } = recordData; // Destructure notes
   const { data: newRecord, error: recordError } = await supabase
     .from("purchase_records")
-    .insert({ ...restRecordData, user_id: user.id, notes: notes }) // Map notes to notes
+    .insert({ ...recordData, user_id: user.id })
     .select()
     .single();
 
@@ -59,10 +58,9 @@ export const updatePurchaseRecord = async (
   // For simplicity, updating a purchase record will not automatically adjust stock or cost.
   // If stock/cost adjustment is needed, it should be done via a separate stock movement adjustment.
   // This prevents complex recalculations and potential data inconsistencies if historical stock movements are not re-processed.
-  const { notes, ...restRecordData } = recordData; // Destructure notes
   const { data: updatedRecord, error: recordError } = await supabase
     .from("purchase_records")
-    .update({ ...restRecordData, notes: notes }) // Map notes to notes
+    .update(recordData)
     .eq("id", id)
     .select()
     .single();
