@@ -7,15 +7,14 @@ import { Loader2 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Insumo } from "@/types"; // Import Insumo type
 
 const LowStockAlerts: React.FC = () => {
   // Fetch all insumos to correctly calculate low stock without pagination interference
   const { data: insumoData, isLoading, isError, error } = useInsumos(undefined, undefined, 1, 9999); // Fetch all items
 
-  const lowStockInsumos = insumoData?.data.filter( // Access .data here
-    (insumo: Insumo) => insumo.stock_quantity <= insumo.min_stock_level && insumo.min_stock_level > 0 // Only show if min_stock_level is set and stock is below it
-  ).sort((a: Insumo, b: Insumo) => a.stock_quantity - b.stock_quantity);
+  const lowStockInsumos = insumoData?.data.filter(
+    (insumo) => insumo.stock_quantity <= insumo.min_stock_level && insumo.min_stock_level > 0 // Only show if min_stock_level is set and stock is below it
+  ).sort((a, b) => a.stock_quantity - b.stock_quantity);
 
   if (isLoading) {
     return (
@@ -72,7 +71,7 @@ const LowStockAlerts: React.FC = () => {
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {lowStockInsumos.map((insumo: Insumo) => (
+                {lowStockInsumos.map((insumo) => (
                   <TableRow key={insumo.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                     <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{insumo.nombre}</TableCell>
                     <TableCell className="text-right text-base">

@@ -32,7 +32,7 @@ interface InsumoNeeded extends Insumo {
 
 const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate }) => {
   const { data: menus, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenus();
-  const { data: allInsumos, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos();
+  const { data: allInsumosData, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos(undefined, undefined, 1, 9999); // Renamed to allInsumosData
 
   const [isSupplierDetailsDialogOpen, setIsSupplierDetailsDialogOpen] = useState(false);
   const [selectedInsumoForDetails, setSelectedInsumoForDetails] = useState<Insumo | null>(null);
@@ -43,7 +43,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
   const error = errorMenus || errorInsumos;
 
   const { insumosForPurchase, totalEstimatedPurchaseCost } = useMemo(() => {
-    if (isLoading || isError || !menus || !allInsumos) {
+    if (isLoading || isError || !menus || !allInsumosData?.data) { // Access .data here
       return { insumosForPurchase: [], totalEstimatedPurchaseCost: 0 };
     }
 
@@ -73,7 +73,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
 
     let overallEstimatedCost = 0;
     const result: InsumoNeeded[] = [];
-    allInsumos.forEach(insumo => {
+    allInsumosData.data.forEach((insumo: Insumo) => { // Access .data and type insumo
       const quantityNeededForPeriodRaw = insumoNeedsMap.get(insumo.id) || 0;
       const currentStock = insumo.stock_quantity; // stock_quantity is already in purchase_unit
 
@@ -113,7 +113,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
       insumosForPurchase: result.sort((a, b) => b.purchase_suggestion_rounded - a.purchase_suggestion_rounded), // Sort by highest purchase suggestion (rounded)
       totalEstimatedPurchaseCost: parseFloat(overallEstimatedCost.toFixed(2)),
     };
-  }, [menus, allInsumos, startDate, endDate, isLoading, isError]);
+  }, [menus, allInsumosData?.data, startDate, endDate, isLoading, isError]); // Add allInsumosData.data to dependencies
 
   const handleOpenSupplierDetails = (insumo: Insumo) => {
     setSelectedInsumoForDetails(insumo);
@@ -261,7 +261,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                               </TooltipTrigger>
                               {insumo.purchase_suggestion_rounded_up && (
                                 <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                                  <p>Valor real: {insumo.quantity_needed_for_period_raw.toFixed(2)} {insumo.purchase_unit}</p>
+                                  <p>Valor real: {insumo.purchase_suggestion_raw.toFixed(2)} {insumo.purchase_unit}</p>
                                 </TooltipContent>
                               )}
                             </Tooltip>

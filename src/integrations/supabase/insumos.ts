@@ -1,8 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
 import { Insumo, InsumoFormValues, InsumoSupplierHistory, InsumoPriceHistory } from "@/types";
 
-export const getInsumos = async (searchTerm?: string, category?: string): Promise<Insumo[]> => {
-  let query = supabase.from("insumos").select("*");
+export const getInsumos = async (
+  searchTerm?: string,
+  category?: string,
+  page: number = 1, // New parameter for current page
+  pageSize: number = 10 // New parameter for items per page
+): Promise<{ data: Insumo[]; count: number }> => {
+  let query = supabase.from("insumos").select("*", { count: 'exact' }); // Request exact count
 
   if (searchTerm) {
     query = query.ilike("nombre", `%${searchTerm}%`);
@@ -12,12 +17,16 @@ export const getInsumos = async (searchTerm?: string, category?: string): Promis
     query = query.eq("category", category);
   }
 
-  // Order by name first, then by creation date
   query = query.order("nombre", { ascending: true }).order("created_at", { ascending: false });
 
-  const { data, error } = await query;
+  // Apply pagination
+  const from = (page - 1) * pageSize;
+  const to = from + pageSize - 1;
+  query = query.range(from, to);
+
+  const { data, error, count } = await query;
   if (error) throw new Error(error.message);
-  return data;
+  return { data: data || [], count: count || 0 };
 };
 
 export const createInsumo = async (insumo: InsumoFormValues): Promise<Insumo> => {

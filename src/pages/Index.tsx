@@ -16,7 +16,7 @@ import LowStockAlerts from "@/components/insumos/LowStockAlerts";
 const Index = () => {
   const { user, session } = useSession();
   const { data: profile } = useProfile();
-  const { data: insumos, isLoading: isLoadingInsumos } = useInsumos();
+  const { data: insumoData, isLoading: isLoadingInsumos } = useInsumos(); // Renamed to insumoData
   const { data: platos, isLoading: isLoadingPlatos } = usePlatos();
   const { data: menus, isLoading: isLoadingMenus } = useMenus();
   const { data: eventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
@@ -26,7 +26,7 @@ const Index = () => {
   const userName = profile?.first_name || user?.email || "Usuario";
   const userRole = session?.user?.user_metadata?.role;
 
-  const totalInsumos = insumos?.length || 0;
+  const totalInsumos = insumoData?.count || 0; // Access count property
   const totalPlatos = platos?.length || 0;
   const totalMenus = menus?.length || 0;
   const totalEventTypes = eventTypes?.length || 0;

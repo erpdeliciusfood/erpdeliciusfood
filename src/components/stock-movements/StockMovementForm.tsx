@@ -82,7 +82,7 @@ interface StockMovementFormProps {
 
 const StockMovementForm: React.FC<StockMovementFormProps> = ({ onSuccess, onCancel }) => {
   const addMutation = useAddStockMovement();
-  const { data: availableInsumos, isLoading: isLoadingInsumos } = useInsumos();
+  const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos(); // Renamed to availableInsumosData
 
   const form = useForm<StockMovementFormValues>({
     resolver: zodResolver(formSchema),
@@ -98,7 +98,7 @@ const StockMovementForm: React.FC<StockMovementFormProps> = ({ onSuccess, onCanc
 
   const movementType = form.watch("movement_type");
   const selectedInsumoId = form.watch("insumo_id");
-  const selectedInsumo = availableInsumos?.find(insumo => insumo.id === selectedInsumoId);
+  const selectedInsumo = availableInsumosData?.data.find((insumo: Insumo) => insumo.id === selectedInsumoId); // Access .data and type insumo
   const purchaseUnit = selectedInsumo?.purchase_unit || "unidad";
 
   useEffect(() => {
@@ -146,7 +146,7 @@ const StockMovementForm: React.FC<StockMovementFormProps> = ({ onSuccess, onCanc
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {availableInsumos?.map((insumo: Insumo) => (
+                  {availableInsumosData?.data.map((insumo: Insumo) => ( // Access .data and type insumo
                     <SelectItem key={insumo.id} value={insumo.id}>
                       {insumo.nombre} ({insumo.purchase_unit})
                     </SelectItem>

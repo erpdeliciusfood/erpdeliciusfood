@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Download } from "lucide-react";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { InsumoFormValues } from "@/types";
-import * as Papa from "papaparse"; // Changed import back to * as Papa
+import * as Papa from "papaparse";
 import * as z from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { createMultipleInsumos } from "@/integrations/supabase/insumos";
@@ -72,77 +72,91 @@ const InsumoImporter: React.FC<InsumoImporterProps> = ({ onSuccess, onCancel }) 
     setIsProcessing(true);
     const toastId = showLoading("Procesando archivo e importando insumos...");
 
-    Papa.parse(file, { // Changed to Papa.parse
-      header: true,
-      skipEmptyLines: true,
-      complete: async (results: Papa.ParseResult<any>) => {
-        const parsedData = results.data;
-        const errors: { row: number; message: string }[] = [];
-        const validInsumos: InsumoFormValues[] = [];
+    const reader = new FileReader();
 
-        parsedData.forEach((row: any, index: number) => {
-          const rowNumber = index + 2; // +1 for 0-indexed array, +1 for header row
-          try {
-            // Clean up empty strings to null for optional fields
-            const cleanedRow = { ...row };
-            for (const key in cleanedRow) {
-              if (cleanedRow[key] === "") {
-                cleanedRow[key] = null;
+    reader.onload = async (e) => {
+      const text = e.target?.result as string;
+
+      Papa.parse(text, {
+        header: true,
+        skipEmptyLines: true,
+        complete: async (results: Papa.ParseResult<any>) => {
+          const parsedData = results.data;
+          const errors: { row: number; message: string }[] = [];
+          const validInsumos: InsumoFormValues[] = [];
+
+          parsedData.forEach((row: any, index: number) => {
+            const rowNumber = index + 2; // +1 for 0-indexed array, +1 for header row
+            try {
+              // Clean up empty strings to null for optional fields
+              const cleanedRow = { ...row };
+              for (const key in cleanedRow) {
+                if (cleanedRow[key] === "") {
+                  cleanedRow[key] = null;
+                }
+              }
+
+              const validatedInsumo = csvRowSchema.parse(cleanedRow);
+              validInsumos.push(validatedInsumo);
+            } catch (e: any) {
+              if (e instanceof z.ZodError) {
+                e.errors.forEach(err => {
+                  errors.push({
+                    row: rowNumber,
+                    message: `Fila ${rowNumber}, campo '${err.path.join(".")}': ${err.message}`,
+                  });
+                });
+              } else {
+                errors.push({ row: rowNumber, message: `Fila ${rowNumber}: ${e.message}` });
               }
             }
+          });
 
-            const validatedInsumo = csvRowSchema.parse(cleanedRow);
-            validInsumos.push(validatedInsumo);
-          } catch (e: any) {
-            if (e instanceof z.ZodError) {
-              e.errors.forEach(err => {
-                errors.push({
-                  row: rowNumber,
-                  message: `Fila ${rowNumber}, campo '${err.path.join(".")}': ${err.message}`,
-                });
-              });
-            } else {
-              errors.push({ row: rowNumber, message: `Fila ${rowNumber}: ${e.message}` });
-            }
+          if (errors.length > 0) {
+            dismissToast(toastId);
+            showError(`Errores de validación encontrados en ${errors.length} filas. Por favor, revisa la consola para más detalles.`);
+            console.error("Errores de validación en el archivo CSV:", errors);
+            setIsProcessing(false);
+            return;
           }
-        });
 
-        if (errors.length > 0) {
-          dismissToast(toastId);
-          showError(`Errores de validación encontrados en ${errors.length} filas. Por favor, revisa la consola para más detalles.`);
-          console.error("Errores de validación en el archivo CSV:", errors);
-          setIsProcessing(false);
-          return;
-        }
+          if (validInsumos.length === 0) {
+            dismissToast(toastId);
+            showError("No se encontraron insumos válidos para importar en el archivo.");
+            setIsProcessing(false);
+            return;
+          }
 
-        if (validInsumos.length === 0) {
+          try {
+            const importedCount = await createMultipleInsumos(validInsumos);
+            dismissToast(toastId);
+            showSuccess(`Se importaron ${importedCount} insumos exitosamente.`);
+            queryClient.invalidateQueries({ queryKey: ["insumos"] });
+            onSuccess();
+          } catch (dbError: any) {
+            dismissToast(toastId);
+            showError(`Error al guardar insumos en la base de datos: ${dbError.message}`);
+            console.error("Error de base de datos durante la importación:", dbError);
+          } finally {
+            setIsProcessing(false);
+          }
+        },
+        error: (error: Papa.ParseError) => {
           dismissToast(toastId);
-          showError("No se encontraron insumos válidos para importar en el archivo.");
+          showError(`Error al parsear el archivo CSV: ${error.message}`);
+          console.error("Error de PapaParse:", error);
           setIsProcessing(false);
-          return;
-        }
+        },
+      });
+    };
 
-        try {
-          const importedCount = await createMultipleInsumos(validInsumos);
-          dismissToast(toastId);
-          showSuccess(`Se importaron ${importedCount} insumos exitosamente.`);
-          queryClient.invalidateQueries({ queryKey: ["insumos"] });
-          onSuccess();
-        } catch (dbError: any) {
-          dismissToast(toastId);
-          showError(`Error al guardar insumos en la base de datos: ${dbError.message}`);
-          console.error("Error de base de datos durante la importación:", dbError);
-        } finally {
-          setIsProcessing(false);
-        }
-      },
-      error: (error: Papa.ParseError) => {
-        dismissToast(toastId);
-        showError(`Error al parsear el archivo CSV: ${error.message}`);
-        console.error("Error de PapaParse:", error);
-        setIsProcessing(false);
-      },
-    });
+    reader.onerror = () => {
+      dismissToast(toastId);
+      showError("Error al leer el archivo.");
+      setIsProcessing(false);
+    };
+
+    reader.readAsText(file);
   };
 
   return (

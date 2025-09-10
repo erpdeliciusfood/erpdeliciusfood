@@ -60,7 +60,7 @@ interface PlatoFormProps {
 const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel }) => {
   const addMutation = useAddPlato();
   const updateMutation = useUpdatePlato();
-  const { data: availableInsumos, isLoading: isLoadingInsumos } = useInsumos();
+  const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos(); // Renamed to availableInsumosData
 
   const form = useForm<PlatoFormValues>({
     resolver: zodResolver(formSchema),
@@ -196,7 +196,7 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {availableInsumos?.map((insumo: Insumo) => (
+                          {availableInsumosData?.data.map((insumo: Insumo) => ( // Access .data here
                             <SelectItem key={insumo.id} value={insumo.id}>
                               {insumo.nombre} ({insumo.base_unit})
                             </SelectItem>

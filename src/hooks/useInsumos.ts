@@ -3,10 +3,10 @@ import { getInsumos, createInsumo, updateInsumo, deleteInsumo, getInsumoSupplier
 import { Insumo, InsumoFormValues, InsumoSupplierHistory, InsumoPriceHistory } from "@/types";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
-export const useInsumos = (searchTerm?: string, category?: string) => {
-  return useQuery<Insumo[], Error>({
-    queryKey: ["insumos", searchTerm, category], // Include search and category in query key
-    queryFn: () => getInsumos(searchTerm, category),
+export const useInsumos = (searchTerm?: string, category?: string, page: number = 1, pageSize: number = 10) => {
+  return useQuery<{ data: Insumo[]; count: number }, Error>({
+    queryKey: ["insumos", searchTerm, category, page, pageSize], // Include pagination in query key
+    queryFn: () => getInsumos(searchTerm, category, page, pageSize),
   });
 };
 

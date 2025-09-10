@@ -22,7 +22,7 @@ const Reports = () => {
   });
   const [periodType, setPeriodType] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('monthly');
 
-  const { data: insumos, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos();
+  const { data: insumoData, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos(); // Renamed to insumoData
 
   const handlePeriodChange = (period: 'daily' | 'weekly' | 'monthly' | 'custom') => {
     setPeriodType(period);
@@ -155,7 +155,7 @@ const Reports = () => {
             <p className="text-xl">Selecciona un rango de fechas para ver los reportes financieros.</p>
           </div>
         )}
-        {insumos && <StockOverview insumos={insumos} lowStockThreshold={10} />}
+        {insumoData?.data && <StockOverview insumos={insumoData.data} lowStockThreshold={10} />} {/* Access .data here */}
       </div>
 
       <MadeWithDyad />

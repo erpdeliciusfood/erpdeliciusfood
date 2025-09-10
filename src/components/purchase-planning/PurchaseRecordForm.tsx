@@ -73,7 +73,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
 }) => {
   const addMutation = useAddPurchaseRecord();
   const updateMutation = useUpdatePurchaseRecord();
-  const { data: availableInsumos, isLoading: isLoadingInsumos } = useInsumos();
+  const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos(); // Renamed to availableInsumosData
 
   const form = useForm<PurchaseRecordFormValues>({
     resolver: zodResolver(formSchema),
@@ -96,7 +96,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
   const selectedInsumoId = form.watch("insumo_id");
 
   // Find the selected insumo to get its purchase_unit
-  const selectedInsumo = availableInsumos?.find(insumo => insumo.id === selectedInsumoId);
+  const selectedInsumo = availableInsumosData?.data.find((insumo: Insumo) => insumo.id === selectedInsumoId); // Access .data and type insumo
   const purchaseUnit = selectedInsumo?.purchase_unit || "unidad";
 
   useEffect(() => {
@@ -140,7 +140,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
   useEffect(() => {
     // When insumo_id changes, pre-fill supplier details from registered insumo
     if (selectedInsumoId && !initialData) { // Only for new records, not when editing
-      const selectedInsumo = availableInsumos?.find(insumo => insumo.id === selectedInsumoId);
+      const selectedInsumo = availableInsumosData?.data.find((insumo: Insumo) => insumo.id === selectedInsumoId); // Access .data and type insumo
       if (selectedInsumo) {
         form.setValue("supplier_name_at_purchase", selectedInsumo.supplier_name || "");
         form.setValue("supplier_phone_at_purchase", selectedInsumo.supplier_phone || "");
@@ -148,7 +148,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         form.setValue("from_registered_supplier", true);
       }
     }
-  }, [selectedInsumoId, availableInsumos, form, initialData]);
+  }, [selectedInsumoId, availableInsumosData?.data, form, initialData]); // Add availableInsumosData.data to dependencies
 
   const onSubmit = async (values: PurchaseRecordFormValues) => {
     if (initialData) {
@@ -181,7 +181,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {availableInsumos?.map((insumo: Insumo) => (
+                  {availableInsumosData?.data.map((insumo: Insumo) => ( // Access .data and type insumo
                     <SelectItem key={insumo.id} value={insumo.id}>
                       {insumo.nombre} ({insumo.purchase_unit})
                     </SelectItem>
