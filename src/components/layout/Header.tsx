@@ -28,7 +28,7 @@ const Header: React.FC = () => {
     <header className="bg-primary dark:bg-primary-foreground text-primary-foreground dark:text-primary p-4 shadow-md">
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="flex items-center">
-          <img src="/brand.svg" alt="App Logo" className="h-8 w-auto mr-2 text-primary-foreground dark:text-primary" />
+          <img src="/logo-erp.png" alt="App Logo" className="h-8 w-auto mr-2" />
           <span className="text-2xl font-bold">ERP App</span>
         </Link>
         <nav className="flex items-center space-x-4">
