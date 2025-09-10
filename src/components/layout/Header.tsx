@@ -29,7 +29,7 @@ const Header: React.FC = () => {
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="flex items-center">
           <img src="/logo-erp.png" alt="App Logo" className="h-8 w-auto mr-2" />
-          <span className="text-2xl font-bold">ERP App</span>
+          {/* <span className="text-2xl font-bold">ERP App</span> */} {/* Eliminado el nombre de la app */}
         </Link>
         <nav className="flex items-center space-x-4">
           <Link to="/insumos">
