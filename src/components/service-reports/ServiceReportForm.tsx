@@ -29,7 +29,7 @@ import { es } from "date-fns/locale";
 import { ServiceReport, ServiceReportFormValues, MealService, Plato } from "@/types";
 import { useAddServiceReport, useUpdateServiceReport } from "@/hooks/useServiceReports";
 import { useMealServices } from "@/hooks/useMealServices";
-import { usePlatos } from "@/hooks/usePlatos"; // Import usePlatos
+import { usePlatos } from "@/hooks/usePlatos";
 import { Loader2, CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 
 const formSchema = z.object({
@@ -57,7 +57,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
   const addMutation = useAddServiceReport();
   const updateMutation = useUpdateServiceReport();
   const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
-  const { data: availablePlatos, isLoading: isLoadingPlatos } = usePlatos(); // Fetch available platos
+  const { data: availablePlatos, isLoading: isLoadingPlatos } = usePlatos();
 
   const form = useForm<ServiceReportFormValues>({
     resolver: zodResolver(formSchema),
@@ -68,7 +68,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
       meals_sold: 0,
       additional_services_revenue: 0,
       notes: "",
-      platos_vendidos: [{ plato_id: "", quantity_sold: 1 }], // Default for new reports
+      platos_vendidos: [{ plato_id: "", quantity_sold: 1 }],
     },
   });
 
@@ -283,7 +283,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
           </CardHeader>
           <CardContent className="space-y-4">
             {fields.map((field, index) => (
-              <div key={field.id} className="flex flex-col md:flex-row gap-4 items-end border-b pb-4 last:border-b-0 last:pb-0">
+              <div key={field.id} className="flex flex-col md:flex-row gap-4 items-end p-4 border rounded-lg shadow-sm bg-gray-50 dark:bg-gray-700/30">
                 <FormField
                   control={form.control}
                   name={`platos_vendidos.${index}.plato_id`}

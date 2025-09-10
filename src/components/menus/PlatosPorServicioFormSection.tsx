@@ -18,13 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MealService, MenuFormValues, Plato } from "@/types"; // Removed MealType
+import { MealService, MenuFormValues, Plato } from "@/types";
 
 interface PlatosPorServicioFormSectionProps {
   isLoading: boolean;
   availablePlatos: Plato[] | undefined;
   availableMealServices: MealService[] | undefined;
-  // availableMealTypes: MealType[] | undefined; // REMOVED
 }
 
 const DISH_CATEGORIES = [
@@ -49,7 +48,6 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
   isLoading,
   availablePlatos,
   availableMealServices,
-  // availableMealTypes, // REMOVED
 }) => {
   const form = useFormContext<MenuFormValues>();
   const { fields, append, remove } = useFieldArray({
@@ -81,7 +79,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
       </CardHeader>
       <CardContent className="space-y-4">
         {fields.map((field, index) => (
-          <div key={field.id} className="flex flex-col md:flex-row gap-4 items-end border-b pb-4 last:border-b-0 last:pb-0">
+          <div key={field.id} className="flex flex-col md:flex-row gap-4 items-end p-4 border rounded-lg shadow-sm bg-gray-50 dark:bg-gray-700/30">
             <FormField
               control={form.control}
               name={`platos_por_servicio.${index}.meal_service_id`}
@@ -140,7 +138,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
             />
             <FormField
               control={form.control}
-              name={`platos_por_servicio.${index}.dish_category`} // NEW: dish_category field
+              name={`platos_por_servicio.${index}.dish_category`}
               render={({ field: categoryField }) => (
                 <FormItem className="flex-grow w-full md:w-1/3">
                   <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Categoría de Plato</FormLabel>
@@ -202,9 +200,9 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
         <Button
           type="button"
           variant="outline"
-          onClick={() => append({ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 })} // NEW: dish_category
+          onClick={() => append({ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 })}
           className="w-full mt-4 px-6 py-3 text-lg"
-          disabled={isLoading || !availablePlatos || availablePlatos.length === 0 || !availableMealServices || availableMealServices.length === 0} // Removed availableMealTypes check
+          disabled={isLoading || !availablePlatos || availablePlatos.length === 0 || !availableMealServices || availableMealServices.length === 0}
         >
           <PlusCircle className="mr-2 h-5 w-5" />
           Añadir Plato a Servicio
