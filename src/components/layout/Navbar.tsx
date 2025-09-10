@@ -1,9 +1,10 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, Utensils, UserCircle2, Home, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText } from "lucide-react";
+import { LogOut } from "lucide-react";
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
+import { NAV_LINKS } from "@/constants/navigationConstants"; // Import NAV_LINKS
 
 interface NavbarProps {
   userRole: 'user' | 'admin' | undefined;
@@ -23,80 +24,21 @@ const Navbar: React.FC<NavbarProps> = ({ userRole }) => {
 
   return (
     <nav className="flex items-center space-x-4 overflow-x-auto pb-2 md:pb-0">
-      <Link to="/">
-        <Button variant="ghost" className={navButtonClass}>
-          <Home className="mr-2 h-5 w-5" />
-          Inicio
-        </Button>
-      </Link>
-      <Link to="/insumos">
-        <Button variant="ghost" className={navButtonClass}>
-          <Utensils className="mr-2 h-5 w-5" />
-          Insumos
-        </Button>
-      </Link>
-      <Link to="/platos">
-        <Button variant="ghost" className={navButtonClass}>
-          <ChefHat className="mr-2 h-5 w-5" />
-          Platos
-        </Button>
-      </Link>
-      <Link to="/event-types">
-        <Button variant="ghost" className={navButtonClass}>
-          <CalendarDays className="mr-2 h-5 w-5" />
-          Tipos Evento
-        </Button>
-      </Link>
-      <Link to="/menus">
-        <Button variant="ghost" className={navButtonClass}>
-          <BookText className="mr-2 h-5 w-5" />
-          Menús
-        </Button>
-      </Link>
-      <Link to="/service-reports">
-        <Button variant="ghost" className={navButtonClass}>
-          <FileText className="mr-2 h-5 w-5" />
-          Reportes Servicio
-        </Button>
-      </Link>
-      <Link to="/purchase-planning">
-        <Button variant="ghost" className={navButtonClass}>
-          <ShoppingBag className="mr-2 h-5 w-5" />
-          Planificación Compras
-        </Button>
-      </Link>
-      <Link to="/purchase-records">
-        <Button variant="ghost" className={navButtonClass}>
-          <ReceiptText className="mr-2 h-5 w-5" />
-          Registros Compra
-        </Button>
-      </Link>
-      <Link to="/stock-movements">
-        <Button variant="ghost" className={navButtonClass}>
-          <Package className="mr-2 h-5 w-5" />
-          Movimientos Stock
-        </Button>
-      </Link>
-      <Link to="/reports">
-        <Button variant="ghost" className={navButtonClass}>
-          <BarChart3 className="mr-2 h-5 w-5" />
-          Reportes
-        </Button>
-      </Link>
-      {userRole === 'admin' && (
-        <Link to="/user-management">
-          <Button variant="ghost" className={navButtonClass}>
-            <Users className="mr-2 h-5 w-5" />
-            Usuarios
-          </Button>
-        </Link>
-      )}
-      <Link to="/profile">
-        <Button variant="ghost" className={navButtonClass}>
-          <UserCircle2 className="mr-2 h-5 w-5" />
-          Perfil
-        </Button>
-      </Link>
+      {NAV_LINKS.map((link) => {
+        // Render link only if no roles are specified or if userRole matches one of the specified roles
+        if (link.roles && !link.roles.includes(userRole as any)) {
+          return null;
+        }
+        const IconComponent = link.icon;
+        return (
+          <Link to={link.path} key={link.path}>
+            <Button variant="ghost" className={navButtonClass}>
+              <IconComponent className="mr-2 h-5 w-5" />
+              {link.label}
+            </Button>
+          </Link>
+        );
+      })}
       <Button
         variant="ghost"
         onClick={handleSignOut}
