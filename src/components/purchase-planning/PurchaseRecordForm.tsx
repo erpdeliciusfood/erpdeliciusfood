@@ -3,6 +3,7 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Form,
   FormControl,
@@ -18,15 +19,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Loader2 } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Calendar } from "@/components/ui/calendar";
+import { cn } from "@/lib/utils";
+import { format, formatISO } from "date-fns";
+import { es } from "date-fns/locale";
 import { PurchaseRecord, PurchaseRecordFormValues, Insumo } from "@/types";
 import { useAddPurchaseRecord, useUpdatePurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { useInsumos } from "@/hooks/useInsumos";
-
-// Import new modular sections
-import PurchaseDetailsSection from "./PurchaseDetailsSection";
-import SupplierDetailsSection from "./SupplierDetailsSection";
-import WhoMadePurchaseSection from "./WhoMadePurchaseSection";
+import { Loader2, CalendarIcon } from "lucide-react";
+import PurchaseDetailsSection from "./PurchaseDetailsSection"; // NEW
+import SupplierDetailsSection from "./SupplierDetailsSection"; // NEW
 
 const formSchema = z.object({
   insumo_id: z.string().min(1, { message: "Debe seleccionar un insumo." }),
@@ -77,7 +80,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
     resolver: zodResolver(formSchema),
     defaultValues: {
       insumo_id: prefilledInsumoId || "",
-      purchase_date: initialData ? initialData.purchase_date : format(new Date(), "yyyy-MM-dd"),
+      purchase_date: format(new Date(), "yyyy-MM-dd"),
       quantity_purchased: prefilledQuantity || 0,
       unit_cost_at_purchase: prefilledUnitCost || 0,
       total_amount: (prefilledQuantity && prefilledUnitCost) ? parseFloat((prefilledQuantity * prefilledUnitCost).toFixed(2)) : 0,
@@ -90,6 +93,8 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
   });
 
   const selectedInsumoId = form.watch("insumo_id");
+
+  // Find the selected insumo to get its purchase_unit and registered supplier details
   const selectedInsumo = availableInsumosData?.data.find((insumo: Insumo) => insumo.id === selectedInsumoId);
   const purchaseUnit = selectedInsumo?.purchase_unit || "unidad";
 
@@ -169,10 +174,55 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
             )}
           />
 
+          <FormField
+            control={form.control}
+            name="purchase_date"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Fecha de Compra</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal h-12 text-base",
+                          !field.value && "text-muted-foreground"
+                        )}
+                        disabled={isLoading}
+                      >
+                        {field.value ? (
+                          format(new Date(field.value), "PPP", { locale: es })
+                        ) : (
+                          <span>Selecciona una fecha</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value ? new Date(field.value) : undefined}
+                      onSelect={(date) => field.onChange(date ? formatISO(date, { representation: 'date' }) : null)}
+                      disabled={(date) =>
+                        date > new Date() || date < new Date("1900-01-01") || isLoading
+                      }
+                      initialFocus
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <PurchaseDetailsSection
             isLoading={isLoading}
             selectedInsumoId={selectedInsumoId}
             purchaseUnit={purchaseUnit}
+            lastChangedField={lastChangedField}
             setLastChangedField={setLastChangedField}
           />
 
@@ -183,7 +233,25 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
             initialData={initialData}
           />
 
-          <WhoMadePurchaseSection isLoading={isLoading} />
+          <FormField
+            control={form.control}
+            name="notes"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Quién realizó la compra (Opcional)</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Ej. Juan Pérez"
+                    {...field}
+                    value={field.value || ""}
+                    className="h-12 text-base"
+                    disabled={isLoading}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
 
           <div className="flex justify-end space-x-4 pt-4">
             <Button
