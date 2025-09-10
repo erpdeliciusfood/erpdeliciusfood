@@ -230,6 +230,7 @@ export interface PurchaseRecord {
   notes: string | null;
   status: 'ordered' | 'received_by_company' | 'received_by_warehouse' | 'cancelled'; // NEW: Add status to PurchaseRecord
   received_date: string | null; // NEW: Add received_date to PurchaseRecord
+  insumos?: Insumo; // NEW: Add insumos relationship
 }
 
 // NEW: Interface for the form values when creating/updating a PurchaseRecord
