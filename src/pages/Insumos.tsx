@@ -1,17 +1,18 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, PlusCircle, Search, Upload } from "lucide-react"; // Added Search and Upload icons
+import { Loader2, PlusCircle, Search, Upload, UtensilsCrossed } from "lucide-react"; // Added UtensilsCrossed
 import { useInsumos } from "@/hooks/useInsumos";
-import InsumoList from "@/components/insumos/InsumoList";
+import InsumoCardGrid from "@/components/insumos/InsumoCardGrid";
 import InsumoForm from "@/components/insumos/InsumoForm";
-import InsumoImporter from "@/components/insumos/InsumoImporter"; // Import the new component
+import InsumoImporter from "@/components/insumos/InsumoImporter";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Insumo } from "@/types";
 
 const INSUMO_CATEGORIES = [
-  "Todos", // Option to show all categories
+  "Todos",
   "Cereales",
   "Legumbres",
   "Carbohidrato / Cereales",
@@ -28,8 +29,8 @@ const INSUMO_CATEGORIES = [
 
 const Insumos = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
-  const [isImportFormOpen, setIsImportFormOpen] = useState(false); // New state for import dialog
-  const [editingInsumo, setEditingInsumo] = useState(null);
+  const [isImportFormOpen, setIsImportFormOpen] = useState(false);
+  const [editingInsumo, setEditingInsumo] = useState<Insumo | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Todos");
 
@@ -40,7 +41,7 @@ const Insumos = () => {
     setIsFormOpen(true);
   };
 
-  const handleEditClick = (insumo: any) => {
+  const handleEditClick = (insumo: Insumo) => {
     setEditingInsumo(insumo);
     setIsFormOpen(true);
   };
@@ -76,12 +77,12 @@ const Insumos = () => {
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100">Gestión de Insumos</h1>
-        <div className="flex space-x-4">
+        <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
           <Dialog open={isImportFormOpen} onOpenChange={setIsImportFormOpen}>
             <DialogTrigger asChild>
               <Button
                 onClick={() => setIsImportFormOpen(true)}
-                className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-secondary hover:bg-secondary-foreground text-secondary-foreground hover:text-secondary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
+                className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-secondary hover:bg-secondary-foreground text-secondary-foreground hover:text-secondary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
               >
                 <Upload className="mr-3 h-6 w-6" />
                 Importar Insumos
@@ -101,7 +102,7 @@ const Insumos = () => {
             <DialogTrigger asChild>
               <Button
                 onClick={handleAddClick}
-                className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
+                className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
               >
                 <PlusCircle className="mr-3 h-6 w-6" />
                 Añadir Insumo
@@ -150,9 +151,10 @@ const Insumos = () => {
 
       <div className="flex-grow">
         {insumos && insumos.length > 0 ? (
-          <InsumoList insumos={insumos} onEdit={handleEditClick} />
+          <InsumoCardGrid insumos={insumos} onEdit={handleEditClick} />
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">
+            <UtensilsCrossed className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
             <p className="text-xl mb-4">No hay insumos registrados o que coincidan con tu búsqueda/filtro. ¡Añade el primero!</p>
             <Button
               onClick={handleAddClick}

@@ -12,7 +12,8 @@ export const getInsumos = async (searchTerm?: string, category?: string): Promis
     query = query.eq("category", category);
   }
 
-  query = query.order("created_at", { ascending: false });
+  // Order by name first, then by creation date
+  query = query.order("nombre", { ascending: true }).order("created_at", { ascending: false });
 
   const { data, error } = await query;
   if (error) throw new Error(error.message);

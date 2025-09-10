@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Download } from "lucide-react";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { InsumoFormValues } from "@/types";
-import { parse } from "papaparse"; // Changed import from * as Papa to { parse }
+import * as Papa from "papaparse"; // Changed import back to * as Papa
 import * as z from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { createMultipleInsumos } from "@/integrations/supabase/insumos";
@@ -72,7 +72,7 @@ const InsumoImporter: React.FC<InsumoImporterProps> = ({ onSuccess, onCancel }) 
     setIsProcessing(true);
     const toastId = showLoading("Procesando archivo e importando insumos...");
 
-    parse(file, { // Changed Papa.parse to parse
+    Papa.parse(file, { // Changed to Papa.parse
       header: true,
       skipEmptyLines: true,
       complete: async (results: Papa.ParseResult<any>) => {
