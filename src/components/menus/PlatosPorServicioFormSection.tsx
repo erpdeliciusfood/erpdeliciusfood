@@ -19,30 +19,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { MealService, MenuFormValues, Plato } from "@/types"; 
+import { DISH_CATEGORIES } from "@/constants/menuConstants"; // Import DISH_CATEGORIES
 
 interface PlatosPorServicioFormSectionProps {
   isLoading: boolean;
   availablePlatos: Plato[] | undefined;
   availableMealServices: MealService[] | undefined;
 }
-
-const DISH_CATEGORIES = [
-  "Desayuno / Merienda",
-  "Entrada",
-  "Sopa / Crema",
-  "Ensalada Fría",
-  "Ensalada Caliente",
-  "Plato de Fondo - Carnes",
-  "Plato de Fondo - Aves",
-  "Plato de Fondo - Pescados y Mariscos",
-  "Plato de Fondo - Pastas y Arroces",
-  "Plato de Fondo - Vegetariano / Vegano",
-  "Acompañamiento / Guarnición",
-  "Postre",
-  "Bebida",
-  "Dieta Blanda",
-  "Otra Opción",
-];
 
 const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> = ({
   isLoading,

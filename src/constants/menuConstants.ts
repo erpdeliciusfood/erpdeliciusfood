@@ -1,0 +1,17 @@
+export const DISH_CATEGORIES = [
+  "Desayuno / Merienda",
+  "Entrada",
+  "Sopa / Crema",
+  "Ensalada Fría",
+  "Ensalada Caliente",
+  "Plato de Fondo - Carnes",
+  "Plato de Fondo - Aves",
+  "Plato de Fondo - Pescados y Mariscos",
+  "Plato de Fondo - Pastas y Arroces",
+  "Plato de Fondo - Vegetariano / Vegano",
+  "Acompañamiento / Guarnición",
+  "Postre",
+  "Bebida",
+  "Dieta Blanda",
+  "Otra Opción",
+];
