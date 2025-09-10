@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, Utensils, UserCircle2, Home, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText } from "lucide-react"; // Updated icons, added ReceiptText
+import { LogOut, Utensils, UserCircle2, Home, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText, Warehouse } from "lucide-react"; // Updated icons, added Warehouse
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
@@ -68,7 +68,7 @@ const Header: React.FC = () => {
               Planificación Compras
             </Button>
           </Link>
-          <Link to="/purchase-records"> {/* NEW: Link to Purchase Records */}
+          <Link to="/purchase-records">
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <ReceiptText className="mr-2 h-5 w-5" />
               Registros Compra
@@ -78,6 +78,12 @@ const Header: React.FC = () => {
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <Package className="mr-2 h-5 w-5" />
               Movimientos Stock
+            </Button>
+          </Link>
+          <Link to="/warehouse"> {/* NEW: Link to Warehouse */}
+            <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
+              <Warehouse className="mr-2 h-5 w-5" />
+              Almacén
             </Button>
           </Link>
           <Link to="/reports">
