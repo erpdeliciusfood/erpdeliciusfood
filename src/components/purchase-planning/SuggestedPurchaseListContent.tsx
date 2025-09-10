@@ -21,6 +21,7 @@ interface InsumoNeeded extends Insumo {
   purchase_suggestion_rounded: number;
   purchase_suggestion_rounded_up: boolean;
   estimated_purchase_cost: number;
+  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both'; // NEW: Reason for suggestion
 }
 
 interface SuggestedPurchaseListContentProps {
@@ -136,6 +137,19 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
     onClose(); // Close the dialog, which will trigger parent re-fetch
   };
 
+  const getReasonBadge = (reason: 'menu_demand' | 'min_stock_level' | 'both') => {
+    switch (reason) {
+      case 'menu_demand':
+        return <Badge variant="outline" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">Demanda de Menú</Badge>;
+      case 'min_stock_level':
+        return <Badge variant="outline" className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300">Stock Mínimo</Badge>;
+      case 'both':
+        return <Badge variant="outline" className="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">Ambos</Badge>;
+      default:
+        return <Badge variant="secondary">Desconocido</Badge>;
+    }
+  };
+
   const purchasableInsumos = suggestedPurchases.filter(i => i.purchase_suggestion_rounded > 0);
 
   if (purchasableInsumos.length === 0) {
@@ -230,6 +244,9 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
               </Dialog>
             </CardHeader>
             <CardContent className="text-gray-700 dark:text-gray-300">
+              <p className="mb-1">
+                <span className="font-semibold">Motivo de Sugerencia:</span> {getReasonBadge(insumo.reason_for_purchase_suggestion)} {/* NEW: Display reason */}
+              </p>
               <p className="mb-1">
                 <span className="font-semibold">Unidad de Compra:</span> {insumo.purchase_unit}
               </p>

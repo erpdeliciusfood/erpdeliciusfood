@@ -28,6 +28,7 @@ interface InsumoNeeded extends Insumo {
   purchase_suggestion_rounded: number; // Rounded up value
   purchase_suggestion_rounded_up: boolean; // Flag if rounding occurred
   estimated_purchase_cost: number;
+  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both'; // NEW: Reason for suggestion
 }
 
 const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate }) => {
@@ -91,6 +92,20 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
       const neededToReachMinStock = Math.max(0, minStockLevel - currentStock); // Use minStockLevel
       const purchaseSuggestionRaw = Math.max(neededToCoverMenus, neededToReachMinStock);
 
+      // Determine reason for purchase suggestion
+      let reason: 'menu_demand' | 'min_stock_level' | 'both' = 'menu_demand';
+      const isMenuDriven = quantityNeededForPeriodRaw > currentStock;
+      const isMinStockDriven = minStockLevel > currentStock;
+
+      if (isMenuDriven && isMinStockDriven) {
+        reason = 'both';
+      } else if (isMenuDriven) {
+        reason = 'menu_demand';
+      } else if (isMinStockDriven) {
+        reason = 'min_stock_level';
+      }
+
+
       // Rounding for purchase_suggestion
       const purchaseSuggestionRounded = purchaseSuggestionRaw > 0 && purchaseSuggestionRaw % 1 !== 0
         ? Math.ceil(purchaseSuggestionRaw)
@@ -111,6 +126,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
           purchase_suggestion_rounded: purchaseSuggestionRounded,
           purchase_suggestion_rounded_up: purchaseSuggestionRoundedUp,
           estimated_purchase_cost: parseFloat(estimatedPurchaseCost.toFixed(2)),
+          reason_for_purchase_suggestion: reason, // Assign the determined reason
         });
         overallEstimatedCost += estimatedPurchaseCost;
       }
@@ -137,6 +153,19 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
     // Optionally, refetch data for PurchaseAnalysis if needed after purchases are made
     // queryClient.invalidateQueries({ queryKey: ["menus"] });
     // queryClient.invalidateQueries({ queryKey: ["insumos"] });
+  };
+
+  const getReasonBadge = (reason: 'menu_demand' | 'min_stock_level' | 'both') => {
+    switch (reason) {
+      case 'menu_demand':
+        return <Badge variant="outline" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">Demanda de Menú</Badge>;
+      case 'min_stock_level':
+        return <Badge variant="outline" className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300">Stock Mínimo</Badge>;
+      case 'both':
+        return <Badge variant="outline" className="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">Ambos</Badge>;
+      default:
+        return <Badge variant="secondary">Desconocido</Badge>;
+    }
   };
 
   if (isLoading) {
@@ -221,6 +250,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Necesidad Periodo</TableHead>
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Sugerencia Compra</TableHead>
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Costo Estimado (S/)</TableHead>
+                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Motivo</TableHead> {/* NEW: Motivo column */}
                     <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Proveedor</TableHead>
                   </TableRow>
                 </TableHeader>
@@ -279,6 +309,9 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                       </TableCell>
                       <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">
                         S/ {insumo.estimated_purchase_cost.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-center text-base py-3 px-6">
+                        {getReasonBadge(insumo.reason_for_purchase_suggestion)}
                       </TableCell>
                       <TableCell className="text-center py-3 px-6">
                         <Button

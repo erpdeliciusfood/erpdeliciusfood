@@ -234,3 +234,16 @@ export interface PurchaseRecordFormValues {
   from_registered_supplier: boolean;
   notes: string | null;
 }
+
+// NEW: Interface for suggested insumos in PurchaseAnalysis
+export interface InsumoNeeded extends Insumo {
+  quantity_needed_for_period_raw: number;
+  quantity_needed_for_period_rounded: number;
+  quantity_needed_for_period_rounded_up: boolean;
+  current_stock: number;
+  purchase_suggestion_raw: number;
+  purchase_suggestion_rounded: number;
+  purchase_suggestion_rounded_up: boolean;
+  estimated_purchase_cost: number;
+  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both';
+}
