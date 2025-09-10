@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
 } from "@/components/ui/form";
-import { Menu, MenuFormValues, type MenuPlatoFormValues } from "@/types"; // Changed to type import
+import { Menu, type MenuFormValues, type MenuPlatoFormValues } from "@/types";
 import { useAddMenu, useUpdateMenu } from "@/hooks/useMenus";
 import { useRecetas } from "@/hooks/useRecetas";
 import { useMealServices } from "@/hooks/useMealServices";
@@ -97,7 +97,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       menu_type: preselectedDate ? "daily" : "event", // Dynamically set default menu_type
       menu_date: preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null,
       event_type_id: null,
-      platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
+      platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }] as MenuPlatoFormValues[], // Explicit type assertion
     },
   });
 
@@ -123,7 +123,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         menu_type: preselectedDate ? "daily" : "event", // Dynamically set default menu_type
         menu_date: preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null,
         event_type_id: null,
-        platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
+        platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }] as MenuPlatoFormValues[], // Explicit type assertion
       });
     }
   }, [initialData, form, preselectedDate]);

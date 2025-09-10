@@ -24,7 +24,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { EventType, MenuFormValues, Menu } from "@/types";
+import { EventType, type MenuFormValues, Menu } from "@/types";
 
 interface MenuDetailsFormSectionProps {
   isLoading: boolean;

@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Menu, MenuFormValues } from "@/types"; // Removed Receta
+import { Menu, type MenuFormValues, type MenuPlatoFormValues } from "@/types";
 
 export const getMenus = async (startDate?: string, endDate?: string): Promise<Menu[]> => {
   let query = supabase
@@ -60,7 +60,7 @@ export const createMenu = async (menuData: MenuFormValues): Promise<Menu> => {
 
   // Insert associated menu_platos
   if (platos_por_servicio && platos_por_servicio.length > 0) {
-    const menuPlatosToInsert = platos_por_servicio.map((item) => ({
+    const menuPlatosToInsert = platos_por_servicio.map((item: MenuPlatoFormValues) => ({
       menu_id: newMenu.id,
       plato_id: item.plato_id,
       meal_service_id: item.meal_service_id,
@@ -118,7 +118,7 @@ export const updateMenu = async (id: string, menuData: MenuFormValues): Promise<
 
   // Insert new associated menu_platos
   if (platos_por_servicio && platos_por_servicio.length > 0) {
-    const menuPlatosToInsert = platos_por_servicio.map((item) => ({
+    const menuPlatosToInsert = platos_por_servicio.map((item: MenuPlatoFormValues) => ({
       menu_id: updatedMenu.id,
       plato_id: item.plato_id,
       meal_service_id: item.meal_service_id,
