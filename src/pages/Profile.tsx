@@ -2,21 +2,12 @@ import { Button } from "@/components/ui/button";
 import { LogOut, UserCircle2 } from "lucide-react";
 import ProfileForm from "@/components/profile/ProfileForm";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { signOut } from "@/integrations/supabase/profiles";
-import { showError, showSuccess } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
+import { useAuthActions } from "@/hooks/useAuthActions"; // Import the new hook
 
 const Profile = () => {
   const { user } = useSession();
-
-  const handleSignOut = async () => {
-    try {
-      await signOut();
-      showSuccess("Sesión cerrada exitosamente.");
-    } catch (error: any) {
-      showError(`Error al cerrar sesión: ${error.message}`);
-    }
-  };
+  const { signOut } = useAuthActions(); // Use the new hook
 
   return (
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col items-center">
@@ -28,7 +19,7 @@ const Profile = () => {
           </h1>
           <Button
             variant="outline"
-            onClick={handleSignOut}
+            onClick={signOut} // Use signOut from the hook
             className="px-6 py-3 text-lg flex items-center space-x-2 hover:bg-red-100 dark:hover:bg-red-900 transition-colors duration-200 ease-in-out"
           >
             <LogOut className="h-5 w-5" />

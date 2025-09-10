@@ -23,7 +23,7 @@ interface PlatoFromQuery {
 
 interface MenuPlatoFromQuery {
   quantity_needed: number;
-  platos: PlatoFromQuery | null;
+  platos: PlatoFromQuery[] | null; // Changed to array to match Supabase's return structure
 }
 
 interface MenuFromQuery {
@@ -63,31 +63,33 @@ export const getAggregatedInsumoNeedsForDate = async (date: string): Promise<Agg
 
   const aggregatedNeedsMap = new Map<string, AggregatedInsumoNeed>();
 
-  (menus as MenuFromQuery[]).forEach(menu => { // Cast to the defined interface
+  (menus as MenuFromQuery[]).forEach(menu => {
     menu.menu_platos?.forEach(menuPlato => {
-      const plato = menuPlato.platos;
-      if (plato) {
-        plato.plato_insumos?.forEach(platoInsumo => { // platoInsumo is now correctly typed
-          const insumo = platoInsumo.insumos;
-          if (insumo) {
-            const neededInBaseUnit = platoInsumo.cantidad_necesaria * menuPlato.quantity_needed;
+      // Iterate over the 'platos' array within each 'menuPlato'
+      menuPlato.platos?.forEach(plato => {
+        if (plato) {
+          plato.plato_insumos?.forEach(platoInsumo => {
+            const insumo = platoInsumo.insumos;
+            if (insumo) {
+              const neededInBaseUnit = platoInsumo.cantidad_necesaria * menuPlato.quantity_needed;
 
-            const currentAggregated = aggregatedNeedsMap.get(insumo.id) || {
-              insumo_id: insumo.id,
-              insumo_nombre: insumo.nombre,
-              base_unit: insumo.base_unit,
-              purchase_unit: insumo.purchase_unit,
-              conversion_factor: insumo.conversion_factor,
-              current_stock_quantity: insumo.stock_quantity,
-              total_needed_base_unit: 0,
-              total_needed_purchase_unit: 0,
-            };
+              const currentAggregated = aggregatedNeedsMap.get(insumo.id) || {
+                insumo_id: insumo.id,
+                insumo_nombre: insumo.nombre,
+                base_unit: insumo.base_unit,
+                purchase_unit: insumo.purchase_unit,
+                conversion_factor: insumo.conversion_factor,
+                current_stock_quantity: insumo.stock_quantity,
+                total_needed_base_unit: 0,
+                total_needed_purchase_unit: 0,
+              };
 
-            currentAggregated.total_needed_base_unit += neededInBaseUnit;
-            aggregatedNeedsMap.set(insumo.id, currentAggregated);
-          }
-        });
-      }
+              currentAggregated.total_needed_base_unit += neededInBaseUnit;
+              aggregatedNeedsMap.set(insumo.id, currentAggregated);
+            }
+          });
+        }
+      });
     });
   });
 
