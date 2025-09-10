@@ -10,7 +10,7 @@ import InsumoImporter from "@/components/insumos/InsumoImporter";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Insumo } from "@/types";
+import { Insumo, InsumoFormValues } from "@/types"; // Import InsumoFormValues
 import { Pagination, PaginationContent, PaginationItem, PaginationLink, PaginationNext, PaginationPrevious } from "@/components/ui/pagination";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
@@ -70,6 +70,14 @@ const Insumos = () => {
   const handlePageChange = (page: number) => {
     setCurrentPage(page);
   };
+
+  // Map Insumo to InsumoFormValues for the form
+  const mappedEditingInsumo: InsumoFormValues | null = editingInsumo
+    ? {
+        ...editingInsumo,
+        min_stock_level: editingInsumo.min_stock_level ?? 0, // Ensure it's a number
+      }
+    : null;
 
   if (isLoading) {
     return (
@@ -135,7 +143,7 @@ const Insumos = () => {
               </DialogTitle>
             </DialogHeader>
             <InsumoForm
-              initialData={editingInsumo}
+              initialData={mappedEditingInsumo}
               onSuccess={handleFormClose}
               onCancel={handleFormClose}
             />

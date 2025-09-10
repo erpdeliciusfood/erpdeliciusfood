@@ -75,12 +75,12 @@ const InsumoCardGrid: React.FC<InsumoCardGridProps> = ({ insumos, onEdit }) => {
           <CardContent className="flex-grow space-y-2 text-gray-800 dark:text-gray-200">
             <p className="text-lg">
               <span className="font-semibold">Stock:</span>{" "}
-              <Badge variant={insumo.stock_quantity <= insumo.min_stock_level ? "destructive" : "outline"} className="text-base px-2 py-1">
+              <Badge variant={insumo.stock_quantity <= (insumo.min_stock_level ?? 0) ? "destructive" : "outline"} className="text-base px-2 py-1">
                 {insumo.stock_quantity} {insumo.purchase_unit}
               </Badge>
             </p>
             <p className="text-lg">
-              <span className="font-semibold">Mínimo:</span> {insumo.min_stock_level} {insumo.purchase_unit}
+              <span className="font-semibold">Mínimo:</span> {insumo.min_stock_level ?? 0} {insumo.purchase_unit}
             </p>
             <p className="text-lg flex items-center">
               <DollarSign className="mr-1 h-5 w-5 text-green-600" />

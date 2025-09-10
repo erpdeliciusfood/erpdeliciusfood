@@ -11,7 +11,7 @@ export interface Insumo {
   last_price_update: string | null;
   purchase_unit: string;
   conversion_factor: number;
-  min_stock_level: number;
+  min_stock_level: number | null; // Cambiado a permitir null
   category: string;
   created_at: string;
 }
@@ -157,7 +157,7 @@ export interface AggregatedInsumoNeed {
   purchase_unit: string;
   conversion_factor: number;
   current_stock_quantity: number;
-  total_needed_base_unit: number;
+  total_needed_base_unit: number; // Added this line
   total_needed_purchase_unit: number;
 }
 

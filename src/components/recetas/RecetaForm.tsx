@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Receta, RecetaFormValues, Insumo } from "@/types";
+import { Receta, RecetaFormValues, Insumo, InsumoFormValues } from "@/types"; // Import InsumoFormValues
 import { useAddReceta, useUpdateReceta } from "@/hooks/useRecetas";
 import { useInsumos } from "@/hooks/useInsumos";
 import { Loader2, PlusCircle, Trash2, Edit } from "lucide-react"; // Added Edit icon
@@ -148,6 +148,14 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
   };
 
   const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingInsumos;
+
+  // Map Insumo to InsumoFormValues for the edit form
+  const mappedInsumoToEdit: InsumoFormValues | null = insumoToEdit
+    ? {
+        ...insumoToEdit,
+        min_stock_level: insumoToEdit.min_stock_level ?? 0, // Ensure it's a number
+      }
+    : null;
 
   return (
     <>
@@ -330,9 +338,9 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
               Editar Insumo
             </DialogTitle>
           </DialogHeader>
-          {insumoToEdit && (
+          {mappedInsumoToEdit && (
             <InsumoForm
-              initialData={insumoToEdit} // Pass the full Insumo object for editing
+              initialData={mappedInsumoToEdit} // Pass the mapped InsumoFormValues object for editing
               onSuccess={handleInsumoFormSuccess}
               onCancel={handleInsumoFormCancel}
             />

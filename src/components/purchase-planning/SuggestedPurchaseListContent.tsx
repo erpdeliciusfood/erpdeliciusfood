@@ -238,7 +238,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
               </p>
               <p className="mb-1">
                 <span className="font-semibold">Stock Actual:</span>{" "}
-                <Badge variant={insumo.current_stock <= insumo.min_stock_level ? "destructive" : "outline"}>
+                <Badge variant={insumo.current_stock <= (insumo.min_stock_level ?? 0) ? "destructive" : "outline"}>
                   {insumo.current_stock} {insumo.purchase_unit}
                 </Badge>
               </p>

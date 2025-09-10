@@ -13,7 +13,7 @@ const LowStockAlerts: React.FC = () => {
   const { data: insumoData, isLoading, isError, error } = useInsumos(undefined, undefined, 1, 9999); // Fetch all items
 
   const lowStockInsumos = insumoData?.data.filter(
-    (insumo) => insumo.stock_quantity <= insumo.min_stock_level && insumo.min_stock_level > 0 // Only show if min_stock_level is set and stock is below it
+    (insumo) => insumo.stock_quantity <= (insumo.min_stock_level ?? 0) && (insumo.min_stock_level ?? 0) > 0 // Only show if min_stock_level is set and stock is below it
   ).sort((a, b) => a.stock_quantity - b.stock_quantity);
 
   if (isLoading) {

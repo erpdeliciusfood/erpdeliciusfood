@@ -84,12 +84,12 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
                 <Badge variant="secondary" className="text-sm">{insumo.category}</Badge>
               </TableCell>
               <TableCell className="text-right text-base py-3 px-6">
-                <Badge variant={insumo.stock_quantity <= insumo.min_stock_level ? "destructive" : "outline"} className="text-base px-2 py-1">
+                <Badge variant={insumo.stock_quantity <= (insumo.min_stock_level ?? 0) ? "destructive" : "outline"} className="text-base px-2 py-1">
                   {insumo.stock_quantity} {insumo.purchase_unit}
                 </Badge>
               </TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
-                {insumo.min_stock_level} {insumo.purchase_unit}
+                {insumo.min_stock_level ?? 0} {insumo.purchase_unit}
               </TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 flex items-center justify-end">
                 <DollarSign className="mr-1 h-5 w-5 text-green-600" />

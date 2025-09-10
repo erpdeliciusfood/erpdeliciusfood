@@ -81,6 +81,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
     allInsumosData.data.forEach((insumo: Insumo) => { // Access .data and type insumo
       const quantityNeededForPeriodRaw = insumoNeedsMap.get(insumo.id) || 0;
       const currentStock = insumo.stock_quantity; // stock_quantity is already in purchase_unit
+      const minStockLevel = insumo.min_stock_level ?? 0; // Handle null min_stock_level
 
       // Rounding for quantity_needed_for_period
       const quantityNeededForPeriodRounded = quantityNeededForPeriodRaw > 0 && quantityNeededForPeriodRaw % 1 !== 0
@@ -90,7 +91,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
 
       // REVISED: Calculate purchase suggestion to cover menu needs OR reach min stock level
       const neededToCoverMenus = Math.max(0, quantityNeededForPeriodRaw - currentStock);
-      const neededToReachMinStock = Math.max(0, insumo.min_stock_level - currentStock);
+      const neededToReachMinStock = Math.max(0, minStockLevel - currentStock); // Use minStockLevel
       const purchaseSuggestionRaw = Math.max(neededToCoverMenus, neededToReachMinStock);
 
       // Rounding for purchase_suggestion
@@ -233,7 +234,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
                       <TableCell className="text-base text-gray-700 dark:text-gray-300">{insumo.purchase_unit}</TableCell>
                       <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">S/ {insumo.costo_unitario.toFixed(2)}</TableCell>
                       <TableCell className="text-right text-base">
-                        <Badge variant={insumo.current_stock <= insumo.min_stock_level ? "destructive" : "outline"}>
+                        <Badge variant={insumo.current_stock <= (insumo.min_stock_level ?? 0) ? "destructive" : "outline"}>
                           {insumo.current_stock}
                         </Badge>
                       </TableCell>
@@ -300,8 +301,18 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
           ) : (
             <div className="text-center py-6 text-gray-600 dark:text-gray-400">
               <ShoppingBag className="mx-auto h-12 w-12 mb-3 text-gray-400 dark:text-gray-600" />
-              <p className="text-lg">No se encontraron necesidades de insumos para el período seleccionado o tu stock actual es suficiente.</p>
-              <p className="text-md mt-2">Asegúrate de tener menús planificados con recetas e insumos para este rango de fechas, o que tus niveles de stock estén por debajo de lo necesario o de tu stock mínimo.</p>
+              <p className="text-lg">
+                {menus && menus.length === 0
+                  ? "No hay menús planificados para el período seleccionado."
+                  : allInsumosData?.data && allInsumosData.data.length === 0
+                  ? "No hay insumos registrados en tu inventario."
+                  : "No se encontraron necesidades de insumos para el período seleccionado o tu stock actual es suficiente."}
+              </p>
+              <p className="text-md mt-2">
+                {menus && menus.length === 0 && "Asegúrate de haber creado menús para este rango de fechas."}
+                {allInsumosData?.data && allInsumosData.data.length === 0 && "Añade insumos a tu inventario para empezar a planificar compras."}
+                {menus && menus.length > 0 && allInsumosData?.data && allInsumosData.data.length > 0 && "Asegúrate de tener menús planificados con recetas e insumos para este rango de fechas, o que tus niveles de stock estén por debajo de lo necesario o de tu stock mínimo."}
+              </p>
             </div>
           )}
         </CardContent>

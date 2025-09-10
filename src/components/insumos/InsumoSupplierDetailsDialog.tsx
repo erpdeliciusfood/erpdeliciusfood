@@ -72,7 +72,7 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
         stock_quantity: insumo.stock_quantity,
         purchase_unit: insumo.purchase_unit,
         conversion_factor: insumo.conversion_factor,
-        min_stock_level: insumo.min_stock_level,
+        min_stock_level: insumo.min_stock_level ?? 0, // Safely handle null
         category: insumo.category,
         supplier_name: values.supplier_name,
         supplier_phone: values.supplier_phone,
