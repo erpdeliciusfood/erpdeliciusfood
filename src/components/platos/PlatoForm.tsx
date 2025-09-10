@@ -4,6 +4,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea"; // Import Textarea
 import {
   Form,
   FormControl,
@@ -12,18 +13,12 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Plato, PlatoFormValues, Insumo } from "@/types";
 import { useAddPlato, useUpdatePlato } from "@/hooks/usePlatos";
 import { useInsumos } from "@/hooks/useInsumos";
 import { Loader2, PlusCircle, Trash2 } from "lucide-react";
+import SearchableInsumoSelect from "./SearchableInsumoSelect"; // Import the new component
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -55,7 +50,7 @@ interface PlatoFormProps {
 const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel }) => {
   const addMutation = useAddPlato();
   const updateMutation = useUpdatePlato();
-  const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos(); // Renamed to availableInsumosData
+  const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos();
 
   const form = useForm<PlatoFormValues>({
     resolver: zodResolver(formSchema),
@@ -129,11 +124,11 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
             <FormItem>
               <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Descripción</FormLabel>
               <FormControl>
-                <Input
+                <Textarea // Changed to Textarea
                   placeholder="Ej. Jugoso lomo fino salteado con cebolla y tomate..."
                   {...field}
                   value={field.value || ""}
-                  className="h-12 text-base"
+                  className="min-h-[80px] text-base"
                   disabled={isLoading}
                 />
               </FormControl>
@@ -155,24 +150,12 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
                   render={({ field: insumoField }) => (
                     <FormItem className="flex-grow w-full">
                       <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Insumo</FormLabel>
-                      <Select
-                        onValueChange={insumoField.onChange}
-                        defaultValue={insumoField.value}
+                      <SearchableInsumoSelect
+                        value={insumoField.value}
+                        onChange={insumoField.onChange}
                         disabled={isLoading || isLoadingInsumos}
-                      >
-                        <FormControl>
-                          <SelectTrigger className="h-12 text-base">
-                            <SelectValue placeholder="Selecciona un insumo" />
-                          </SelectTrigger>
-                        </FormControl>
-                        <SelectContent>
-                          {availableInsumosData?.data.map((insumo: Insumo) => ( // Access .data here
-                            <SelectItem key={insumo.id} value={insumo.id}>
-                              {insumo.nombre} ({insumo.base_unit})
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
+                        availableInsumos={availableInsumosData?.data}
+                      />
                       <FormMessage />
                     </FormItem>
                   )}
@@ -204,7 +187,7 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
                   size="icon"
                   onClick={() => remove(index)}
                   className="h-10 w-10 flex-shrink-0"
-                  disabled={isLoading || fields.length === 1} // Disable if only one item
+                  disabled={isLoading || fields.length === 1}
                 >
                   <Trash2 className="h-5 w-5" />
                 </Button>
