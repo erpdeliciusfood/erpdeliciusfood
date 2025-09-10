@@ -13,7 +13,8 @@ import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { DateRange } from "react-day-picker";
-import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
+import PurchaseAnalysis from "@/components/purchase-planning/PurchaseAnalysis"; // Updated import path
 
 const Reports = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -82,7 +83,7 @@ const Reports = () => {
         icon={BarChart3}
       />
 
-      <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4"> {/* Adjusted layout for buttons */}
+      <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4">
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
@@ -147,6 +148,7 @@ const Reports = () => {
           <>
             <FinancialOverviewReport startDate={dateRange.from} endDate={dateRange.to} />
             <ConsumptionReport startDate={dateRange.from} endDate={dateRange.to} />
+            <PurchaseAnalysis startDate={dateRange.from} endDate={dateRange.to} /> {/* Using the consolidated component */}
           </>
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">
