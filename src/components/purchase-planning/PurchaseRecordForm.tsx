@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
@@ -23,14 +23,14 @@ import {
 } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { Checkbox } from "@/components/ui/checkbox";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group"; // Changed from Checkbox
 import { cn } from "@/lib/utils";
 import { format, formatISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { PurchaseRecord, PurchaseRecordFormValues, Insumo } from "@/types";
 import { useAddPurchaseRecord, useUpdatePurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { useInsumos } from "@/hooks/useInsumos";
-import { Loader2, CalendarIcon } from "lucide-react";
+import { Loader2, CalendarIcon, CheckCircle2, XCircle } from "lucide-react"; // Added icons
 
 const formSchema = z.object({
   insumo_id: z.string().min(1, { message: "Debe seleccionar un insumo." }),
@@ -45,7 +45,7 @@ const formSchema = z.object({
   }, { message: "El teléfono debe empezar con +51 y tener 9 dígitos (ej. +51987654321)." }),
   supplier_address_at_purchase: z.string().max(255, { message: "La dirección del proveedor no debe exceder los 255 caracteres." }).nullable(),
   from_registered_supplier: z.boolean(),
-  notes: z.string().max(500, { message: "Las notas no deben exceder los 500 caracteres." }).nullable(),
+  notes: z.string().max(100, { message: "El nombre no debe exceder los 100 caracteres." }).nullable(), // Renamed from who_made_purchase to notes
 });
 
 interface PurchaseRecordFormProps {
@@ -73,7 +73,9 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
 }) => {
   const addMutation = useAddPurchaseRecord();
   const updateMutation = useUpdatePurchaseRecord();
-  const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos(); // Renamed to availableInsumosData
+  const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos();
+
+  const [lastChangedField, setLastChangedField] = useState<'quantity' | 'unitCost' | 'total' | null>(null);
 
   const form = useForm<PurchaseRecordFormValues>({
     resolver: zodResolver(formSchema),
@@ -82,21 +84,23 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
       purchase_date: format(new Date(), "yyyy-MM-dd"),
       quantity_purchased: prefilledQuantity || 0,
       unit_cost_at_purchase: prefilledUnitCost || 0,
-      total_amount: (prefilledQuantity && prefilledUnitCost) ? prefilledQuantity * prefilledUnitCost : 0,
+      total_amount: (prefilledQuantity && prefilledUnitCost) ? parseFloat((prefilledQuantity * prefilledUnitCost).toFixed(2)) : 0,
       supplier_name_at_purchase: prefilledSupplierName || "",
       supplier_phone_at_purchase: prefilledSupplierPhone || "",
       supplier_address_at_purchase: prefilledSupplierAddress || "",
       from_registered_supplier: true,
-      notes: "",
+      notes: "", // Renamed from who_made_purchase to notes
     },
   });
 
   const quantityPurchased = form.watch("quantity_purchased");
   const unitCostAtPurchase = form.watch("unit_cost_at_purchase");
+  const totalAmount = form.watch("total_amount");
   const selectedInsumoId = form.watch("insumo_id");
+  const fromRegisteredSupplier = form.watch("from_registered_supplier");
 
-  // Find the selected insumo to get its purchase_unit
-  const selectedInsumo = availableInsumosData?.data.find((insumo: Insumo) => insumo.id === selectedInsumoId); // Access .data and type insumo
+  // Find the selected insumo to get its purchase_unit and registered supplier details
+  const selectedInsumo = availableInsumosData?.data.find((insumo: Insumo) => insumo.id === selectedInsumoId);
   const purchaseUnit = selectedInsumo?.purchase_unit || "unidad";
 
   useEffect(() => {
@@ -111,7 +115,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         supplier_phone_at_purchase: initialData.supplier_phone_at_purchase || "",
         supplier_address_at_purchase: initialData.supplier_address_at_purchase || "",
         from_registered_supplier: initialData.from_registered_supplier,
-        notes: initialData.notes || "",
+        notes: initialData.notes || "", // Renamed from who_made_purchase to notes
       });
     } else {
       form.reset({
@@ -119,42 +123,67 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         purchase_date: format(new Date(), "yyyy-MM-dd"),
         quantity_purchased: prefilledQuantity || 0,
         unit_cost_at_purchase: prefilledUnitCost || 0,
-        total_amount: (prefilledQuantity && prefilledUnitCost) ? prefilledQuantity * prefilledUnitCost : 0,
+        total_amount: (prefilledQuantity && prefilledUnitCost) ? parseFloat((prefilledQuantity * prefilledUnitCost).toFixed(2)) : 0,
         supplier_name_at_purchase: prefilledSupplierName || "",
         supplier_phone_at_purchase: prefilledSupplierPhone || "",
         supplier_address_at_purchase: prefilledSupplierAddress || "",
         from_registered_supplier: true,
-        notes: "",
+        notes: "", // Renamed from who_made_purchase to notes
       });
     }
   }, [initialData, form, prefilledInsumoId, prefilledQuantity, prefilledUnitCost, prefilledSupplierName, prefilledSupplierPhone, prefilledSupplierAddress]);
 
+  // Effect for automatic calculations
   useEffect(() => {
-    // Auto-calculate total_amount
-    const calculatedTotal = quantityPurchased * unitCostAtPurchase;
-    if (form.getValues("total_amount") !== calculatedTotal) {
-      form.setValue("total_amount", parseFloat(calculatedTotal.toFixed(2)), { shouldValidate: true });
-    }
-  }, [quantityPurchased, unitCostAtPurchase, form]);
+    const calculateTotal = () => {
+      if (quantityPurchased > 0 && unitCostAtPurchase > 0) {
+        const calculatedTotal = quantityPurchased * unitCostAtPurchase;
+        if (Math.abs(totalAmount - calculatedTotal) > 0.01) { // Check for significant difference
+          form.setValue("total_amount", parseFloat(calculatedTotal.toFixed(2)), { shouldValidate: true });
+        }
+      }
+    };
 
+    const calculateUnitCost = () => {
+      if (quantityPurchased > 0 && totalAmount > 0) {
+        const calculatedUnitCost = totalAmount / quantityPurchased;
+        if (Math.abs(unitCostAtPurchase - calculatedUnitCost) > 0.01) {
+          form.setValue("unit_cost_at_purchase", parseFloat(calculatedUnitCost.toFixed(2)), { shouldValidate: true });
+        }
+      }
+    };
+
+    if (lastChangedField === 'quantity' || lastChangedField === 'unitCost') {
+      calculateTotal();
+    } else if (lastChangedField === 'total') {
+      calculateUnitCost();
+    }
+  }, [quantityPurchased, unitCostAtPurchase, totalAmount, form, lastChangedField]);
+
+  // Effect to pre-fill supplier details when insumo_id or fromRegisteredSupplier changes
   useEffect(() => {
-    // When insumo_id changes, pre-fill supplier details from registered insumo
-    if (selectedInsumoId && !initialData) { // Only for new records, not when editing
-      const selectedInsumo = availableInsumosData?.data.find((insumo: Insumo) => insumo.id === selectedInsumoId); // Access .data and type insumo
-      if (selectedInsumo) {
-        form.setValue("supplier_name_at_purchase", selectedInsumo.supplier_name || "");
-        form.setValue("supplier_phone_at_purchase", selectedInsumo.supplier_phone || "");
-        form.setValue("supplier_address_at_purchase", selectedInsumo.supplier_address || "");
-        form.setValue("from_registered_supplier", true);
+    if (fromRegisteredSupplier && selectedInsumo) {
+      form.setValue("supplier_name_at_purchase", selectedInsumo.supplier_name || "");
+      form.setValue("supplier_phone_at_purchase", selectedInsumo.supplier_phone || "");
+      form.setValue("supplier_address_at_purchase", selectedInsumo.supplier_address || "");
+    } else if (!fromRegisteredSupplier) {
+      // Clear fields if switching to 'No' (unless it's initialData and it was already 'No')
+      if (!initialData || initialData.from_registered_supplier) { // Only clear if it was previously from a registered supplier or new form
+        form.setValue("supplier_name_at_purchase", "");
+        form.setValue("supplier_phone_at_purchase", "");
+        form.setValue("supplier_address_at_purchase", "");
       }
     }
-  }, [selectedInsumoId, availableInsumosData?.data, form, initialData]); // Add availableInsumosData.data to dependencies
+  }, [selectedInsumo, fromRegisteredSupplier, form, initialData]);
 
   const onSubmit = async (values: PurchaseRecordFormValues) => {
+    // Map notes to notes for the API (no change needed here as it's already 'notes')
+    const submitValues = { ...values };
+
     if (initialData) {
-      await updateMutation.mutateAsync({ id: initialData.id, record: values });
+      await updateMutation.mutateAsync({ id: initialData.id, record: submitValues });
     } else {
-      await addMutation.mutateAsync(values);
+      await addMutation.mutateAsync(submitValues);
     }
     onSuccess();
   };
@@ -173,7 +202,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value}
-                disabled={isLoading || isLoadingInsumos || !!initialData || !!prefilledInsumoId} // Disable if editing or prefilled
+                disabled={isLoading || isLoadingInsumos || !!initialData || !!prefilledInsumoId}
               >
                 <FormControl>
                   <SelectTrigger className="h-12 text-base">
@@ -181,7 +210,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {availableInsumosData?.data.map((insumo: Insumo) => ( // Access .data and type insumo
+                  {availableInsumosData?.data.map((insumo: Insumo) => (
                     <SelectItem key={insumo.id} value={insumo.id}>
                       {insumo.nombre} ({insumo.purchase_unit})
                     </SelectItem>
@@ -251,7 +280,10 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
                   step="0.01"
                   placeholder="Ej. 10.5"
                   {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  onChange={(e) => {
+                    field.onChange(parseFloat(e.target.value));
+                    setLastChangedField('quantity');
+                  }}
                   className="h-12 text-base"
                   disabled={isLoading}
                 />
@@ -273,7 +305,10 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
                   step="0.01"
                   placeholder="Ej. 2.50"
                   {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                  onChange={(e) => {
+                    field.onChange(parseFloat(e.target.value));
+                    setLastChangedField('unitCost');
+                  }}
                   className="h-12 text-base"
                   disabled={isLoading}
                 />
@@ -295,67 +330,10 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
                   step="0.01"
                   placeholder="Ej. 26.25"
                   {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="supplier_name_at_purchase"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre del Proveedor (en la compra)</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Ej. Distribuidora La Huerta"
-                  {...field}
-                  value={field.value || ""}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="supplier_phone_at_purchase"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Teléfono del Proveedor (en la compra)</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Ej. +51987654321"
-                  {...field}
-                  value={field.value || ""}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
-        <FormField
-          control={form.control}
-          name="supplier_address_at_purchase"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Dirección del Proveedor (en la compra)</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Ej. Av. Los Girasoles 123, Lima"
-                  {...field}
-                  value={field.value || ""}
+                  onChange={(e) => {
+                    field.onChange(parseFloat(e.target.value));
+                    setLastChangedField('total');
+                  }}
                   className="h-12 text-base"
                   disabled={isLoading}
                 />
@@ -369,38 +347,152 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
           control={form.control}
           name="from_registered_supplier"
           render={({ field }) => (
-            <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+            <FormItem className="space-y-3">
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">¿Fue del proveedor registrado para este insumo?</FormLabel>
               <FormControl>
-                <Checkbox
-                  checked={field.value}
-                  onCheckedChange={field.onChange}
-                  disabled={isLoading}
-                />
+                <RadioGroup
+                  onValueChange={(value) => field.onChange(value === "true")}
+                  value={field.value ? "true" : "false"}
+                  className="flex space-x-4"
+                  disabled={isLoading || !selectedInsumoId} // Disable if no insumo selected
+                >
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="true" />
+                    </FormControl>
+                    <FormLabel className="font-normal flex items-center">
+                      <CheckCircle2 className="h-5 w-5 mr-2 text-green-600" /> Sí
+                    </FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="false" />
+                    </FormControl>
+                    <FormLabel className="font-normal flex items-center">
+                      <XCircle className="h-5 w-5 mr-2 text-red-600" /> No
+                    </FormLabel>
+                  </FormItem>
+                </RadioGroup>
               </FormControl>
-              <div className="space-y-1 leading-none">
-                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
-                  ¿Fue del proveedor registrado para este insumo?
-                </FormLabel>
-                <FormDescription className="text-sm text-gray-600 dark:text-gray-400">
-                  Marca esta casilla si la compra se realizó al proveedor habitual.
-                </FormDescription>
-              </div>
+              <FormMessage />
             </FormItem>
           )}
         />
 
+        {(selectedInsumoId && fromRegisteredSupplier) && (
+          <div className="space-y-6">
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre del Proveedor (registrado)</FormLabel>
+              <FormControl>
+                <Input
+                  value={selectedInsumo?.supplier_name || ""}
+                  className="h-12 text-base"
+                  disabled
+                />
+              </FormControl>
+            </FormItem>
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Teléfono del Proveedor (registrado)</FormLabel>
+              <FormControl>
+                <Input
+                  value={selectedInsumo?.supplier_phone || ""}
+                  className="h-12 text-base"
+                  disabled
+                />
+              </FormControl>
+            </FormItem>
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Dirección del Proveedor (registrado)</FormLabel>
+              <FormControl>
+                <Input
+                  value={selectedInsumo?.supplier_address || ""}
+                  className="h-12 text-base"
+                  disabled
+                />
+              </FormControl>
+            </FormItem>
+          </div>
+        )}
+
+        {(!selectedInsumoId || !fromRegisteredSupplier) && ( // Show these fields if no insumo selected OR not from registered supplier
+          <div className="space-y-6">
+            <FormField
+              control={form.control}
+              name="supplier_name_at_purchase"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre del Proveedor (en la compra)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Ej. Distribuidora La Huerta"
+                      {...field}
+                      value={field.value || ""}
+                      className="h-12 text-base"
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="supplier_phone_at_purchase"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Teléfono del Proveedor (en la compra)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Ej. +51987654321"
+                      {...field}
+                      value={field.value || ""}
+                      className="h-12 text-base"
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <FormField
+              control={form.control}
+              name="supplier_address_at_purchase"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Dirección del Proveedor (en la compra)</FormLabel>
+                  <FormControl>
+                    <Input
+                      placeholder="Ej. Av. Los Girasoles 123, Lima"
+                      {...field}
+                      value={field.value || ""}
+                      className="h-12 text-base"
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <FormDescription className="text-sm text-gray-600 dark:text-gray-400">
+                    Si no conoces los datos del proveedor, puedes dejarlos en blanco.
+                  </FormDescription>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          </div>
+        )}
+
         <FormField
           control={form.control}
-          name="notes"
+          name="notes" // Reverted to notes
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Notas (Opcional)</FormLabel>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Quién realizó la compra (Opcional)</FormLabel>
               <FormControl>
-                <Textarea
-                  placeholder="Detalles adicionales sobre la compra..."
+                <Input // Changed from Textarea to Input for a shorter field
+                  placeholder="Ej. Juan Pérez"
                   {...field}
                   value={field.value || ""}
-                  className="min-h-[80px] text-base"
+                  className="h-12 text-base"
                   disabled={isLoading}
                 />
               </FormControl>

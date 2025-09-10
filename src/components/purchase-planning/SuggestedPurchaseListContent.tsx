@@ -113,7 +113,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
           supplier_phone_at_purchase: insumo.supplier_phone || null,
           supplier_address_at_purchase: insumo.supplier_address || null,
           from_registered_supplier: true,
-          notes: `Compra sugerida por análisis para el período.`,
+          notes: `Compra sugerida por análisis para el período.`, // Reverted to 'notes'
         });
         successfulRegistrations++;
       } catch (error: any) {

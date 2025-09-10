@@ -48,6 +48,7 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Unitario (S/)</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Monto Total (S/)</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Proveedor</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Quién realizó la compra</TableHead> {/* Updated TableHead */}
             <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -58,7 +59,7 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                 {format(new Date(record.purchase_date), "PPP", { locale: es })}
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
-                {record.insumos?.nombre || "Insumo Desconocido"} {/* Display insumo name */}
+                {record.insumos?.nombre || "Insumo Desconocido"}
               </TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
                 {record.quantity_purchased.toFixed(2)} {record.insumos?.purchase_unit || "unidad"}
@@ -83,6 +84,9 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                   )}
                 </div>
               </TableCell>
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+                {record.notes || "N/A"} {/* Displaying the 'notes' field which now holds 'who_made_purchase' */}
+              </TableCell>
               <TableCell className="flex justify-center space-x-2 py-3 px-6">
                 <Button
                   variant="outline"
@@ -106,7 +110,7 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                     <AlertDialogHeader>
                       <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
                       <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                        Esta acción no se puede deshacer. Esto eliminará permanentemente el registro de compra de {record.insumos?.nombre || "Insumo Desconocido"} del {format(new Date(record.purchase_date), "PPP", { locale: es })} de nuestros servidores.
+                        Esta acción no se puede deshacer. Esto eliminará permanentemente el registro de compra de {record.insumos?.nombre || "Insumo Desconocido"} del {format(new Date(record.purchase_date), "PPP", { locale: es })} (realizada por {record.notes || "N/A"}) de nuestros servidores.
                         <br/><span className="font-semibold text-red-600 dark:text-red-400">Nota: Esto NO revertirá los cambios de stock o costo del insumo.</span>
                       </AlertDialogDescription>
                     </AlertDialogHeader>

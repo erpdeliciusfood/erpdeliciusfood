@@ -127,19 +127,6 @@ export interface MenuPlato {
   meal_services?: MealService;
 }
 
-export interface MenuFormValues {
-  title: string;
-  menu_date: string | null;
-  event_type_id: string | null;
-  description: string | null;
-  platos_por_servicio: {
-    meal_service_id: string;
-    plato_id: string;
-    dish_category: string;
-    quantity_needed: number;
-  }[];
-}
-
 export interface Profile {
   id: string;
   first_name: string | null;
@@ -217,7 +204,7 @@ export interface PurchaseRecord {
   supplier_phone_at_purchase: string | null;
   supplier_address_at_purchase: string | null;
   from_registered_supplier: boolean;
-  notes: string | null;
+  notes: string | null; // This will now store 'who_made_purchase'
   created_at: string;
   insumos?: Insumo;
 }
@@ -232,5 +219,5 @@ export interface PurchaseRecordFormValues {
   supplier_phone_at_purchase: string | null;
   supplier_address_at_purchase: string | null;
   from_registered_supplier: boolean;
-  notes: string | null;
+  notes: string | null; // Reverted to 'notes'
 }
