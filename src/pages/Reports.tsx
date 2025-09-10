@@ -16,6 +16,7 @@ import { DateRange } from "react-day-picker";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
 import PurchaseAnalysis from "@/components/purchase-planning/PurchaseAnalysis"; // Updated import path
 import { InsumoNeeded } from "@/types"; // NEW: Import InsumoNeeded for filter type
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
 
 const Reports = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -143,6 +144,20 @@ const Reports = () => {
               </PopoverContent>
             </Popover>
           )}
+
+          {/* NEW: Filter by Reason for Purchase Analysis */}
+          <Select onValueChange={(value: 'all' | InsumoNeeded['reason_for_purchase_suggestion']) => setSelectedReasonFilter(value)} value={selectedReasonFilter}>
+            <SelectTrigger className="w-full md:w-[200px] h-12 text-base">
+              <SelectValue placeholder="Filtrar por motivo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los Motivos</SelectItem>
+              <SelectItem value="menu_demand">Demanda de Menú</SelectItem>
+              <SelectItem value="min_stock_level">Stock Mínimo</SelectItem>
+              <SelectItem value="both">Ambos</SelectItem>
+              <SelectItem value="zero_stock_alert">Stock Cero</SelectItem>
+            </SelectContent>
+          </Select>
       </div>
 
       <div className="grid grid-cols-1 gap-8 mb-8">
