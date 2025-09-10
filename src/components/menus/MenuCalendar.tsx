@@ -10,6 +10,7 @@ import { Menu } from "@/types";
 import { DayModifiers } from "react-day-picker";
 import DailyMenuList from "./DailyMenuList";
 import MenuFormSheet from "./MenuFormSheet";
+import { showError } from "@/utils/toast"; // Import showError
 
 interface MenuCalendarProps {
   onAddMenu: (date: Date) => void;
@@ -58,6 +59,25 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
   const handleMonthChange = (month: Date) => {
     setCurrentMonth(month);
     setSelectedDate(undefined); // Clear selected date when month changes
+  };
+
+  // NEW: Function to handle adding a menu, checking for existing daily menus
+  const handleAddMenuForSelectedDate = (date: Date) => {
+    if (!menusInMonth) {
+      showError("Cargando menús, por favor espera.");
+      return;
+    }
+
+    const existingDailyMenuForDate = menusInMonth.find(menu =>
+      menu.menu_date && isSameDay(parseISO(menu.menu_date), date) && !menu.event_type_id // Check for daily menu (no event_type_id)
+    );
+
+    if (existingDailyMenuForDate) {
+      showError(`Ya existe un menú diario para el ${format(date, "PPP", { locale: es })}. Por favor, edita el menú existente.`);
+      onEditMenu(existingDailyMenuForDate); // Open form to edit the existing daily menu
+    } else {
+      onAddMenu(date); // Proceed to add new menu
+    }
   };
 
   const modifiers: DayModifiers = {
@@ -119,7 +139,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
               Días con Menús
             </div>
             <div className="flex items-center">
-              <span className="h-4 w-4 rounded-full bg-primary dark:bg-primary-foreground mr-2 border border-primary dark:border-primary-foreground"></span>
+              <span className="h-4 w-4 rounded-full bg-primary text-primary-foreground mr-2 border border-primary dark:border-primary-foreground"></span>
               Hoy
             </div>
             <div className="flex items-center">
@@ -148,7 +168,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
               Menús para el {format(selectedDate, "PPP", { locale: es })}
             </CardTitle>
             <Button
-              onClick={() => onAddMenu(selectedDate || new Date())} // Asegura que siempre se pase una fecha
+              onClick={() => handleAddMenuForSelectedDate(selectedDate || new Date())} // Use the new handler
               className="px-4 py-2 text-base bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
