@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"; // Changed Dialog to Sheet
 import { Loader2, PlusCircle, Search, Upload, UtensilsCrossed, LayoutGrid, List } from "lucide-react"; // Added LayoutGrid and List icons
 import { useInsumos } from "@/hooks/useInsumos";
 import InsumoCardGrid from "@/components/insumos/InsumoCardGrid";
@@ -93,8 +93,8 @@ const Insumos = () => {
       <div className="flex flex-col md:flex-row justify-between items-center mb-6 gap-4">
         <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100">Gestión de Insumos</h1>
         <div className="flex flex-col sm:flex-row space-y-2 sm:space-y-0 sm:space-x-4 w-full md:w-auto">
-          <Dialog open={isImportFormOpen} onOpenChange={setIsImportFormOpen}>
-            <DialogTrigger asChild>
+          <Sheet open={isImportFormOpen} onOpenChange={setIsImportFormOpen}>
+            <SheetTrigger asChild>
               <Button
                 onClick={() => setIsImportFormOpen(true)}
                 className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-secondary hover:bg-secondary-foreground text-secondary-foreground hover:text-secondary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
@@ -102,19 +102,19 @@ const Insumos = () => {
                 <Upload className="mr-3 h-6 w-6" />
                 Importar Insumos
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            </SheetTrigger>
+            <SheetContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   Importar Insumos desde CSV
-                </DialogTitle>
-              </DialogHeader>
+                </SheetTitle>
+              </SheetHeader>
               <InsumoImporter onSuccess={handleImportFormClose} onCancel={handleImportFormClose} />
-            </DialogContent>
-          </Dialog>
+            </SheetContent>
+          </Sheet>
 
-          <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogTrigger asChild>
+          <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
+            <SheetTrigger asChild>
               <Button
                 onClick={handleAddClick}
                 className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
@@ -122,20 +122,20 @@ const Insumos = () => {
                 <PlusCircle className="mr-3 h-6 w-6" />
                 Añadir Insumo
               </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+            </SheetTrigger>
+            <SheetContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
+              <SheetHeader>
+                <SheetTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                   {editingInsumo ? "Editar Insumo" : "Añadir Nuevo Insumo"}
-                </DialogTitle>
-              </DialogHeader>
+                </SheetTitle>
+              </SheetHeader>
               <InsumoForm
                 initialData={editingInsumo}
                 onSuccess={handleFormClose}
                 onCancel={handleFormClose}
               />
-            </DialogContent>
-          </Dialog>
+            </SheetContent>
+          </Sheet>
         </div>
       </div>
 
