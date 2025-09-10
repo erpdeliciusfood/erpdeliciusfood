@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
 } from "@/components/ui/form";
-import { Menu, MenuFormValues } from "@/types"; // Removed Receta
+import { Menu, MenuFormValues, type MenuPlatoFormValues } from "@/types"; // Changed to type import
 import { useAddMenu, useUpdateMenu } from "@/hooks/useMenus";
 import { useRecetas } from "@/hooks/useRecetas";
 import { useMealServices } from "@/hooks/useMealServices";
