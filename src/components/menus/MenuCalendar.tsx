@@ -148,7 +148,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
               Menús para el {format(selectedDate, "PPP", { locale: es })}
             </CardTitle>
             <Button
-              onClick={() => onAddMenu(selectedDate)}
+              onClick={() => onAddMenu(selectedDate || new Date())} // Asegura que siempre se pase una fecha
               className="px-4 py-2 text-base bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
@@ -166,7 +166,6 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
         setIsFormOpen={setIsFormOpen}
         editingMenu={editingMenu}
         selectedDate={selectedDate}
-        setSelectedDate={setSelectedDate}
       />
     </div>
   );

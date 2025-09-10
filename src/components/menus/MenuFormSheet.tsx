@@ -8,7 +8,6 @@ interface MenuFormSheetProps {
   setIsFormOpen: (open: boolean) => void;
   editingMenu: Menu | null;
   selectedDate: Date | undefined;
-  setSelectedDate: (date: Date | undefined) => void;
 }
 
 const MenuFormSheet: React.FC<MenuFormSheetProps> = ({
@@ -16,7 +15,6 @@ const MenuFormSheet: React.FC<MenuFormSheetProps> = ({
   setIsFormOpen,
   editingMenu,
   selectedDate,
-  setSelectedDate,
 }) => {
   return (
     <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
