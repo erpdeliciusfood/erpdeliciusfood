@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useServiceReports } from "@/hooks/useServiceReports";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, TrendingDown, LineChart as LineChartIcon } from "lucide-react"; // TrendingUp removed
+import { Loader2, TrendingDown, LineChart as LineChartIcon } from "lucide-react";
 import { format, isWithinInterval, parseISO, eachDayOfInterval } from "date-fns";
 import { es } from "date-fns/locale";
 import { ServiceReport } from "@/types";

@@ -4,7 +4,7 @@ import { Menu, MenuFormValues } from "@/types";
 export const getMenus = async (startDate?: string, endDate?: string): Promise<Menu[]> => {
   let query = supabase
     .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))") // Removed meal_types relation
+    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))")
     .order("menu_date", { ascending: false })
     .order("created_at", { ascending: false });
 
@@ -24,7 +24,7 @@ export const getMenus = async (startDate?: string, endDate?: string): Promise<Me
 export const getMenuById = async (id: string): Promise<Menu | null> => {
   const { data, error } = await supabase
     .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))") // Removed meal_types relation
+    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))")
     .eq("id", id)
     .single();
 
@@ -80,7 +80,7 @@ export const createMenu = async (menuData: MenuFormValues): Promise<Menu> => {
   // Fetch the complete menu with its relations for the return value
   const { data: completeMenu, error: fetchError } = await supabase
     .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))") // Removed meal_types relation
+    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))")
     .eq("id", newMenu.id)
     .single();
 
@@ -138,7 +138,7 @@ export const updateMenu = async (id: string, menuData: MenuFormValues): Promise<
   // Fetch the complete menu with its relations for the return value
   const { data: completeMenu, error: fetchError } = await supabase
     .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))") // Removed meal_types relation
+    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))")
     .eq("id", updatedMenu.id)
     .single();
 
