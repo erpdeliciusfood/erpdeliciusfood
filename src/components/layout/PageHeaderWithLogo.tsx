@@ -11,8 +11,8 @@ const PageHeaderWithLogo: React.FC<PageHeaderWithLogoProps> = ({ title, descript
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
       <div className="flex items-center mb-4 md:mb-0">
-        <img src="/logo-erp.png" alt="App Logo" className="h-10 w-auto mr-3" />
-        {/* <span className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">ERP App</span> */} {/* Eliminado el nombre de la app */}
+        <img src="/logo-erp.png" alt="App Logo" className="h-12 w-auto mr-3" /> {/* Cambiado de h-10 a h-12 */}
+        {/* <span className="text-3xl font-extrabold text-gray-900 dark:text-gray-100">ERP App</span> */}
       </div>
       <div className="flex flex-col md:items-end">
         <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100 flex items-center">
