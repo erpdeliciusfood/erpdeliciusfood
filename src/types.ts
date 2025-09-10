@@ -25,9 +25,9 @@ export interface InsumoFormValues {
   conversion_factor: number;
   min_stock_level: number;
   category: string;
-  supplier_name: string | null;
-  supplier_phone: string | null;
-  supplier_address: string | null;
+  supplier_name?: string | null; // Made optional to allow undefined
+  supplier_phone?: string | null; // Made optional to allow undefined
+  supplier_address?: string | null; // Made optional to allow undefined
 }
 
 export interface Plato {

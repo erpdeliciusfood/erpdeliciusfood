@@ -2,9 +2,9 @@ import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Loader2, Upload, FileText, Download } from "lucide-react";
+import { Loader2, Download } from "lucide-react"; // Removed Upload, FileText
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
-import { useAddInsumo } from "@/hooks/useInsumos"; // We'll adapt this or create a new one for batch
+// Removed: import { useAddInsumo } from "@/hooks/useInsumos";
 import { InsumoFormValues } from "@/types";
 import * as Papa from "papaparse"; // For CSV parsing
 import * as z from "zod"; // For validation
@@ -76,12 +76,12 @@ const InsumoImporter: React.FC<InsumoImporterProps> = ({ onSuccess, onCancel }) 
     Papa.parse(file, {
       header: true,
       skipEmptyLines: true,
-      complete: async (results) => {
+      complete: async (results: Papa.ParseResult<any>) => { // Explicitly type results
         const parsedData = results.data;
         const errors: { row: number; message: string }[] = [];
         const validInsumos: InsumoFormValues[] = [];
 
-        parsedData.forEach((row: any, index) => {
+        parsedData.forEach((row: any, index: number) => { // Explicitly type index
           const rowNumber = index + 2; // +1 for 0-indexed array, +1 for header row
           try {
             // Clean up empty strings to null for optional fields
@@ -137,7 +137,7 @@ const InsumoImporter: React.FC<InsumoImporterProps> = ({ onSuccess, onCancel }) 
           setIsProcessing(false);
         }
       },
-      error: (error) => {
+      error: (error: Papa.ParseError) => { // Explicitly type error
         dismissToast(toastId);
         showError(`Error al parsear el archivo CSV: ${error.message}`);
         console.error("Error de PapaParse:", error);
