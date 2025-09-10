@@ -18,12 +18,12 @@ interface PlatoInsumoFromQuery {
 }
 
 interface PlatoFromQuery {
-  plato_insumos: PlatoInsumoFromQuery[] | null; // Changed to array to match Supabase's return structure
+  plato_insumos: PlatoInsumoFromQuery[] | null;
 }
 
 interface MenuPlatoFromQuery {
   quantity_needed: number;
-  platos: PlatoFromQuery[] | null; // Changed to array to match Supabase's return structure
+  platos: PlatoFromQuery[] | null; // Corrected: should be an array of PlatoFromQuery
 }
 
 interface MenuFromQuery {
@@ -66,7 +66,7 @@ export const getAggregatedInsumoNeedsForDate = async (date: string): Promise<Agg
   (menus as MenuFromQuery[]).forEach(menu => {
     menu.menu_platos?.forEach(menuPlato => {
       // Iterate over the 'platos' array within each 'menuPlato'
-      menuPlato.platos?.forEach(plato => {
+      menuPlato.platos?.forEach(plato => { // Added this loop to iterate over the 'platos' array
         if (plato) {
           plato.plato_insumos?.forEach(platoInsumo => {
             const insumo = platoInsumo.insumos;
