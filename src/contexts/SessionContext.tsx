@@ -23,13 +23,12 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       if (currentSession) {
         setSession(currentSession);
         setUser(currentSession.user);
-        if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-          navigate('/'); // Redirigir a la página principal después de iniciar sesión
-        }
+        // Removed navigate('/') from SIGNED_IN and USER_UPDATED events
+        // This prevents unwanted redirects when switching tabs or refreshing
       } else {
         setSession(null);
         setUser(null);
-        navigate('/login'); // Redirigir a la página de login si no hay sesión
+        navigate('/login'); // Redirect to login page if no session
       }
       setIsLoading(false);
     });
