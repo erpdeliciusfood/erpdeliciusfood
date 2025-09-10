@@ -45,6 +45,12 @@ const formSchema = z.object({
   category: z.string().min(1, {
     message: "Debe seleccionar una categoría.",
   }),
+  // Removed system-managed stock fields from direct form input
+  // pending_reception_quantity: z.coerce.number().optional(),
+  // pending_delivery_quantity: z.coerce.number().optional(),
+  // last_physical_count_quantity: z.coerce.number().optional(),
+  // last_physical_count_date: z.string().nullable().optional(),
+  // discrepancy_quantity: z.coerce.number().optional(),
 });
 
 interface InsumoFormProps {
@@ -99,6 +105,12 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
       stock_quantity: 0,
       min_stock_level: 0,
       category: "Otros",
+      // Set default values for system-managed fields to ensure they are always numbers/null
+      pending_reception_quantity: 0,
+      pending_delivery_quantity: 0,
+      last_physical_count_quantity: 0,
+      last_physical_count_date: null,
+      discrepancy_quantity: 0,
     },
   });
 
@@ -116,6 +128,12 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         stock_quantity: initialData.stock_quantity,
         min_stock_level: initialData.min_stock_level,
         category: initialData.category || "Otros",
+        // Ensure system-managed fields are passed from initialData if available, otherwise default
+        pending_reception_quantity: initialData.pending_reception_quantity ?? 0,
+        pending_delivery_quantity: initialData.pending_delivery_quantity ?? 0,
+        last_physical_count_quantity: initialData.last_physical_count_quantity ?? 0,
+        last_physical_count_date: initialData.last_physical_count_date || null,
+        discrepancy_quantity: initialData.discrepancy_quantity ?? 0,
       });
       // When editing an existing insumo, the conversion factor should always be editable by default.
       setIsConversionFactorEditable(true);
@@ -129,6 +147,12 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         stock_quantity: 0,
         min_stock_level: 0,
         category: "Otros",
+        // Reset system-managed fields to their defaults for new forms
+        pending_reception_quantity: 0,
+        pending_delivery_quantity: 0,
+        last_physical_count_quantity: 0,
+        last_physical_count_date: null,
+        discrepancy_quantity: 0,
       });
       setIsConversionFactorEditable(true);
     }

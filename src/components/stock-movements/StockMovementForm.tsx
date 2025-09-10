@@ -27,7 +27,7 @@ import { Loader2 } from "lucide-react";
 
 const formSchema = z.object({
   insumo_id: z.string().min(1, { message: "Debe seleccionar un insumo." }),
-  movement_type: z.enum(["purchase_in", "adjustment_in", "adjustment_out"], { // Removed 'daily_prep_out' from manual options
+  movement_type: z.enum(["purchase_in", "reception_in", "adjustment_in", "adjustment_out"], { // NEW: Added 'reception_in'
     required_error: "Debe seleccionar un tipo de movimiento.",
   }),
   quantity_change: z.coerce.number().min(0.01, {
@@ -64,11 +64,11 @@ const formSchema = z.object({
         path: ["total_purchase_quantity"],
       });
     }
-  } else { // adjustment_in or adjustment_out
+  } else if (data.movement_type === "reception_in" || data.movement_type === "adjustment_in" || data.movement_type === "adjustment_out") { // NEW: Include reception_in
     if (data.quantity_change === undefined || data.quantity_change <= 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "La cantidad de cambio es requerida para ajustes.",
+        message: "La cantidad de cambio es requerida para este tipo de movimiento.",
         path: ["quantity_change"],
       });
     }
@@ -175,7 +175,8 @@ const StockMovementForm: React.FC<StockMovementFormProps> = ({ onSuccess, onCanc
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  <SelectItem value="purchase_in">Entrada por Compra</SelectItem>
+                  <SelectItem value="purchase_in">Entrada por Compra (Almacén)</SelectItem> {/* Clarified text */}
+                  <SelectItem value="reception_in">Recepción por Empresa</SelectItem> {/* NEW: Reception by company */}
                   <SelectItem value="adjustment_in">Ajuste de Entrada</SelectItem>
                   <SelectItem value="adjustment_out">Ajuste de Salida</SelectItem>
                 </SelectContent>

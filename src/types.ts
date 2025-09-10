@@ -229,7 +229,7 @@ export interface PurchaseRecord {
   from_registered_supplier: boolean;
   notes: string | null;
   status: 'ordered' | 'received_by_company' | 'received_by_warehouse' | 'cancelled'; // NEW: Add status to PurchaseRecord
-  insumos?: Insumo;
+  received_date: string | null; // NEW: Add received_date to PurchaseRecord
 }
 
 // NEW: Interface for the form values when creating/updating a PurchaseRecord
@@ -245,6 +245,7 @@ export interface PurchaseRecordFormValues {
   from_registered_supplier: boolean;
   notes: string | null;
   status?: 'ordered' | 'received_by_company' | 'received_by_warehouse' | 'cancelled'; // NEW: Add status to form values
+  received_date?: string | null; // NEW: Add received_date to form values
 }
 
 // NEW: Interface for suggested insumos in PurchaseAnalysis

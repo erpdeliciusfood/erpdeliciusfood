@@ -8,7 +8,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, UtensilsCrossed, Building2, Package, DollarSign } from "lucide-react";
+import { Edit, Trash2, UtensilsCrossed, Building2, Package, DollarSign, Truck, Warehouse, AlertCircle, Scale } from "lucide-react"; // NEW: Truck, Warehouse, AlertCircle, Scale icons
 import { Insumo } from "@/types";
 import { useDeleteInsumo } from "@/hooks/useInsumos";
 import {
@@ -25,6 +25,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Dialog } from "@/components/ui/dialog";
 import InsumoSupplierDetailsDialog from "./InsumoSupplierDetailsDialog";
+import PhysicalCountDialog from "./PhysicalCountDialog"; // NEW: Import PhysicalCountDialog
+import { format } from "date-fns"; // NEW: Import format for dates
+import { es } from "date-fns/locale"; // NEW: Import locale
 
 interface InsumoCardGridProps {
   insumos: Insumo[];
@@ -35,6 +38,8 @@ const InsumoCardGrid: React.FC<InsumoCardGridProps> = ({ insumos, onEdit }) => {
   const deleteMutation = useDeleteInsumo();
   const [isSupplierDetailsDialogOpen, setIsSupplierDetailsDialogOpen] = useState(false);
   const [selectedInsumoForDetails, setSelectedInsumoForDetails] = useState<Insumo | null>(null);
+  const [isPhysicalCountDialogOpen, setIsPhysicalCountDialogOpen] = useState(false); // NEW: State for physical count dialog
+  const [selectedInsumoForPhysicalCount, setSelectedInsumoForPhysicalCount] = useState<Insumo | null>(null); // NEW: State for physical count insumo
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
@@ -48,6 +53,17 @@ const InsumoCardGrid: React.FC<InsumoCardGridProps> = ({ insumos, onEdit }) => {
   const handleCloseSupplierDetails = () => {
     setIsSupplierDetailsDialogOpen(false);
     setSelectedInsumoForDetails(null);
+  };
+
+  // NEW: Handlers for Physical Count Dialog
+  const handleOpenPhysicalCount = (insumo: Insumo) => {
+    setSelectedInsumoForPhysicalCount(insumo);
+    setIsPhysicalCountDialogOpen(true);
+  };
+
+  const handleClosePhysicalCount = () => {
+    setIsPhysicalCountDialogOpen(false);
+    setSelectedInsumoForPhysicalCount(null);
   };
 
   if (insumos.length === 0) {
@@ -74,18 +90,37 @@ const InsumoCardGrid: React.FC<InsumoCardGridProps> = ({ insumos, onEdit }) => {
           </CardHeader>
           <CardContent className="flex-grow space-y-2 text-gray-800 dark:text-gray-200">
             <p className="text-lg">
-              <span className="font-semibold">Stock:</span>{" "}
+              <span className="font-semibold">Stock Actual:</span>{" "}
               <Badge variant={insumo.stock_quantity <= (insumo.min_stock_level ?? 0) ? "destructive" : "outline"} className="text-base px-2 py-1">
-                {insumo.stock_quantity} {insumo.purchase_unit}
+                {insumo.stock_quantity.toFixed(2)} {insumo.purchase_unit}
               </Badge>
             </p>
+            <p className="text-lg flex items-center">
+              <Truck className="mr-1 h-5 w-5 text-blue-600" />
+              <span className="font-semibold">Pendiente Entrega:</span> {insumo.pending_delivery_quantity.toFixed(2)} {insumo.purchase_unit}
+            </p>
+            <p className="text-lg flex items-center">
+              <Warehouse className="mr-1 h-5 w-5 text-purple-600" />
+              <span className="font-semibold">Pendiente Recepción:</span> {insumo.pending_reception_quantity.toFixed(2)} {insumo.purchase_unit}
+            </p>
             <p className="text-lg">
-              <span className="font-semibold">Mínimo:</span> {insumo.min_stock_level ?? 0} {insumo.purchase_unit}
+              <span className="font-semibold">Stock Mínimo:</span> {insumo.min_stock_level ?? 0} {insumo.purchase_unit}
             </p>
             <p className="text-lg flex items-center">
               <DollarSign className="mr-1 h-5 w-5 text-green-600" />
               <span className="font-semibold">Costo Unitario:</span> S/ {insumo.costo_unitario.toFixed(2)} / {insumo.purchase_unit}
             </p>
+            {insumo.last_physical_count_quantity !== null && (
+              <p className="text-lg">
+                <span className="font-semibold">Último Conteo:</span> {insumo.last_physical_count_quantity.toFixed(2)} {insumo.purchase_unit} ({insumo.last_physical_count_date ? format(new Date(insumo.last_physical_count_date), "PPP", { locale: es }) : "N/A"})
+              </p>
+            )}
+            {insumo.discrepancy_quantity !== 0 && (
+              <p className="text-lg flex items-center text-orange-700 dark:text-orange-300">
+                <AlertCircle className="mr-1 h-5 w-5" />
+                <span className="font-semibold">Diferencia:</span> {insumo.discrepancy_quantity.toFixed(2)} {insumo.purchase_unit}
+              </p>
+            )}
             <p className="text-lg">
               <span className="font-semibold">Proveedor:</span> {insumo.supplier_name || "N/A"}
             </p>
@@ -106,6 +141,14 @@ const InsumoCardGrid: React.FC<InsumoCardGridProps> = ({ insumos, onEdit }) => {
               className="h-12 w-12 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out"
             >
               <Building2 className="h-6 w-6 text-gray-600 dark:text-gray-300" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => handleOpenPhysicalCount(insumo)} // NEW: Button to open physical count dialog
+              className="h-12 w-12 rounded-full hover:bg-yellow-100 dark:hover:bg-yellow-900 transition-colors duration-150 ease-in-out"
+            >
+              <Scale className="h-6 w-6 text-yellow-600" />
             </Button>
             <AlertDialog>
               <AlertDialogTrigger asChild>
@@ -144,6 +187,16 @@ const InsumoCardGrid: React.FC<InsumoCardGridProps> = ({ insumos, onEdit }) => {
           <InsumoSupplierDetailsDialog
             insumo={selectedInsumoForDetails}
             onClose={handleCloseSupplierDetails}
+          />
+        )}
+      </Dialog>
+
+      {/* NEW: Dialog for Physical Count */}
+      <Dialog open={isPhysicalCountDialogOpen} onOpenChange={setIsPhysicalCountDialogOpen}>
+        {selectedInsumoForPhysicalCount && (
+          <PhysicalCountDialog
+            insumo={selectedInsumoForPhysicalCount}
+            onClose={handleClosePhysicalCount}
           />
         )}
       </Dialog>

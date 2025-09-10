@@ -46,6 +46,8 @@ const formSchema = z.object({
   supplier_address_at_purchase: z.string().max(255, { message: "La dirección del proveedor no debe exceder los 255 caracteres." }).nullable(),
   from_registered_supplier: z.boolean(),
   notes: z.string().max(500, { message: "Las notas no deben exceder los 500 caracteres." }).nullable(),
+  status: z.enum(['ordered', 'received_by_company', 'received_by_warehouse', 'cancelled']), // NEW: Status field
+  received_date: z.string().nullable(), // NEW: Received date field
 });
 
 interface PurchaseRecordFormProps {
@@ -88,12 +90,15 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
       supplier_address_at_purchase: prefilledSupplierAddress || "",
       from_registered_supplier: true,
       notes: "",
+      status: 'ordered', // NEW: Default status
+      received_date: null, // NEW: Default received date
     },
   });
 
   const quantityPurchased = form.watch("quantity_purchased");
   const unitCostAtPurchase = form.watch("unit_cost_at_purchase");
   const selectedInsumoId = form.watch("insumo_id");
+  const currentStatus = form.watch("status"); // NEW: Watch status
 
   // Find the selected insumo to get its purchase_unit
   const selectedInsumo = availableInsumosData?.data.find((insumo: Insumo) => insumo.id === selectedInsumoId); // Access .data and type insumo
@@ -112,6 +117,8 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         supplier_address_at_purchase: initialData.supplier_address_at_purchase || "",
         from_registered_supplier: initialData.from_registered_supplier,
         notes: initialData.notes || "",
+        status: initialData.status, // NEW: Set initial status
+        received_date: initialData.received_date || null, // NEW: Set initial received date
       });
     } else {
       form.reset({
@@ -125,6 +132,8 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         supplier_address_at_purchase: prefilledSupplierAddress || "",
         from_registered_supplier: true,
         notes: "",
+        status: 'ordered', // NEW: Default status for new records
+        received_date: null, // NEW: Default received date for new records
       });
     }
   }, [initialData, form, prefilledInsumoId, prefilledQuantity, prefilledUnitCost, prefilledSupplierName, prefilledSupplierPhone, prefilledSupplierAddress]);
@@ -149,6 +158,18 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
       }
     }
   }, [selectedInsumoId, availableInsumosData?.data, form, initialData]); // Add availableInsumosData.data to dependencies
+
+  // NEW: Effect to auto-set received_date when status changes to a 'received' state
+  useEffect(() => {
+    if (initialData && initialData.status !== currentStatus) { // Only trigger on status change for existing records
+      if ((currentStatus === 'received_by_company' || currentStatus === 'received_by_warehouse') && !form.getValues("received_date")) {
+        form.setValue("received_date", format(new Date(), "yyyy-MM-dd"), { shouldValidate: true });
+      } else if (currentStatus === 'ordered' || currentStatus === 'cancelled') {
+        form.setValue("received_date", null, { shouldValidate: true });
+      }
+    }
+  }, [currentStatus, form, initialData]);
+
 
   const onSubmit = async (values: PurchaseRecordFormValues) => {
     if (initialData) {
@@ -388,6 +409,83 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
             </FormItem>
           )}
         />
+
+        {initialData && ( // Only show status and received_date when editing an existing record
+          <>
+            <FormField
+              control={form.control}
+              name="status"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Estado de la Compra</FormLabel>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    disabled={isLoading}
+                  >
+                    <FormControl>
+                      <SelectTrigger className="h-12 text-base">
+                        <SelectValue placeholder="Selecciona el estado" />
+                      </SelectTrigger>
+                    </FormControl>
+                    <SelectContent>
+                      <SelectItem value="ordered">Ordenado</SelectItem>
+                      <SelectItem value="received_by_company">Recibido por Empresa</SelectItem>
+                      <SelectItem value="received_by_warehouse">Recibido en Almacén</SelectItem>
+                      <SelectItem value="cancelled">Cancelado</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+            {(currentStatus === 'received_by_company' || currentStatus === 'received_by_warehouse') && (
+              <FormField
+                control={form.control}
+                name="received_date"
+                render={({ field }) => (
+                  <FormItem className="flex flex-col">
+                    <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Fecha de Recepción</FormLabel>
+                    <Popover>
+                      <PopoverTrigger asChild>
+                        <FormControl>
+                          <Button
+                            variant={"outline"}
+                            className={cn(
+                              "w-full pl-3 text-left font-normal h-12 text-base",
+                              !field.value && "text-muted-foreground"
+                            )}
+                            disabled={isLoading}
+                          >
+                            {field.value ? (
+                              format(new Date(field.value), "PPP", { locale: es })
+                            ) : (
+                              <span>Selecciona una fecha de recepción</span>
+                            )}
+                            <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                          </Button>
+                        </FormControl>
+                      </PopoverTrigger>
+                      <PopoverContent className="w-auto p-0" align="start">
+                        <Calendar
+                          mode="single"
+                          selected={field.value ? new Date(field.value) : undefined}
+                          onSelect={(date) => field.onChange(date ? formatISO(date, { representation: 'date' }) : null)}
+                          disabled={(date) =>
+                            date > new Date() || date < new Date("1900-01-01") || isLoading
+                          }
+                          initialFocus
+                          locale={es}
+                        />
+                      </PopoverContent>
+                    </Popover>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
+          </>
+        )}
 
         <FormField
           control={form.control}

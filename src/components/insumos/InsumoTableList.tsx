@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, UtensilsCrossed, Building2, DollarSign, Package } from "lucide-react";
+import { Edit, Trash2, UtensilsCrossed, Building2, DollarSign, Package, Scale } from "lucide-react"; // REMOVED: Truck, Warehouse, AlertCircle. KEPT: Scale
 import { Insumo } from "@/types";
 import { useDeleteInsumo } from "@/hooks/useInsumos";
 import {
@@ -25,6 +25,9 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Dialog } from "@/components/ui/dialog";
 import InsumoSupplierDetailsDialog from "./InsumoSupplierDetailsDialog";
+import PhysicalCountDialog from "./PhysicalCountDialog"; // NEW: Import PhysicalCountDialog
+// REMOVED: import { format } from "date-fns";
+// REMOVED: import { es } from "date-fns/locale";
 
 interface InsumoTableListProps {
   insumos: Insumo[];
@@ -35,6 +38,8 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
   const deleteMutation = useDeleteInsumo();
   const [isSupplierDetailsDialogOpen, setIsSupplierDetailsDialogOpen] = useState(false);
   const [selectedInsumoForDetails, setSelectedInsumoForDetails] = useState<Insumo | null>(null);
+  const [isPhysicalCountDialogOpen, setIsPhysicalCountDialogOpen] = useState(false); // NEW: State for physical count dialog
+  const [selectedInsumoForPhysicalCount, setSelectedInsumoForPhysicalCount] = useState<Insumo | null>(null); // NEW: State for physical count insumo
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
@@ -48,6 +53,17 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
   const handleCloseSupplierDetails = () => {
     setIsSupplierDetailsDialogOpen(false);
     setSelectedInsumoForDetails(null);
+  };
+
+  // NEW: Handlers for Physical Count Dialog
+  const handleOpenPhysicalCount = (insumo: Insumo) => {
+    setSelectedInsumoForPhysicalCount(insumo);
+    setIsPhysicalCountDialogOpen(true);
+  };
+
+  const handleClosePhysicalCount = () => {
+    setIsPhysicalCountDialogOpen(false);
+    setSelectedInsumoForPhysicalCount(null);
   };
 
   if (insumos.length === 0) {
@@ -66,7 +82,9 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
           <TableRow>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Nombre</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Categoría</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Stock</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Stock Actual</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Pendiente Entrega</TableHead> {/* NEW */}
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Pendiente Recepción</TableHead> {/* NEW */}
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Mínimo</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Unitario (S/)</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Proveedor</TableHead>
@@ -85,8 +103,14 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
               </TableCell>
               <TableCell className="text-right text-base py-3 px-6">
                 <Badge variant={insumo.stock_quantity <= (insumo.min_stock_level ?? 0) ? "destructive" : "outline"} className="text-base px-2 py-1">
-                  {insumo.stock_quantity} {insumo.purchase_unit}
+                  {insumo.stock_quantity.toFixed(2)} {insumo.purchase_unit}
                 </Badge>
+              </TableCell>
+              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+                {insumo.pending_delivery_quantity.toFixed(2)} {insumo.purchase_unit}
+              </TableCell>
+              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+                {insumo.pending_reception_quantity.toFixed(2)} {insumo.purchase_unit}
               </TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
                 {insumo.min_stock_level ?? 0} {insumo.purchase_unit}
@@ -114,6 +138,14 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
                   className="h-10 w-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out"
                 >
                   <Building2 className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleOpenPhysicalCount(insumo)} // NEW: Button to open physical count dialog
+                  className="h-10 w-10 rounded-full hover:bg-yellow-100 dark:hover:bg-yellow-900 transition-colors duration-150 ease-in-out"
+                >
+                  <Scale className="h-5 w-5 text-yellow-600" />
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -154,6 +186,16 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
           <InsumoSupplierDetailsDialog
             insumo={selectedInsumoForDetails}
             onClose={handleCloseSupplierDetails}
+          />
+        )}
+      </Dialog>
+
+      {/* NEW: Dialog for Physical Count */}
+      <Dialog open={isPhysicalCountDialogOpen} onOpenChange={setIsPhysicalCountDialogOpen}>
+        {selectedInsumoForPhysicalCount && (
+          <PhysicalCountDialog
+            insumo={selectedInsumoForPhysicalCount}
+            onClose={handleClosePhysicalCount}
           />
         )}
       </Dialog>
