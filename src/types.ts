@@ -103,6 +103,14 @@ export interface EventType {
   created_at: string;
 }
 
+// NEW: Interface for individual plato/receta in menu form
+export interface MenuPlatoFormValue {
+  meal_service_id: string;
+  plato_id: string;
+  dish_category: string;
+  quantity_needed: number;
+}
+
 export interface Menu {
   id: string;
   user_id: string;
@@ -113,6 +121,15 @@ export interface Menu {
   created_at: string;
   event_types?: EventType;
   menu_platos?: MenuPlato[];
+}
+
+// NEW: Interface for menu form values
+export interface MenuFormValues {
+  title: string;
+  description: string | null;
+  menu_date: string | null;
+  event_type_id: string | null;
+  platos_por_servicio: MenuPlatoFormValue[];
 }
 
 export interface MenuPlato {
