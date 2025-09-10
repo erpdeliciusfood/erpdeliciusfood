@@ -11,9 +11,14 @@ export interface Insumo {
   last_price_update: string | null;
   purchase_unit: string;
   conversion_factor: number;
-  min_stock_level: number | null; // Cambiado a permitir null
+  min_stock_level: number | null;
   category: string;
   created_at: string;
+  pending_reception_quantity: number; // NEW: Stock comprado, pendiente de ingreso al almacén
+  pending_delivery_quantity: number; // NEW: Stock en proceso de compra
+  last_physical_count_quantity: number; // NEW: Último conteo físico
+  last_physical_count_date: string | null; // NEW: Fecha del último conteo físico
+  discrepancy_quantity: number; // NEW: Diferencia entre stock_quantity y last_physical_count_quantity
 }
 
 export interface InsumoFormValues {
@@ -25,9 +30,14 @@ export interface InsumoFormValues {
   conversion_factor: number;
   min_stock_level: number;
   category: string;
-  supplier_name?: string | null; // Made optional to allow undefined
-  supplier_phone?: string | null; // Made optional to allow undefined
-  supplier_address?: string | null; // Made optional to allow undefined
+  supplier_name?: string | null;
+  supplier_phone?: string | null;
+  supplier_address?: string | null;
+  pending_reception_quantity?: number; // NEW: Optional for form, managed by system
+  pending_delivery_quantity?: number; // NEW: Optional for form, managed by system
+  last_physical_count_quantity?: number; // NEW: Optional for form, managed by system
+  last_physical_count_date?: string | null; // NEW: Optional for form, managed by system
+  discrepancy_quantity?: number; // NEW: Optional for form, managed by system
 }
 
 export interface Receta {
@@ -165,11 +175,11 @@ export interface StockMovement {
   id: string;
   user_id: string;
   insumo_id: string;
-  movement_type: 'purchase_in' | 'consumption_out' | 'adjustment_in' | 'adjustment_out' | 'daily_prep_out'; // NEW: Added daily_prep_out
+  movement_type: 'purchase_in' | 'consumption_out' | 'adjustment_in' | 'adjustment_out' | 'daily_prep_out' | 'reception_in'; // NEW: Added reception_in
   quantity_change: number;
   new_stock_quantity: number;
   source_document_id: string | null;
-  menu_id?: string | null; // NEW: Added menu_id for daily_prep_out
+  menu_id?: string | null;
   notes: string | null;
   created_at: string;
   insumos?: Insumo;
@@ -177,12 +187,12 @@ export interface StockMovement {
 
 export interface StockMovementFormValues {
   insumo_id: string;
-  movement_type: 'purchase_in' | 'adjustment_in' | 'adjustment_out' | 'daily_prep_out'; // NEW: Added daily_prep_out
+  movement_type: 'purchase_in' | 'adjustment_in' | 'adjustment_out' | 'daily_prep_out' | 'reception_in'; // NEW: Added reception_in
   quantity_change?: number;
   total_purchase_amount?: number;
   total_purchase_quantity?: number;
   notes: string | null;
-  menu_id?: string | null; // NEW: Added menu_id
+  menu_id?: string | null;
 }
 
 export interface InsumoSupplierHistory {
@@ -218,7 +228,8 @@ export interface PurchaseRecord {
   supplier_address_at_purchase: string | null;
   from_registered_supplier: boolean;
   notes: string | null;
-  insumos?: Insumo; // NEW: Added insumos relationship
+  status: 'ordered' | 'received_by_company' | 'received_by_warehouse' | 'cancelled'; // NEW: Add status to PurchaseRecord
+  insumos?: Insumo;
 }
 
 // NEW: Interface for the form values when creating/updating a PurchaseRecord
@@ -233,6 +244,7 @@ export interface PurchaseRecordFormValues {
   supplier_address_at_purchase: string | null;
   from_registered_supplier: boolean;
   notes: string | null;
+  status?: 'ordered' | 'received_by_company' | 'received_by_warehouse' | 'cancelled'; // NEW: Add status to form values
 }
 
 // NEW: Interface for suggested insumos in PurchaseAnalysis
