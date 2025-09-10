@@ -19,16 +19,14 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (_event, currentSession) => {
       if (currentSession) {
         setSession(currentSession);
         setUser(currentSession.user);
-        // Removed navigate('/') from SIGNED_IN and USER_UPDATED events
-        // This prevents unwanted redirects when switching tabs or refreshing
       } else {
         setSession(null);
         setUser(null);
-        navigate('/login'); // Redirect to login page if no session
+        // Removed navigate('/login') from here. The ProtectedRoute now handles redirection.
       }
       setIsLoading(false);
     });
