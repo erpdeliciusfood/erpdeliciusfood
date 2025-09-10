@@ -30,11 +30,11 @@ const MenuFormSheet: React.FC<MenuFormSheetProps> = ({
           initialData={editingMenu}
           onSuccess={() => {
             setIsFormOpen(false);
-            setSelectedDate(undefined); // Clear selected date after form submission
+            // No se limpia selectedDate aquí para mantener la selección en el calendario
           }}
           onCancel={() => {
             setIsFormOpen(false);
-            setSelectedDate(undefined); // Clear selected date if cancelled
+            // No se limpia selectedDate aquí para mantener la selección en el calendario
           }}
           preselectedDate={selectedDate} // Pass selectedDate to MenuForm
         />
