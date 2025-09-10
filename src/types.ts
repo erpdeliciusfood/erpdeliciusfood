@@ -103,21 +103,6 @@ export interface EventType {
   created_at: string;
 }
 
-export interface MenuPlatoFormValues {
-  meal_service_id: string;
-  plato_id: string;
-  dish_category: string;
-  quantity_needed: number;
-}
-
-export interface MenuFormValues {
-  title: string;
-  description: string | null;
-  menu_date: string | null;
-  event_type_id: string | null;
-  platos_por_servicio: MenuPlatoFormValues[];
-}
-
 export interface Menu {
   id: string;
   user_id: string;

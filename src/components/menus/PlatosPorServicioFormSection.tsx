@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MealService, type MenuFormValues, Receta } from "@/types"; // Changed to type import
+import { MealService, MenuFormValues, Receta } from "@/types"; // Changed Plato to Receta
 
 interface PlatosPorServicioFormSectionProps {
   isLoading: boolean;

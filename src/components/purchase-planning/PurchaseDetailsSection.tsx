@@ -8,29 +8,22 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
-import { format, formatISO } from "date-fns";
-import { es } from "date-fns/locale";
-import { CalendarIcon } from "lucide-react";
 import { PurchaseRecordFormValues } from "@/types";
 
 interface PurchaseDetailsSectionProps {
   isLoading: boolean;
   selectedInsumoId: string;
   purchaseUnit: string;
+  lastChangedField: 'quantity' | 'unitCost' | 'total' | null;
   setLastChangedField: (field: 'quantity' | 'unitCost' | 'total' | null) => void;
-  lastChangedField: 'quantity' | 'unitCost' | 'total' | null; // NEW: Add lastChangedField prop
 }
 
 const PurchaseDetailsSection: React.FC<PurchaseDetailsSectionProps> = ({
   isLoading,
   selectedInsumoId,
   purchaseUnit,
+  lastChangedField,
   setLastChangedField,
-  lastChangedField, // NEW: Destructure lastChangedField
 }) => {
   const form = useFormContext<PurchaseRecordFormValues>();
 
@@ -58,61 +51,15 @@ const PurchaseDetailsSection: React.FC<PurchaseDetailsSectionProps> = ({
       }
     };
 
-    // Only perform calculation if a field was explicitly marked as last changed
     if (lastChangedField === 'quantity' || lastChangedField === 'unitCost') {
       calculateTotal();
     } else if (lastChangedField === 'total') {
       calculateUnitCost();
     }
-  }, [quantityPurchased, unitCostAtPurchase, totalAmount, form, lastChangedField]); // Add lastChangedField to dependencies
-
+  }, [quantityPurchased, unitCostAtPurchase, totalAmount, form, lastChangedField]);
 
   return (
     <>
-      <FormField
-        control={form.control}
-        name="purchase_date"
-        render={({ field }) => (
-          <FormItem className="flex flex-col">
-            <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Fecha de Compra</FormLabel>
-            <Popover>
-              <PopoverTrigger asChild>
-                <FormControl>
-                  <Button
-                    variant={"outline"}
-                    className={cn(
-                      "w-full pl-3 text-left font-normal h-12 text-base",
-                      !field.value && "text-muted-foreground"
-                    )}
-                    disabled={isLoading}
-                  >
-                    {field.value ? (
-                      format(new Date(field.value), "PPP", { locale: es })
-                    ) : (
-                      <span>Selecciona una fecha</span>
-                    )}
-                    <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                  </Button>
-                </FormControl>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-0" align="start">
-                <Calendar
-                  mode="single"
-                  selected={field.value ? new Date(field.value) : undefined}
-                  onSelect={(date) => field.onChange(date ? formatISO(date, { representation: 'date' }) : null)}
-                  disabled={(date) =>
-                    date > new Date() || date < new Date("1900-01-01") || isLoading
-                  }
-                  initialFocus
-                  locale={es}
-                />
-              </PopoverContent>
-            </Popover>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
       <FormField
         control={form.control}
         name="quantity_purchased"
@@ -130,11 +77,6 @@ const PurchaseDetailsSection: React.FC<PurchaseDetailsSectionProps> = ({
                 onChange={(e) => {
                   field.onChange(parseFloat(e.target.value));
                   setLastChangedField('quantity');
-                }}
-                onBlur={() => {
-                  setLastChangedField(null); // Clear after blur to allow new calculations
-                  const calculatedTotal = quantityPurchased * unitCostAtPurchase;
-                  form.setValue("total_amount", parseFloat(calculatedTotal.toFixed(2)), { shouldValidate: true });
                 }}
                 className="h-12 text-base"
                 disabled={isLoading}
@@ -161,11 +103,6 @@ const PurchaseDetailsSection: React.FC<PurchaseDetailsSectionProps> = ({
                   field.onChange(parseFloat(e.target.value));
                   setLastChangedField('unitCost');
                 }}
-                onBlur={() => {
-                  setLastChangedField(null); // Clear after blur to allow new calculations
-                  const calculatedTotal = quantityPurchased * unitCostAtPurchase;
-                  form.setValue("total_amount", parseFloat(calculatedTotal.toFixed(2)), { shouldValidate: true });
-                }}
                 className="h-12 text-base"
                 disabled={isLoading}
               />
@@ -190,13 +127,6 @@ const PurchaseDetailsSection: React.FC<PurchaseDetailsSectionProps> = ({
                 onChange={(e) => {
                   field.onChange(parseFloat(e.target.value));
                   setLastChangedField('total');
-                }}
-                onBlur={() => {
-                  setLastChangedField(null); // Clear after blur to allow new calculations
-                  if (quantityPurchased > 0) {
-                    const calculatedUnitCost = totalAmount / quantityPurchased;
-                    form.setValue("unit_cost_at_purchase", parseFloat(calculatedUnitCost.toFixed(2)), { shouldValidate: true });
-                  }
                 }}
                 className="h-12 text-base"
                 disabled={isLoading}

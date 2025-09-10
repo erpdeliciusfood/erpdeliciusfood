@@ -118,7 +118,7 @@ const SupplierDetailsSection: React.FC<SupplierDetailsSectionProps> = ({
         </div>
       )}
 
-      {(!selectedInsumoId || !fromRegisteredSupplier) && ( // Show these fields if no insumo selected OR not from registered supplier
+      {(!selectedInsumoId || !fromRegisteredSupplier) && (
         <div className="space-y-6">
           <FormField
             control={form.control}
