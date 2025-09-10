@@ -15,6 +15,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { DateRange } from "react-day-picker";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
 import PurchaseAnalysis from "@/components/purchase-planning/PurchaseAnalysis"; // Updated import path
+import { InsumoNeeded } from "@/types"; // NEW: Import InsumoNeeded for filter type
 
 const Reports = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -22,6 +23,7 @@ const Reports = () => {
     to: endOfMonth(new Date()),
   });
   const [periodType, setPeriodType] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('monthly');
+  const [selectedReasonFilter, setSelectedReasonFilter] = useState<'all' | InsumoNeeded['reason_for_purchase_suggestion']>('all'); // NEW: State for reason filter
 
   const { data: insumoData, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos();
 
@@ -148,7 +150,7 @@ const Reports = () => {
           <>
             <FinancialOverviewReport startDate={dateRange.from} endDate={dateRange.to} />
             <ConsumptionReport startDate={dateRange.from} endDate={dateRange.to} />
-            <PurchaseAnalysis startDate={dateRange.from} endDate={dateRange.to} /> {/* Using the consolidated component */}
+            <PurchaseAnalysis startDate={dateRange.from} endDate={dateRange.to} selectedReasonFilter={selectedReasonFilter} /> {/* Using the consolidated component */}
           </>
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">

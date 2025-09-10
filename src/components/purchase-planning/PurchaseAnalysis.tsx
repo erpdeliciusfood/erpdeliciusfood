@@ -17,6 +17,7 @@ import SuggestedPurchaseListContent from "@/components/purchase-planning/Suggest
 interface PurchaseAnalysisProps {
   startDate: Date;
   endDate: Date;
+  selectedReasonFilter: 'all' | InsumoNeeded['reason_for_purchase_suggestion']; // NEW: Prop for reason filter
 }
 
 interface InsumoNeeded extends Insumo {
@@ -31,7 +32,7 @@ interface InsumoNeeded extends Insumo {
   reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert'; // NEW: Reason for suggestion
 }
 
-const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate }) => {
+const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate, selectedReasonFilter }) => { // NEW: Destructure selectedReasonFilter
   // Fetch menus directly filtered by date range for efficiency
   const { data: menus, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenus(
     format(startDate, "yyyy-MM-dd"),
@@ -135,11 +136,16 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate 
       }
     });
 
+    // Apply reason filter
+    const filteredResult = selectedReasonFilter === 'all'
+      ? result
+      : result.filter(insumo => insumo.reason_for_purchase_suggestion === selectedReasonFilter);
+
     return {
-      insumosForPurchase: result.sort((a, b) => b.purchase_suggestion_rounded - a.purchase_suggestion_rounded), // Sort by highest purchase suggestion (rounded)
+      insumosForPurchase: filteredResult.sort((a, b) => b.purchase_suggestion_rounded - a.purchase_suggestion_rounded), // Sort by highest purchase suggestion (rounded)
       totalEstimatedPurchaseCost: parseFloat(overallEstimatedCost.toFixed(2)),
     };
-  }, [menus, allInsumosData?.data, startDate, endDate, isLoading, isError]); // Add allInsumosData.data to dependencies
+  }, [menus, allInsumosData?.data, startDate, endDate, isLoading, isError, selectedReasonFilter]); // NEW: Add selectedReasonFilter to dependencies
 
   const handleOpenSupplierDetails = (insumo: Insumo) => {
     setSelectedInsumoForDetails(insumo);

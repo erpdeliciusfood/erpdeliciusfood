@@ -12,7 +12,9 @@ import PurchaseAnalysis from "@/components/purchase-planning/PurchaseAnalysis";
 import { DateRange } from "react-day-picker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
-import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // NEW: Import Select components
+import { InsumoNeeded } from "@/types"; // NEW: Import InsumoNeeded type for filter options
 
 const PurchasePlanning = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -21,6 +23,7 @@ const PurchasePlanning = () => {
   });
   const [periodType, setPeriodType] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('monthly');
   const [isRegisterPurchaseFormOpen, setIsRegisterPurchaseFormOpen] = useState(false);
+  const [selectedReasonFilter, setSelectedReasonFilter] = useState<'all' | InsumoNeeded['reason_for_purchase_suggestion']>('all'); // NEW: State for reason filter
 
   const handlePeriodChange = (period: 'daily' | 'weekly' | 'monthly' | 'custom') => {
     setPeriodType(period);
@@ -119,6 +122,21 @@ const PurchasePlanning = () => {
               </PopoverContent>
             </Popover>
           )}
+
+          {/* NEW: Filter by Reason */}
+          <Select onValueChange={(value: 'all' | InsumoNeeded['reason_for_purchase_suggestion']) => setSelectedReasonFilter(value)} value={selectedReasonFilter}>
+            <SelectTrigger className="w-full md:w-[200px] h-12 text-base">
+              <SelectValue placeholder="Filtrar por motivo" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">Todos los Motivos</SelectItem>
+              <SelectItem value="menu_demand">Demanda de Menú</SelectItem>
+              <SelectItem value="min_stock_level">Stock Mínimo</SelectItem>
+              <SelectItem value="both">Ambos</SelectItem>
+              <SelectItem value="zero_stock_alert">Stock Cero</SelectItem>
+            </SelectContent>
+          </Select>
+
           <Dialog open={isRegisterPurchaseFormOpen} onOpenChange={setIsRegisterPurchaseFormOpen}>
             <DialogTrigger asChild>
               <Button
@@ -145,7 +163,7 @@ const PurchasePlanning = () => {
 
       <div className="flex-grow">
         {dateRange.from && dateRange.to ? (
-          <PurchaseAnalysis startDate={dateRange.from} endDate={dateRange.to} />
+          <PurchaseAnalysis startDate={dateRange.from} endDate={dateRange.to} selectedReasonFilter={selectedReasonFilter} />
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">
             <ShoppingBag className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
