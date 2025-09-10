@@ -37,7 +37,7 @@ export const createPurchaseRecord = async (
     total_purchase_amount: newRecord.total_amount,
     total_purchase_quantity: newRecord.quantity_purchased,
     notes: `Compra registrada: ${newRecord.notes || 'N/A'}`,
-  });
+  }, user.id); // NEW: Pass the user.id here
 
   // Fetch the complete record with insumo details for the return value
   const { data: completeRecord, error: fetchError } = await supabase

@@ -2,6 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getStockMovements, createStockMovement } from "@/integrations/supabase/stockMovements";
 import { StockMovement, StockMovementFormValues } from "@/types";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
+import { useSession } from "@/contexts/SessionContext"; // NEW: Import useSession
 
 export const useStockMovements = () => {
   return useQuery<StockMovement[], Error>({
@@ -12,8 +13,15 @@ export const useStockMovements = () => {
 
 export const useAddStockMovement = () => {
   const queryClient = useQueryClient();
+  const { user } = useSession(); // NEW: Get user from session
+
   return useMutation<StockMovement, Error, StockMovementFormValues, { toastId: string }>({
-    mutationFn: createStockMovement,
+    mutationFn: async (movementData) => { // NEW: Use an async function to pass userId
+      if (!user?.id) {
+        throw new Error("User not authenticated.");
+      }
+      return createStockMovement(movementData, user.id);
+    },
     onMutate: () => {
       const toastId: string = showLoading("Registrando movimiento de stock...");
       return { toastId };

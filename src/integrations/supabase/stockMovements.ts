@@ -12,7 +12,8 @@ export const getStockMovements = async (): Promise<StockMovement[]> => {
 };
 
 export const createStockMovement = async (
-  movementData: StockMovementFormValues
+  movementData: StockMovementFormValues,
+  userId: string // NEW: Add userId parameter
 ): Promise<StockMovement> => {
   const { insumo_id, movement_type, quantity_change, total_purchase_amount, total_purchase_quantity, notes, menu_id } = movementData;
 
@@ -72,6 +73,7 @@ export const createStockMovement = async (
       new_stock_quantity: parseFloat(updatedInsumo.stock_quantity.toFixed(2)), // Use the actual updated stock
       notes,
       menu_id: menu_id || null, // NEW: Include menu_id
+      user_id: userId, // NEW: Include the user_id
     })
     .select("*, insumos(id, nombre, purchase_unit, base_unit, conversion_factor)")
     .single();
