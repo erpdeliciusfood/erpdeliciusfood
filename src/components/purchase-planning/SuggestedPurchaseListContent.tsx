@@ -7,7 +7,7 @@ import PurchaseRecordForm from "./PurchaseRecordForm";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"; // Changed Dialog to Sheet
 import { useAddPurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
@@ -195,8 +195,8 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
                   {insumo.nombre}
                 </label>
               </div>
-              <Dialog open={isIndividualRegisterFormOpen && selectedInsumoForIndividualRegistration?.id === insumo.id} onOpenChange={setIsIndividualRegisterFormOpen}>
-                <DialogTrigger asChild>
+              <Sheet open={isIndividualRegisterFormOpen && selectedInsumoForIndividualRegistration?.id === insumo.id} onOpenChange={setIsIndividualRegisterFormOpen}>
+                <SheetTrigger asChild>
                   <Button
                     variant="outline"
                     size="sm"
@@ -207,13 +207,13 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
                     <PlusCircle className="mr-2 h-4 w-4" />
                     Registrar Compra
                   </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                </SheetTrigger>
+                <SheetContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
+                  <SheetHeader>
+                    <SheetTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                       Registrar Compra de {selectedInsumoForIndividualRegistration?.nombre}
-                    </DialogTitle>
-                  </DialogHeader>
+                    </SheetTitle>
+                  </SheetHeader>
                   {selectedInsumoForIndividualRegistration && (
                     <PurchaseRecordForm
                       prefilledInsumoId={selectedInsumoForIndividualRegistration.id}
@@ -226,8 +226,8 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
                       onCancel={handleIndividualRegisterFormClose}
                     />
                   )}
-                </DialogContent>
-              </Dialog>
+                </SheetContent>
+              </Sheet>
             </CardHeader>
             <CardContent className="text-gray-700 dark:text-gray-300">
               <p className="mb-1">

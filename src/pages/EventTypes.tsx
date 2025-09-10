@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet"; // Changed Dialog to Sheet
 import { Loader2, PlusCircle } from "lucide-react"; // Removed CalendarDays
 import { useEventTypes } from "@/hooks/useEventTypes";
 import EventTypeList from "@/components/event-types/EventTypeList";
@@ -51,8 +51,8 @@ const EventTypes = () => {
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-4xl font-extrabold text-gray-900 dark:text-gray-100">Gestión de Tipos de Evento</h1>
-        <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-          <DialogTrigger asChild>
+        <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
+          <SheetTrigger asChild>
             <Button
               onClick={handleAddClick}
               className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
@@ -60,20 +60,20 @@ const EventTypes = () => {
               <PlusCircle className="mr-3 h-6 w-6" />
               Añadir Tipo de Evento
             </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          </SheetTrigger>
+          <SheetContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6">
+            <SheetHeader>
+              <SheetTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
                 {editingEventType ? "Editar Tipo de Evento" : "Añadir Nuevo Tipo de Evento"}
-              </DialogTitle>
-            </DialogHeader>
+              </SheetTitle>
+            </SheetHeader>
             <EventTypeForm
               initialData={editingEventType}
               onSuccess={handleFormClose}
               onCancel={handleFormClose}
             />
-          </DialogContent>
-        </Dialog>
+          </SheetContent>
+        </Sheet>
       </div>
 
       <div className="flex-grow">
