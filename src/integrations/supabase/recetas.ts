@@ -1,8 +1,8 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Plato, PlatoFormValues } from "@/types";
+import { Receta, RecetaFormValues } from "@/types"; // Changed type imports
 
 // Helper function to calculate production cost
-const calculatePlatoCosts = async (
+const calculateRecetaCosts = async ( // Changed function name
   insumosData: { insumo_id: string; cantidad_necesaria: number }[],
 ) => {
   let totalProductionCost = 0;
@@ -27,19 +27,19 @@ const calculatePlatoCosts = async (
   };
 };
 
-export const getPlatos = async (): Promise<Plato[]> => {
+export const getRecetas = async (): Promise<Receta[]> => { // Changed function name and type
   const { data, error } = await supabase
-    .from("platos")
-    .select("*, plato_insumos(*, insumos(*))") // Fetch plato_insumos and nested insumos
+    .from("platos") // Keep table name as 'platos' in DB
+    .select("*, plato_insumos(*, insumos(*))")
     .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);
   return data;
 };
 
-export const getPlatoById = async (id: string): Promise<Plato | null> => {
+export const getRecetaById = async (id: string): Promise<Receta | null> => { // Changed function name and type
   const { data, error } = await supabase
-    .from("platos")
+    .from("platos") // Keep table name as 'platos' in DB
     .select("*, plato_insumos(*, insumos(*))")
     .eq("id", id)
     .single();
@@ -51,30 +51,30 @@ export const getPlatoById = async (id: string): Promise<Plato | null> => {
   return data;
 };
 
-export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> => {
-  const { nombre, descripcion, insumos } = platoData;
+export const createReceta = async (recetaData: RecetaFormValues): Promise<Receta> => { // Changed function name and type
+  const { nombre, descripcion, insumos } = recetaData;
 
   // Get authenticated user ID
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) throw new Error("User not authenticated.");
 
   // Calculate production cost
-  const { costo_produccion } = await calculatePlatoCosts(insumos);
+  const { costo_produccion } = await calculateRecetaCosts(insumos); // Changed function name
 
   // Insert the main plato with calculated costs and user_id
-  const { data: newPlato, error: platoError } = await supabase
-    .from("platos")
+  const { data: newReceta, error: platoError } = await supabase // Changed variable name
+    .from("platos") // Keep table name as 'platos' in DB
     .insert({ nombre, descripcion, costo_produccion, user_id: user.id })
     .select()
     .single();
 
   if (platoError) throw new Error(platoError.message);
-  if (!newPlato) throw new Error("Failed to create plato.");
+  if (!newReceta) throw new Error("Failed to create receta."); // Changed text
 
   // Insert associated insumos
   if (insumos && insumos.length > 0) {
     const platoInsumosToInsert = insumos.map((item) => ({
-      plato_id: newPlato.id,
+      plato_id: newReceta.id, // Reference newReceta.id
       insumo_id: item.insumo_id,
       cantidad_necesaria: item.cantidad_necesaria,
     }));
@@ -84,38 +84,38 @@ export const createPlato = async (platoData: PlatoFormValues): Promise<Plato> =>
       .insert(platoInsumosToInsert);
 
     if (platoInsumoError) {
-      throw new Error(`Failed to add insumos to plato: ${platoInsumoError.message}`);
+      throw new Error(`Failed to add insumos to receta: ${platoInsumoError.message}`); // Changed text
     }
   }
 
   // Fetch the complete plato with its insumos for the return value
-  const { data: completePlato, error: fetchError } = await supabase
-    .from("platos")
+  const { data: completeReceta, error: fetchError } = await supabase // Changed variable name
+    .from("platos") // Keep table name as 'platos' in DB
     .select("*, plato_insumos(*, insumos(*))")
-    .eq("id", newPlato.id)
+    .eq("id", newReceta.id) // Reference newReceta.id
     .single();
 
-  if (fetchError) throw new Error(`Failed to fetch complete plato: ${fetchError.message}`);
+  if (fetchError) throw new Error(`Failed to fetch complete receta: ${fetchError.message}`); // Changed text
 
-  return completePlato;
+  return completeReceta;
 };
 
-export const updatePlato = async (id: string, platoData: PlatoFormValues): Promise<Plato> => {
-  const { nombre, descripcion, insumos } = platoData;
+export const updateReceta = async (id: string, recetaData: RecetaFormValues): Promise<Receta> => { // Changed function name and type
+  const { nombre, descripcion, insumos } = recetaData;
 
   // Calculate production cost
-  const { costo_produccion } = await calculatePlatoCosts(insumos);
+  const { costo_produccion } = await calculateRecetaCosts(insumos); // Changed function name
 
   // Update the main plato with calculated costs
-  const { data: updatedPlato, error: platoError } = await supabase
-    .from("platos")
+  const { data: updatedReceta, error: platoError } = await supabase // Changed variable name
+    .from("platos") // Keep table name as 'platos' in DB
     .update({ nombre, descripcion, costo_produccion })
     .eq("id", id)
     .select()
     .single();
 
   if (platoError) throw new Error(platoError.message);
-  if (!updatedPlato) throw new Error("Failed to update plato.");
+  if (!updatedReceta) throw new Error("Failed to update receta."); // Changed text
 
   // Delete existing plato_insumos for this plato
   const { error: deleteError } = await supabase
@@ -123,12 +123,12 @@ export const updatePlato = async (id: string, platoData: PlatoFormValues): Promi
     .delete()
     .eq("plato_id", id);
 
-  if (deleteError) throw new Error(`Failed to delete existing insumos for plato: ${deleteError.message}`);
+  if (deleteError) throw new Error(`Failed to delete existing insumos for receta: ${deleteError.message}`); // Changed text
 
   // Insert new associated insumos
   if (insumos && insumos.length > 0) {
     const platoInsumosToInsert = insumos.map((item) => ({
-      plato_id: updatedPlato.id,
+      plato_id: updatedReceta.id, // Reference updatedReceta.id
       insumo_id: item.insumo_id,
       cantidad_necesaria: item.cantidad_necesaria,
     }));
@@ -138,23 +138,23 @@ export const updatePlato = async (id: string, platoData: PlatoFormValues): Promi
       .insert(platoInsumosToInsert);
 
     if (platoInsumoError) {
-      throw new Error(`Failed to add new insumos to plato: ${platoInsumoError.message}`);
+      throw new Error(`Failed to add new insumos to receta: ${platoInsumoError.message}`); // Changed text
     }
   }
 
   // Fetch the complete plato with its insumos for the return value
-  const { data: completePlato, error: fetchError } = await supabase
-    .from("platos")
+  const { data: completeReceta, error: fetchError } = await supabase // Changed variable name
+    .from("platos") // Keep table name as 'platos' in DB
     .select("*, plato_insumos(*, insumos(*))")
-    .eq("id", updatedPlato.id)
+    .eq("id", updatedReceta.id) // Reference updatedReceta.id
     .single();
 
-  if (fetchError) throw new Error(`Failed to fetch complete plato: ${fetchError.message}`);
+  if (fetchError) throw new Error(`Failed to fetch complete receta: ${fetchError.message}`); // Changed text
 
-  return completePlato;
+  return completeReceta;
 };
 
-export const deletePlato = async (id: string): Promise<void> => {
-  const { error } = await supabase.from("platos").delete().eq("id", id);
+export const deleteReceta = async (id: string): Promise<void> => { // Changed function name
+  const { error } = await supabase.from("platos").delete().eq("id", id); // Keep table name as 'platos' in DB
   if (error) throw new Error(error.message);
 };

@@ -18,13 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MealService, MenuFormValues, Plato } from "@/types"; // Removed MealType
+import { MealService, MenuFormValues, Receta } from "@/types"; // Changed Plato to Receta
 
 interface PlatosPorServicioFormSectionProps {
   isLoading: boolean;
-  availablePlatos: Plato[] | undefined;
+  availablePlatos: Receta[] | undefined; // Changed type
   availableMealServices: MealService[] | undefined;
-  // availableMealTypes: MealType[] | undefined; // REMOVED
 }
 
 const DISH_CATEGORIES = [
@@ -49,7 +48,6 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
   isLoading,
   availablePlatos,
   availableMealServices,
-  // availableMealTypes, // REMOVED
 }) => {
   const form = useFormContext<MenuFormValues>();
   const { fields, append, remove } = useFieldArray({
@@ -58,9 +56,9 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
   });
 
   const platoPlaceholder = () => {
-    if (isLoading) return "Cargando platos...";
-    if (!availablePlatos || availablePlatos.length === 0) return "No hay platos disponibles";
-    return "Selecciona un plato";
+    if (isLoading) return "Cargando recetas..."; // Changed text
+    if (!availablePlatos || availablePlatos.length === 0) return "No hay recetas disponibles"; // Changed text
+    return "Selecciona una receta"; // Changed text
   };
 
   const mealServicePlaceholder = () => {
@@ -77,7 +75,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
   return (
     <Card className="mt-8">
       <CardHeader>
-        <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Platos por Servicio</CardTitle>
+        <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Recetas por Servicio</CardTitle> {/* Changed text */}
       </CardHeader>
       <CardContent className="space-y-4">
         {fields.map((field, index) => (
@@ -115,7 +113,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
               name={`platos_por_servicio.${index}.plato_id`}
               render={({ field: platoField }) => (
                 <FormItem className="flex-grow w-full md:w-1/3">
-                  <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Plato</FormLabel>
+                  <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Receta</FormLabel> {/* Changed text */}
                   <Select
                     onValueChange={platoField.onChange}
                     defaultValue={platoField.value}
@@ -127,9 +125,9 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {availablePlatos?.map((plato: Plato) => (
-                        <SelectItem key={plato.id} value={plato.id}>
-                          {plato.nombre}
+                      {availablePlatos?.map((receta: Receta) => ( // Changed type
+                        <SelectItem key={receta.id} value={receta.id}>
+                          {receta.nombre}
                         </SelectItem>
                       ))}
                     </SelectContent>
@@ -140,10 +138,10 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
             />
             <FormField
               control={form.control}
-              name={`platos_por_servicio.${index}.dish_category`} // NEW: dish_category field
+              name={`platos_por_servicio.${index}.dish_category`}
               render={({ field: categoryField }) => (
                 <FormItem className="flex-grow w-full md:w-1/3">
-                  <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Categoría de Plato</FormLabel>
+                  <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Categoría de Receta</FormLabel> {/* Changed text */}
                   <Select
                     onValueChange={categoryField.onChange}
                     defaultValue={categoryField.value}
@@ -202,12 +200,12 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
         <Button
           type="button"
           variant="outline"
-          onClick={() => append({ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 })} // NEW: dish_category
+          onClick={() => append({ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 })}
           className="w-full mt-4 px-6 py-3 text-lg"
-          disabled={isLoading || !availablePlatos || availablePlatos.length === 0 || !availableMealServices || availableMealServices.length === 0} // Removed availableMealTypes check
+          disabled={isLoading || !availablePlatos || availablePlatos.length === 0 || !availableMealServices || availableMealServices.length === 0}
         >
           <PlusCircle className="mr-2 h-5 w-5" />
-          Añadir Plato a Servicio
+          Añadir Receta a Servicio {/* Changed text */}
         </Button>
       </CardContent>
     </Card>

@@ -8,7 +8,7 @@ import NotFound from "./pages/NotFound";
 import Insumos from "./pages/Insumos";
 import Login from "./pages/Login";
 import Profile from "./pages/Profile";
-import Platos from "./pages/Platos";
+import Recetas from "./pages/Recetas"; // Changed import
 import EventTypes from "./pages/EventTypes";
 import Menus from "./pages/Menus";
 import ServiceReports from "./pages/ServiceReports";
@@ -17,7 +17,7 @@ import UserManagement from "./pages/UserManagement";
 import PurchasePlanning from "./pages/PurchasePlanning";
 import StockMovements from "./pages/StockMovements";
 import PurchaseRecords from "./pages/PurchaseRecords";
-import WarehousePage from "./pages/Warehouse"; // NEW: Import WarehousePage
+import WarehousePage from "./pages/Warehouse";
 import { SessionContextProvider, useSession } from "./contexts/SessionContext";
 import Header from "./components/layout/Header";
 import { ThemeProvider } from "./contexts/ThemeProvider";
@@ -49,7 +49,7 @@ const AppRoutes = () => (
     <Route path="/login" element={<Login />} />
     <Route path="/" element={<ProtectedRoute><Index /></ProtectedRoute>} />
     <Route path="/insumos" element={<ProtectedRoute><Insumos /></ProtectedRoute>} />
-    <Route path="/platos" element={<ProtectedRoute><Platos /></ProtectedRoute>} />
+    <Route path="/recetas" element={<ProtectedRoute><Recetas /></ProtectedRoute>} /> {/* Changed route path and component */}
     <Route path="/event-types" element={<ProtectedRoute><EventTypes /></ProtectedRoute>} />
     <Route path="/menus" element={<ProtectedRoute><Menus /></ProtectedRoute>} />
     <Route path="/service-reports" element={<ProtectedRoute><ServiceReports /></ProtectedRoute>} />
@@ -58,7 +58,7 @@ const AppRoutes = () => (
     <Route path="/purchase-planning" element={<ProtectedRoute><PurchasePlanning /></ProtectedRoute>} />
     <Route path="/stock-movements" element={<ProtectedRoute><StockMovements /></ProtectedRoute>} />
     <Route path="/purchase-records" element={<ProtectedRoute><PurchaseRecords /></ProtectedRoute>} />
-    <Route path="/warehouse" element={<ProtectedRoute><WarehousePage /></ProtectedRoute>} /> {/* NEW: Add Warehouse route */}
+    <Route path="/warehouse" element={<ProtectedRoute><WarehousePage /></ProtectedRoute>} />
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
     <Route path="*" element={<NotFound />} />

@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useServiceReports } from "@/hooks/useServiceReports";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, Package } from "lucide-react"; // UtensilsCrossed removed
+import { Loader2, Package } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { ServiceReport } from "@/types";
@@ -32,9 +32,9 @@ const ConsumptionReport: React.FC<ConsumptionReportProps> = ({ startDate, endDat
       const reportDate = parseISO(report.report_date);
       if (isWithinInterval(reportDate, { start: startDate, end: endDate })) {
         report.service_report_platos?.forEach(srp => {
-          const plato = srp.platos;
-          if (plato) {
-            plato.plato_insumos?.forEach(pi => {
+          const receta = srp.platos; // Changed plato to receta
+          if (receta) {
+            receta.plato_insumos?.forEach(pi => {
               const insumo = pi.insumos;
               if (insumo) {
                 const consumedQuantityInBaseUnit = pi.cantidad_necesaria * srp.quantity_sold;
@@ -119,7 +119,7 @@ const ConsumptionReport: React.FC<ConsumptionReportProps> = ({ startDate, endDat
           <div className="text-center py-6 text-gray-600 dark:text-gray-400">
             <Package className="mx-auto h-12 w-12 mb-3 text-gray-400 dark:text-gray-600" />
             <p className="text-lg">No hay datos de consumo de insumos para el período seleccionado.</p>
-            <p className="text-md mt-2">Asegúrate de tener reportes de servicio registrados con platos vendidos para este rango de fechas.</p>
+            <p className="text-md mt-2">Asegúrate de tener reportes de servicio registrados con recetas vendidas para este rango de fechas.</p> {/* Changed text */}
           </div>
         )}
       </CardContent>

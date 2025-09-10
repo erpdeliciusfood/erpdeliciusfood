@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, UtensilsCrossed, CalendarDays, ChevronDown, CheckCircle2 } from "lucide-react";
-import { Menu, MenuPlato } from "@/types"; // Import MenuPlato
+import { Menu, MenuPlato } from "@/types";
 import { useDeleteMenu } from "@/hooks/useMenus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -138,7 +138,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                         <AlertDialogHeader>
                           <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
                           <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                            Esta acción no se puede deshacer. Esto eliminará permanentemente el menú <span className="font-semibold">{menu.title}</span> y sus platos asociados de nuestros servidores.
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente el menú <span className="font-semibold">{menu.title}</span> y sus recetas asociadas de nuestros servidores. {/* Changed text */}
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
@@ -160,11 +160,11 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                       <Accordion type="single" collapsible className="w-full">
                         <AccordionItem value={`item-${menu.id}`} className="border-none">
                           <AccordionTrigger className="flex items-center justify-between w-full px-6 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:no-underline hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-150 ease-in-out">
-                            Ver Platos del Menú
+                            Ver Recetas del Menú {/* Changed text */}
                             <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
                           </AccordionTrigger>
                           <AccordionContent className="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
-                            <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Detalles de Platos:</h4>
+                            <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Detalles de Recetas:</h4> {/* Changed text */}
                             {Object.entries(platosGroupedByServiceAndCategory || {}).sort(([serviceA], [serviceB]) => {
                               // Sort services by predefined order
                               const indexA = MEAL_SERVICES_ORDER.indexOf(serviceA.toLowerCase());
@@ -181,7 +181,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                                     <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
                                       {platos?.map((mp, idx) => (
                                         <li key={idx} className="text-base">
-                                          <span className="font-medium text-gray-800 dark:text-gray-200">{mp.platos?.nombre || "Plato Desconocido"}</span>
+                                          <span className="font-medium text-gray-800 dark:text-gray-200">{mp.platos?.nombre || "Receta Desconocida"}</span> {/* Changed text */}
                                           {" "} (Cantidad: {mp.quantity_needed})
                                         </li>
                                       ))}

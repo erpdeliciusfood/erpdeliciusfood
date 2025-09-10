@@ -6,9 +6,9 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
 } from "@/components/ui/form";
-import { Menu, MenuFormValues } from "@/types";
+import { Menu, MenuFormValues } from "@/types"; // Removed Receta
 import { useAddMenu, useUpdateMenu } from "@/hooks/useMenus";
-import { usePlatos } from "@/hooks/usePlatos";
+import { useRecetas } from "@/hooks/useRecetas";
 import { useMealServices } from "@/hooks/useMealServices";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import { Loader2 } from "lucide-react";
@@ -33,15 +33,15 @@ const formSchema = z.object({
   platos_por_servicio: z.array(
     z.object({
       meal_service_id: z.string().min(1, { message: "Debe seleccionar un servicio de comida." }),
-      plato_id: z.string().min(1, { message: "Debe seleccionar un plato." }),
-      dish_category: z.string().min(1, { message: "Debe seleccionar una categoría de plato." }),
+      plato_id: z.string().min(1, { message: "Debe seleccionar una receta." }),
+      dish_category: z.string().min(1, { message: "Debe seleccionar una categoría de receta." }),
       quantity_needed: z.coerce.number().min(1, {
         message: "La cantidad debe ser al menos 1.",
       }).max(999, {
         message: "La cantidad no debe exceder 999.",
       }),
     })
-  ).min(1, { message: "Debe añadir al menos un plato por servicio al menú." }),
+  ).min(1, { message: "Debe añadir al menos una receta por servicio al menú." }),
 }).superRefine((data, ctx) => {
   if (data.menu_type === "daily" && !data.menu_date) {
     ctx.addIssue({
@@ -65,8 +65,8 @@ const formSchema = z.object({
     if (seenCombinations.has(combinationKey)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: "Este plato ya está asignado a este servicio y categoría. Por favor, selecciona una combinación única.",
-        path: [`platos_por_servicio.${index}.plato_id`], // Attach error to the plato_id field
+        message: "Esta receta ya está asignada a este servicio y categoría. Por favor, selecciona una combinación única.",
+        path: [`platos_por_servicio.${index}.plato_id`],
       });
     }
     seenCombinations.add(combinationKey);
@@ -85,7 +85,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
   const updateMutation = useUpdateMenu();
 
   // Fetch all necessary data here
-  const { data: availablePlatos, isLoading: isLoadingPlatos } = usePlatos();
+  const { data: availableRecetas, isLoading: isLoadingRecetas } = useRecetas();
   const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
   const { data: availableEventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
 
@@ -146,7 +146,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
   };
 
   // Calculate overall loading state
-  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingPlatos || isLoadingMealServices || isLoadingEventTypes;
+  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingRecetas || isLoadingMealServices || isLoadingEventTypes;
 
   return (
     <FormProvider {...form}>
@@ -161,7 +161,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
 
           <PlatosPorServicioFormSection
             isLoading={isLoading}
-            availablePlatos={availablePlatos}
+            availablePlatos={availableRecetas}
             availableMealServices={availableMealServices}
           />
 

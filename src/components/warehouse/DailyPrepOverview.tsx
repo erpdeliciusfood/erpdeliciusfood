@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Loader2, Package, CheckCircle2, AlertTriangle, MinusCircle } from "lucide-react";
-import { Menu, AggregatedInsumoNeed } from "@/types"; // Removed Insumo
+import { Menu, AggregatedInsumoNeed } from "@/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -26,9 +26,9 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
     menus.forEach(menu => {
       menu.menu_platos?.forEach(menuPlato => {
-        const plato = menuPlato.platos;
-        if (plato) {
-          plato.plato_insumos?.forEach(platoInsumo => {
+        const receta = menuPlato.platos; // Changed plato to receta
+        if (receta) {
+          receta.plato_insumos?.forEach(platoInsumo => {
             const insumo = platoInsumo.insumos;
             if (insumo) {
               const totalNeededBaseUnit = platoInsumo.cantidad_necesaria * menuPlato.quantity_needed;
@@ -175,7 +175,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
           <div className="text-center py-6 text-gray-600 dark:text-gray-400">
             <Package className="mx-auto h-12 w-12 mb-3 text-gray-400 dark:text-gray-600" />
             <p className="text-lg">No se encontraron necesidades de insumos para los menús de este día.</p>
-            <p className="text-md mt-2">Asegúrate de que los menús seleccionados contengan platos con insumos definidos.</p>
+            <p className="text-md mt-2">Asegúrate de que los menús seleccionados contengan recetas con insumos definidos.</p> {/* Changed text */}
           </div>
         )}
       </CardContent>

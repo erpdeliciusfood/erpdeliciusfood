@@ -30,7 +30,7 @@ export interface InsumoFormValues {
   supplier_address?: string | null; // Made optional to allow undefined
 }
 
-export interface Plato {
+export interface Receta {
   id: string;
   user_id: string;
   nombre: string;
@@ -40,7 +40,7 @@ export interface Plato {
   plato_insumos?: PlatoInsumo[];
 }
 
-export interface PlatoFormValues {
+export interface RecetaFormValues {
   nombre: string;
   descripcion: string | null;
   insumos: { insumo_id: string; cantidad_necesaria: number }[];
@@ -75,7 +75,7 @@ export interface ServiceReportPlato {
   plato_id: string;
   quantity_sold: number;
   created_at: string;
-  platos?: Plato;
+  platos?: Receta; // Reference to Receta
 }
 
 export interface ServiceReportFormValues {
@@ -123,7 +123,7 @@ export interface MenuPlato {
   dish_category: string;
   quantity_needed: number;
   created_at: string;
-  platos?: Plato;
+  platos?: Receta; // Reference to Receta
   meal_services?: MealService;
 }
 

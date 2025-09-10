@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, Utensils, UserCircle2, Home, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText, Warehouse } from "lucide-react"; // Updated icons, added Warehouse
+import { LogOut, Utensils, UserCircle2, Home, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText, Warehouse } from "lucide-react";
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
@@ -38,10 +38,10 @@ const Header: React.FC = () => {
               Insumos
             </Button>
           </Link>
-          <Link to="/platos">
+          <Link to="/recetas"> {/* Changed link path and text */}
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <ChefHat className="mr-2 h-5 w-5" />
-              Platos
+              Recetas
             </Button>
           </Link>
           <Link to="/event-types">
@@ -80,7 +80,7 @@ const Header: React.FC = () => {
               Movimientos Stock
             </Button>
           </Link>
-          <Link to="/warehouse"> {/* NEW: Link to Warehouse */}
+          <Link to="/warehouse">
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <Warehouse className="mr-2 h-5 w-5" />
               Almacén

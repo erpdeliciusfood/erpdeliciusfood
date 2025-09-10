@@ -1,12 +1,12 @@
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { Utensils, UserCircle2, LayoutDashboard, ChefHat, BookText, CalendarDays, BarChart3, Users, ShoppingBag, FileText, Package, Warehouse } from "lucide-react"; // Updated icons, added Warehouse
+import { Utensils, UserCircle2, LayoutDashboard, ChefHat, BookText, CalendarDays, BarChart3, Users, ShoppingBag, FileText, Package, Warehouse } from "lucide-react";
 import { useSession } from "@/contexts/SessionContext";
 import { useProfile } from "@/hooks/useProfile";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useInsumos } from "@/hooks/useInsumos";
-import { usePlatos } from "@/hooks/usePlatos";
+import { useRecetas } from "@/hooks/useRecetas";
 import { useMenus } from "@/hooks/useMenus";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import { useServiceReports } from "@/hooks/useServiceReports";
@@ -16,8 +16,8 @@ import LowStockAlerts from "@/components/insumos/LowStockAlerts";
 const Index = () => {
   const { user, session } = useSession();
   const { data: profile } = useProfile();
-  const { data: insumoData, isLoading: isLoadingInsumos } = useInsumos(); // Renamed to insumoData
-  const { data: platos, isLoading: isLoadingPlatos } = usePlatos();
+  const { data: insumoData, isLoading: isLoadingInsumos } = useInsumos();
+  const { data: recetas, isLoading: isLoadingRecetas } = useRecetas();
   const { data: menus, isLoading: isLoadingMenus } = useMenus();
   const { data: eventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
   const { data: serviceReports, isLoading: isLoadingServiceReports } = useServiceReports();
@@ -26,8 +26,8 @@ const Index = () => {
   const userName = profile?.first_name || user?.email || "Usuario";
   const userRole = session?.user?.user_metadata?.role;
 
-  const totalInsumos = insumoData?.count || 0; // Access count property
-  const totalPlatos = platos?.length || 0;
+  const totalInsumos = insumoData?.count || 0;
+  const totalRecetas = recetas?.length || 0;
   const totalMenus = menus?.length || 0;
   const totalEventTypes = eventTypes?.length || 0;
   const totalServiceReports = serviceReports?.length || 0;
@@ -67,20 +67,20 @@ const Index = () => {
             </CardContent>
           </Card>
 
-          {/* Card for Total Platos */}
+          {/* Card for Total Recetas */}
           <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out h-full flex flex-col justify-between">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-2xl font-bold">Total Platos</CardTitle>
+              <CardTitle className="text-2xl font-bold">Total Recetas</CardTitle>
               <ChefHat className="h-8 w-8 text-muted-foreground" />
             </CardHeader>
             <CardContent>
-              {isLoadingPlatos ? (
+              {isLoadingRecetas ? (
                 <div className="h-10 w-full bg-gray-200 dark:bg-gray-700 animate-pulse rounded-md" />
               ) : (
-                <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalPlatos}</div>
+                <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalRecetas}</div>
               )}
               <CardDescription className="text-lg text-left mt-2">
-                Platos disponibles en tu menú.
+                Recetas disponibles en tu menú.
               </CardDescription>
             </CardContent>
           </Card>
@@ -176,10 +176,10 @@ const Index = () => {
             </Card>
           </Link>
 
-          <Link to="/platos">
+          <Link to="/recetas">
             <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-2xl font-bold">Gestión de Platos</CardTitle>
+                <CardTitle className="text-2xl font-bold">Gestión de Recetas</CardTitle>
                 <ChefHat className="h-8 w-8 text-muted-foreground" />
               </CardHeader>
               <CardContent>
@@ -188,7 +188,7 @@ const Index = () => {
                 </CardDescription>
               </CardContent>
               <Button className="w-full mt-4 px-8 py-4 text-lg bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out">
-                Ir a Platos
+                Ir a Recetas
               </Button>
             </Card>
           </Link>
@@ -278,7 +278,7 @@ const Index = () => {
             </Card>
           </Link>
 
-          <Link to="/warehouse"> {/* NEW: Link to Warehouse */}
+          <Link to="/warehouse">
             <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
                 <CardTitle className="text-2xl font-bold">Gestión de Almacén</CardTitle>

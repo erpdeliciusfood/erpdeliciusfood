@@ -26,10 +26,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { ServiceReport, ServiceReportFormValues, MealService, Plato } from "@/types";
+import { ServiceReport, ServiceReportFormValues, MealService, Receta } from "@/types"; // Changed Plato to Receta
 import { useAddServiceReport, useUpdateServiceReport } from "@/hooks/useServiceReports";
 import { useMealServices } from "@/hooks/useMealServices";
-import { usePlatos } from "@/hooks/usePlatos"; // Import usePlatos
+import { useRecetas } from "@/hooks/useRecetas"; // Changed usePlatos to useRecetas
 import { Loader2, CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 
 const formSchema = z.object({
@@ -41,10 +41,10 @@ const formSchema = z.object({
   notes: z.string().max(500, { message: "Las notas no deben exceder los 500 caracteres." }).nullable(),
   platos_vendidos: z.array(
     z.object({
-      plato_id: z.string().min(1, { message: "Debe seleccionar un plato." }),
+      plato_id: z.string().min(1, { message: "Debe seleccionar una receta." }), // Changed text
       quantity_sold: z.coerce.number().min(1, { message: "La cantidad vendida debe ser al menos 1." }).int({ message: "La cantidad vendida debe ser un número entero." }),
     })
-  ).min(1, { message: "Debe añadir al menos un plato vendido al reporte." }),
+  ).min(1, { message: "Debe añadir al menos una receta vendida al reporte." }), // Changed text
 });
 
 interface ServiceReportFormProps {
@@ -57,7 +57,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
   const addMutation = useAddServiceReport();
   const updateMutation = useUpdateServiceReport();
   const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
-  const { data: availablePlatos, isLoading: isLoadingPlatos } = usePlatos(); // Fetch available platos
+  const { data: availableRecetas, isLoading: isLoadingRecetas } = useRecetas(); // Changed variable name and hook
 
   const form = useForm<ServiceReportFormValues>({
     resolver: zodResolver(formSchema),
@@ -113,7 +113,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
     onSuccess();
   };
 
-  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingMealServices || isLoadingPlatos;
+  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingMealServices || isLoadingRecetas; // Changed loading state
 
   return (
     <Form {...form}>
@@ -279,7 +279,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
 
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Platos Vendidos</CardTitle>
+            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Recetas Vendidas</CardTitle> {/* Changed text */}
           </CardHeader>
           <CardContent className="space-y-4">
             {fields.map((field, index) => (
@@ -289,21 +289,21 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
                   name={`platos_vendidos.${index}.plato_id`}
                   render={({ field: platoField }) => (
                     <FormItem className="flex-grow w-full md:w-2/3">
-                      <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Plato</FormLabel>
+                      <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Receta</FormLabel> {/* Changed text */}
                       <Select
                         onValueChange={platoField.onChange}
                         defaultValue={platoField.value}
-                        disabled={isLoading || isLoadingPlatos}
+                        disabled={isLoading || isLoadingRecetas} // Changed loading state
                       >
                         <FormControl>
                           <SelectTrigger className="h-12 text-base">
-                            <SelectValue placeholder="Selecciona un plato" />
+                            <SelectValue placeholder="Selecciona una receta" /> {/* Changed text */}
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {availablePlatos?.map((plato: Plato) => (
-                            <SelectItem key={plato.id} value={plato.id}>
-                              {plato.nombre}
+                          {availableRecetas?.map((receta: Receta) => ( // Changed variable name and type
+                            <SelectItem key={receta.id} value={receta.id}>
+                              {receta.nombre}
                             </SelectItem>
                           ))}
                         </SelectContent>
@@ -353,7 +353,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
               disabled={isLoading}
             >
               <PlusCircle className="mr-2 h-5 w-5" />
-              Añadir Plato Vendido
+              Añadir Receta Vendida {/* Changed text */}
             </Button>
           </CardContent>
         </Card>

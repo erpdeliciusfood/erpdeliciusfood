@@ -9,7 +9,6 @@ import { useAddInsumo, useUpdateInsumo } from "@/hooks/useInsumos";
 import { Loader2 } from "lucide-react";
 import InsumoBasicDetailsFormSection from "./InsumoBasicDetailsFormSection";
 import InsumoStockAndCostFormSection from "./InsumoStockAndCostFormSection";
-// import InsumoSupplierFormSection from "./InsumoSupplierFormSection"; // REMOVED
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -43,27 +42,14 @@ const formSchema = z.object({
   }).max(999999, {
     message: "El nivel mínimo de stock no debe exceder 999999.",
   }),
-  // supplier_name: z.string().max(100, { // REMOVED
-  //   message: "El nombre del proveedor no debe exceder los 100 caracteres.",
-  // }).nullable(),
-  // supplier_phone: z.string().nullable().refine((val) => { // REMOVED
-  //   if (!val) return true; // Allow null or empty string
-  //   // Regex for +51 followed by 9 digits
-  //   return /^\+51\d{9}$/.test(val);
-  // }, {
-  //   message: "El teléfono debe empezar con +51 y tener 9 dígitos (ej. +51987654321).",
-  // }),
-  // supplier_address: z.string().max(255, { // REMOVED
-  //   message: "La dirección del proveedor no debe exceder los 255 caracteres.",
-  // }).nullable(),
   category: z.string().min(1, {
     message: "Debe seleccionar una categoría.",
   }),
 });
 
 interface InsumoFormProps {
-  initialData?: Insumo | null;
-  onSuccess: () => void;
+  initialData?: InsumoFormValues | null;
+  onSuccess: (newInsumo: Insumo) => Promise<void> | void; // Adjusted type to accept Promise<void> and ensure newInsumo is always provided
   onCancel: () => void;
 }
 
@@ -112,9 +98,6 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
       costo_unitario: 0,
       stock_quantity: 0,
       min_stock_level: 0,
-      // supplier_name: "", // REMOVED
-      // supplier_phone: "", // REMOVED
-      // supplier_address: "", // REMOVED
       category: "Otros",
     },
   });
@@ -132,9 +115,6 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         costo_unitario: initialData.costo_unitario,
         stock_quantity: initialData.stock_quantity,
         min_stock_level: initialData.min_stock_level,
-        // supplier_name: initialData.supplier_name || "", // REMOVED
-        // supplier_phone: initialData.supplier_phone || "", // REMOVED
-        // supplier_address: initialData.supplier_address || "", // REMOVED
         category: initialData.category || "Otros",
       });
       setIsConversionFactorEditable(true);
@@ -147,9 +127,6 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         costo_unitario: 0,
         stock_quantity: 0,
         min_stock_level: 0,
-        // supplier_name: "", // REMOVED
-        // supplier_phone: "", // REMOVED
-        // supplier_address: "", // REMOVED
         category: "Otros",
       });
       setIsConversionFactorEditable(true);
@@ -177,12 +154,13 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
   }, [purchaseUnit, baseUnit, form, initialData]);
 
   const onSubmit = async (values: InsumoFormValues) => {
-    if (initialData) {
-      await updateMutation.mutateAsync({ id: initialData.id, insumo: values });
+    if (initialData && (initialData as Insumo).id) {
+      const updatedInsumo = await updateMutation.mutateAsync({ id: (initialData as Insumo).id, insumo: values });
+      onSuccess(updatedInsumo);
     } else {
-      await addMutation.mutateAsync(values);
+      const newInsumo = await addMutation.mutateAsync(values);
+      onSuccess(newInsumo);
     }
-    onSuccess();
   };
 
   const isLoading = addMutation.isPending || updateMutation.isPending;
@@ -200,7 +178,6 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
             INSUMO_CATEGORIES={INSUMO_CATEGORIES}
           />
           <InsumoStockAndCostFormSection isLoading={isLoading} />
-          {/* <InsumoSupplierFormSection isLoading={isLoading} /> */} {/* REMOVED */}
 
           <div className="flex justify-end space-x-4 pt-4">
             <Button
@@ -218,7 +195,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
               disabled={isLoading}
             >
               {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-              {initialData ? "Guardar Cambios" : "Añadir Insumo"}
+              {initialData && (initialData as Insumo).id ? "Guardar Cambios" : "Añadir Insumo"}
             </Button>
           </div>
         </form>

@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 import { useServiceReports } from "@/hooks/useServiceReports";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Loader2, TrendingDown, LineChart as LineChartIcon } from "lucide-react"; // TrendingUp removed
+import { Loader2, TrendingDown, LineChart as LineChartIcon } from "lucide-react";
 import { format, isWithinInterval, parseISO, eachDayOfInterval } from "date-fns";
 import { es } from "date-fns/locale";
 import { ServiceReport } from "@/types";
@@ -53,9 +53,9 @@ const FinancialOverviewReport: React.FC<FinancialOverviewReportProps> = ({ start
         const currentDayData = dailyDataMap.get(formattedReportDate) || { cogs: 0 };
 
         report.service_report_platos?.forEach(pv => {
-          const plato = pv.platos;
-          if (plato) {
-            const cogs = plato.costo_produccion * pv.quantity_sold;
+          const receta = pv.platos; // Changed plato to receta
+          if (receta) {
+            const cogs = receta.costo_produccion * pv.quantity_sold;
             currentDayData.cogs += cogs;
             overallCogs += cogs;
           }
@@ -106,7 +106,7 @@ const FinancialOverviewReport: React.FC<FinancialOverviewReportProps> = ({ start
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6"> {/* Adjusted grid for single metric */}
+        <div className="grid grid-cols-1 md:grid-cols-1 gap-4 mb-6">
           <div className="flex flex-col items-center justify-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg shadow-sm">
             <TrendingDown className="h-8 w-8 text-red-600 mb-2" />
             <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Costo de Ventas (COGS) Total</p>

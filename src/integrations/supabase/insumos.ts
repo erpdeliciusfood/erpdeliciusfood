@@ -38,6 +38,7 @@ export const createInsumo = async (insumo: InsumoFormValues): Promise<Insumo> =>
     ...insumo,
     supplier_name: insumo.supplier_name || '',
     supplier_phone: insumo.supplier_phone || '',
+    supplier_address: insumo.supplier_address || '', // Ensure address is not null
   };
 
   const { data, error } = await supabase.from("insumos").insert({ ...processedInsumo, user_id: user.id }).select().single();
@@ -56,6 +57,7 @@ export const createMultipleInsumos = async (insumos: InsumoFormValues[]): Promis
     // Ensure non-nullable fields are not null by defaulting to empty string
     supplier_name: insumo.supplier_name || '',
     supplier_phone: insumo.supplier_phone || '',
+    supplier_address: insumo.supplier_address || '', // Ensure address is not null
   }));
 
   const { data, error } = await supabase.from("insumos").insert(insumosWithUserId).select("id");
@@ -70,6 +72,7 @@ export const updateInsumo = async (id: string, insumo: InsumoFormValues): Promis
     ...insumo,
     supplier_name: insumo.supplier_name || '',
     supplier_phone: insumo.supplier_phone || '',
+    supplier_address: insumo.supplier_address || '', // Ensure address is not null
   };
 
   const { data, error } = await supabase.from("insumos").update(processedInsumo).eq("id", id).select().single();

@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { ServiceReport, ServiceReportFormValues } from "@/types";
+import { ServiceReport, ServiceReportFormValues } from "@/types"; // Removed Receta
 
 export const getServiceReports = async (): Promise<ServiceReport[]> => {
   const { data, error } = await supabase
@@ -49,7 +49,7 @@ export const createServiceReport = async (reportData: ServiceReportFormValues): 
       .insert(serviceReportPlatosToInsert);
 
     if (serviceReportPlatoError) {
-      throw new Error(`Failed to add platos to service report: ${serviceReportPlatoError.message}`);
+      throw new Error(`Failed to add recetas to service report: ${serviceReportPlatoError.message}`);
     }
   }
 
@@ -96,7 +96,7 @@ export const updateServiceReport = async (id: string, reportData: ServiceReportF
     .delete()
     .eq("service_report_id", id);
 
-  if (deleteError) throw new Error(`Failed to delete existing platos for service report: ${deleteError.message}`);
+  if (deleteError) throw new Error(`Failed to delete existing recetas for service report: ${deleteError.message}`);
 
   // Insert new associated service_report_platos
   if (platos_vendidos && platos_vendidos.length > 0) {
@@ -111,7 +111,7 @@ export const updateServiceReport = async (id: string, reportData: ServiceReportF
       .insert(serviceReportPlatosToInsert);
 
     if (serviceReportPlatoError) {
-      throw new Error(`Failed to add new platos to service report: ${serviceReportPlatoError.message}`);
+      throw new Error(`Failed to add new recetas to service report: ${serviceReportPlatoError.message}`);
     }
   }
 
