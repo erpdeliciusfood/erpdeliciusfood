@@ -34,11 +34,6 @@ const formSchema = z.object({
   descripcion: z.string().max(500, {
     message: "La descripción no debe exceder los 500 caracteres.",
   }).nullable(),
-  // precio_venta: z.coerce.number().min(0.01, { // REMOVED
-  //   message: "El precio de venta debe ser mayor a 0.",
-  // }).max(99999.99, {
-  //   message: "El precio de venta no debe exceder 99999.99.",
-  // }),
   insumos: z.array(
     z.object({
       insumo_id: z.string().min(1, { message: "Debe seleccionar un insumo." }),
@@ -67,7 +62,6 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
     defaultValues: {
       nombre: "",
       descripcion: "",
-      // precio_venta: 0, // REMOVED
       insumos: [{ insumo_id: "", cantidad_necesaria: 0 }],
     },
   });
@@ -82,7 +76,6 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
       form.reset({
         nombre: initialData.nombre,
         descripcion: initialData.descripcion || "",
-        // precio_venta: initialData.precio_venta, // REMOVED
         insumos: initialData.plato_insumos?.map(pi => ({
           insumo_id: pi.insumo_id,
           cantidad_necesaria: pi.cantidad_necesaria,
@@ -92,7 +85,6 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
       form.reset({
         nombre: "",
         descripcion: "",
-        // precio_venta: 0, // REMOVED
         insumos: [{ insumo_id: "", cantidad_necesaria: 0 }],
       });
     }
@@ -149,28 +141,6 @@ const PlatoForm: React.FC<PlatoFormProps> = ({ initialData, onSuccess, onCancel 
             </FormItem>
           )}
         />
-        {/* REMOVED PRECIO_VENTA FIELD */}
-        {/* <FormField
-          control={form.control}
-          name="precio_venta"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Precio de Venta (S/)</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="Ej. 25.50"
-                  {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        /> */}
 
         <Card className="mt-8">
           <CardHeader>

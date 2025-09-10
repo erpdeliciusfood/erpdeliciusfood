@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, UtensilsCrossed, CalendarDays, ChevronDown, CheckCircle2 } from "lucide-react";
-import { Menu, MenuPlato } from "@/types"; // Import MenuPlato
+import { Menu, MenuPlato } from "@/types"; 
 import { useDeleteMenu } from "@/hooks/useMenus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -23,7 +23,7 @@ interface DailyMenuListProps {
 
 const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
   const deleteMutation = useDeleteMenu();
-  const { data: _availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
+  const { data: _availableMealServices } = useMealServices(); // Removed isLoadingMealServices
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
@@ -98,9 +98,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                     ) : "N/A"}
                   </TableCell>
                   <TableCell className="py-3 px-6">
-                    {isLoadingMealServices ? (
-                      <span className="text-sm text-gray-500">Cargando...</span>
-                    ) : (
+                    {/* Removed isLoadingMealServices check as it's no longer passed */}
                       <div className="flex flex-wrap gap-1">
                         {MEAL_SERVICES_ORDER.map(type => (
                           <Badge
@@ -113,7 +111,6 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                           </Badge>
                         ))}
                       </div>
-                    )}
                   </TableCell>
                   <TableCell className="flex justify-center space-x-2 py-3 px-6">
                     <Button

@@ -26,7 +26,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       } else {
         setSession(null);
         setUser(null);
-        // Removed navigate('/login') from here. The ProtectedRoute now handles redirection.
+        // The ProtectedRoute now handles redirection.
       }
       setIsLoading(false);
     });

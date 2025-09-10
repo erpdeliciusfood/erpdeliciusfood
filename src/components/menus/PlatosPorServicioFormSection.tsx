@@ -18,13 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MealService, MenuFormValues, Plato } from "@/types"; // Removed MealType
+import { MealService, MenuFormValues, Plato } from "@/types"; 
 
 interface PlatosPorServicioFormSectionProps {
   isLoading: boolean;
   availablePlatos: Plato[] | undefined;
   availableMealServices: MealService[] | undefined;
-  // availableMealTypes: MealType[] | undefined; // REMOVED
 }
 
 const DISH_CATEGORIES = [
@@ -49,7 +48,6 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
   isLoading,
   availablePlatos,
   availableMealServices,
-  // availableMealTypes, // REMOVED
 }) => {
   const form = useFormContext<MenuFormValues>();
   const { fields, append, remove } = useFieldArray({
@@ -204,7 +202,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
           variant="outline"
           onClick={() => append({ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 })} // NEW: dish_category
           className="w-full mt-4 px-6 py-3 text-lg"
-          disabled={isLoading || !availablePlatos || availablePlatos.length === 0 || !availableMealServices || availableMealServices.length === 0} // Removed availableMealTypes check
+          disabled={isLoading || !availablePlatos || availablePlatos.length === 0 || !availableMealServices || availableMealServices.length === 0}
         >
           <PlusCircle className="mr-2 h-5 w-5" />
           Añadir Plato a Servicio
