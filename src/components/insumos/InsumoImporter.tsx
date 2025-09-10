@@ -5,7 +5,7 @@ import { Label } from "@/components/ui/label";
 import { Loader2, Download } from "lucide-react";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { InsumoFormValues } from "@/types";
-import { parse as papaParse } from "papaparse"; // Aliased import
+import { parse as papaParse } from "papaparse";
 import * as z from "zod";
 import { useQueryClient } from "@tanstack/react-query";
 import { createMultipleInsumos } from "@/integrations/supabase/insumos";
@@ -77,7 +77,8 @@ const InsumoImporter: React.FC<InsumoImporterProps> = ({ onSuccess, onCancel }) 
     reader.onload = async (e) => {
       const text = e.target?.result as string;
 
-      papaParse(text, { // Using aliased 'papaParse'
+      // Workaround for persistent TypeScript error: casting papaParse to any
+      (papaParse as any)(text, {
         header: true,
         skipEmptyLines: true,
         complete: async (results: Papa.ParseResult<any>) => {
