@@ -11,8 +11,9 @@ import InsumoBasicDetailsFormSection from "./InsumoBasicDetailsFormSection";
 import InsumoStockAndCostFormSection from "./InsumoStockAndCostFormSection";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from "@/components/ui/command";
-import { cn } from "@/lib/utils";
+import { cn, normalizeString } from "@/lib/utils"; // Import normalizeString
 import { showSuccess, showError } from "@/utils/toast";
+import { INSUMO_CATEGORIES, UNIDADES_BASE, UNIDADES_COMPRA, PREDEFINED_CONVERSIONS } from "@/constants/insumoConstants"; // Import constants
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -68,39 +69,6 @@ interface InsumoFormProps {
   onSuccess: () => void;
   onCancel: () => void;
 }
-
-const UNIDADES_BASE = [
-  "g", "ml", "unidad", "cucharadita", "cucharada", "taza", "onza", "libra"
-];
-
-const UNIDADES_COMPRA = [
-  "kg", "litro", "unidad", "atado", "manojo", "caja", "paquete", "botella", "lata", "saco", "galón"
-];
-
-const INSUMO_CATEGORIES = [
-  "Cereales y Legumbres",
-  "Proteínas (Carnes, Aves, Pescados)",
-  "Lácteos y Huevos",
-  "Verduras y Hortalizas",
-  "Frutas",
-  "Grasas y Aceites",
-  "Condimentos y Especias",
-  "Panadería y Pastelería",
-  "Bebidas",
-  "Otros",
-];
-
-// Predefined common conversions (Purchase Unit to Base Unit)
-const predefinedConversions: { [purchaseUnit: string]: { [baseUnit: string]: number } } = {
-  "kg": { "g": 1000 },
-  "litro": { "ml": 1000 },
-  "unidad": { "unidad": 1 },
-};
-
-const normalizeString = (str: string | null | undefined) => {
-  if (!str) return "";
-  return str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-};
 
 const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCancel }) => {
   const addMutation = useAddInsumo();
@@ -169,7 +137,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
 
   useEffect(() => {
     if (!initialData && purchaseUnit && baseUnit) {
-      const suggestedFactor = predefinedConversions[purchaseUnit]?.[baseUnit];
+      const suggestedFactor = PREDEFINED_CONVERSIONS[purchaseUnit]?.[baseUnit];
       if (suggestedFactor !== undefined) {
         form.setValue("conversion_factor", suggestedFactor, { shouldValidate: true });
         setIsConversionFactorEditable(false);
