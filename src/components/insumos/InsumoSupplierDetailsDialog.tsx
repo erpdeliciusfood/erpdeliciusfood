@@ -11,7 +11,7 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Insumo, InsumoSupplierHistory, InsumoPriceHistory } from "@/types";
+import { Insumo, InsumoSupplierHistory, InsumoPriceHistory, InsumoFormValues } from "@/types"; // Import InsumoFormValues
 import { useUpdateInsumo, useInsumoSupplierHistory, useInsumoPriceHistory } from "@/hooks/useInsumos";
 import { Loader2, Building2, DollarSign, History } from "lucide-react";
 import { format } from "date-fns";
@@ -30,7 +30,7 @@ const supplierFormSchema = z.object({
   }, {
     message: "El teléfono debe empezar con +51 y tener 9 dígitos (ej. +51987654321).",
   }),
-  supplier_address: z.string().max(255, { // NEW: Added supplier_address to schema
+  supplier_address: z.string().max(255, {
     message: "La dirección del proveedor no debe exceder los 255 caracteres.",
   }).nullable(),
 });
@@ -50,7 +50,7 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
     defaultValues: {
       supplier_name: insumo.supplier_name || "",
       supplier_phone: insumo.supplier_phone || "",
-      supplier_address: insumo.supplier_address || "", // NEW: Set default value
+      supplier_address: insumo.supplier_address || "",
     },
   });
 
@@ -58,20 +58,30 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
     form.reset({
       supplier_name: insumo.supplier_name || "",
       supplier_phone: insumo.supplier_phone || "",
-      supplier_address: insumo.supplier_address || "", // NEW: Reset value
+      supplier_address: insumo.supplier_address || "",
     });
   }, [insumo, form]);
 
   const onSubmit = async (values: z.infer<typeof supplierFormSchema>) => {
     try {
+      // Construct the InsumoFormValues object explicitly to avoid sending extra fields
+      const updatedInsumoData: InsumoFormValues = {
+        nombre: insumo.nombre,
+        base_unit: insumo.base_unit,
+        costo_unitario: insumo.costo_unitario,
+        stock_quantity: insumo.stock_quantity,
+        purchase_unit: insumo.purchase_unit,
+        conversion_factor: insumo.conversion_factor,
+        min_stock_level: insumo.min_stock_level,
+        category: insumo.category,
+        supplier_name: values.supplier_name,
+        supplier_phone: values.supplier_phone,
+        supplier_address: values.supplier_address,
+      };
+
       await updateInsumoMutation.mutateAsync({
         id: insumo.id,
-        insumo: {
-          ...insumo, // Keep existing insumo data
-          supplier_name: values.supplier_name,
-          supplier_phone: values.supplier_phone,
-          supplier_address: values.supplier_address, // NEW: Pass new address
-        },
+        insumo: updatedInsumoData,
       });
       showSuccess("Datos del proveedor actualizados exitosamente.");
       onClose(); // Close dialog on success

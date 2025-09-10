@@ -1,28 +1,15 @@
 import React, { useEffect, useState } from "react";
-import { useForm } from "react-hook-form";
+import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from "@/components/ui/form";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { Form } from "@/components/ui/form";
 import { Insumo, InsumoFormValues } from "@/types";
 import { useAddInsumo, useUpdateInsumo } from "@/hooks/useInsumos";
-import { Loader2, Info } from "lucide-react";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Loader2 } from "lucide-react";
+import InsumoBasicDetailsFormSection from "./InsumoBasicDetailsFormSection";
+import InsumoStockAndCostFormSection from "./InsumoStockAndCostFormSection";
+import InsumoSupplierFormSection from "./InsumoSupplierFormSection";
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -66,12 +53,12 @@ const formSchema = z.object({
   }, {
     message: "El teléfono debe empezar con +51 y tener 9 dígitos (ej. +51987654321).",
   }),
-  supplier_address: z.string().max(255, { // NEW: Added supplier_address to schema
+  supplier_address: z.string().max(255, {
     message: "La dirección del proveedor no debe exceder los 255 caracteres.",
   }).nullable(),
   category: z.string().min(1, {
     message: "Debe seleccionar una categoría.",
-  }), // Added category to schema
+  }),
 });
 
 interface InsumoFormProps {
@@ -106,16 +93,12 @@ const predefinedConversions: { [purchaseUnit: string]: { [baseUnit: string]: num
   "kg": { "g": 1000 },
   "litro": { "ml": 1000 },
   "unidad": { "unidad": 1 },
-  // Add more common conversions here if needed, e.g., for US customary units
-  // "galón": { "ml": 3785.41, "litro": 3.78541 },
-  // "libra": { "g": 453.592, "onza": 16 },
 };
 
 const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCancel }) => {
   const addMutation = useAddInsumo();
   const updateMutation = useUpdateInsumo();
   const [isConversionFactorEditable, setIsConversionFactorEditable] = useState(true);
-  // Removed isCostoUnitarioEditable state
 
   const form = useForm<InsumoFormValues>({
     resolver: zodResolver(formSchema),
@@ -129,8 +112,8 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
       min_stock_level: 0,
       supplier_name: "",
       supplier_phone: "",
-      supplier_address: "", // NEW: Default value for new field
-      category: "Otros", // Default category
+      supplier_address: "",
+      category: "Otros",
     },
   });
 
@@ -149,11 +132,10 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         min_stock_level: initialData.min_stock_level,
         supplier_name: initialData.supplier_name || "",
         supplier_phone: initialData.supplier_phone || "",
-        supplier_address: initialData.supplier_address || "", // NEW: Set initial value
-        category: initialData.category || "Otros", // Set initial category
+        supplier_address: initialData.supplier_address || "",
+        category: initialData.category || "Otros",
       });
-      setIsConversionFactorEditable(true); // Always editable when editing an existing item
-      // Removed setIsCostoUnitarioEditable(false);
+      setIsConversionFactorEditable(true);
     } else {
       form.reset({
         nombre: "",
@@ -165,36 +147,32 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         min_stock_level: 0,
         supplier_name: "",
         supplier_phone: "",
-        supplier_address: "", // NEW: Default value for new field
-        category: "Otros", // Default category for new items
+        supplier_address: "",
+        category: "Otros",
       });
-      setIsConversionFactorEditable(true); // Editable by default for new items
-      // Removed setIsCostoUnitarioEditable(true);
+      setIsConversionFactorEditable(true);
     }
   }, [initialData, form]);
 
-  // Effect to suggest conversion factor based on selected units
   useEffect(() => {
-    if (!initialData && purchaseUnit && baseUnit) { // Only suggest for new items
+    if (!initialData && purchaseUnit && baseUnit) {
       const suggestedFactor = predefinedConversions[purchaseUnit]?.[baseUnit];
       if (suggestedFactor !== undefined) {
         form.setValue("conversion_factor", suggestedFactor, { shouldValidate: true });
-        setIsConversionFactorEditable(false); // Disable if a suggestion is found
+        setIsConversionFactorEditable(false);
       } else if (purchaseUnit === baseUnit) {
         form.setValue("conversion_factor", 1.0, { shouldValidate: true });
-        setIsConversionFactorEditable(false); // Disable if units are the same
+        setIsConversionFactorEditable(false);
       } else {
-        // For non-standard or unknown conversions, keep current value or default to 1.0 if it's 0
         if (form.getValues("conversion_factor") === 0) {
           form.setValue("conversion_factor", 1.0, { shouldValidate: true });
         }
-        setIsConversionFactorEditable(true); // Enable if no suggestion or different units
+        setIsConversionFactorEditable(true);
       }
     } else if (initialData) {
-      setIsConversionFactorEditable(true); // Always editable when editing existing data
+      setIsConversionFactorEditable(true);
     }
   }, [purchaseUnit, baseUnit, form, initialData]);
-
 
   const onSubmit = async (values: InsumoFormValues) => {
     if (initialData) {
@@ -208,307 +186,42 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
   const isLoading = addMutation.isPending || updateMutation.isPending;
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-2">
-        <FormField
-          control={form.control}
-          name="nombre"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre del Insumo</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Ej. Papa Amarilla"
-                  {...field}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="category"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Categoría</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ""} disabled={isLoading}>
-                <FormControl>
-                  <SelectTrigger className="h-12 text-base">
-                    <SelectValue placeholder="Selecciona una categoría" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {INSUMO_CATEGORIES.map((category) => (
-                    <SelectItem key={category} value={category}>
-                      {category}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="base_unit"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Unidad Base (para recetas)</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ""} disabled={isLoading}>
-                <FormControl>
-                  <SelectTrigger className="h-12 text-base">
-                    <SelectValue placeholder="Selecciona una unidad base" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {UNIDADES_BASE.map((unidad) => (
-                    <SelectItem key={unidad} value={unidad}>
-                      {unidad}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="purchase_unit"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Unidad de Compra (al proveedor)</FormLabel>
-              <Select onValueChange={field.onChange} value={field.value || ""} disabled={isLoading}>
-                <FormControl>
-                  <SelectTrigger className="h-12 text-base">
-                    <SelectValue placeholder="Selecciona una unidad de compra" />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {UNIDADES_COMPRA.map((unidad) => (
-                    <SelectItem key={unidad} value={unidad}>
-                      {unidad}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="conversion_factor"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center space-x-2">
-                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
-                  Factor de Conversión (Unidad de Compra a Unidad Base)
-                </FormLabel>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="h-4 w-4 text-gray-500 dark:text-gray-400 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs text-base p-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                      <p className="font-semibold mb-1 text-gray-900 dark:text-gray-100">Factor de Conversión</p>
-                      <p className="text-gray-700 dark:text-gray-300">Indica cuántas unidades base (receta) hay en una unidad de compra (proveedor).</p>
-                      <p className="mt-2 text-gray-700 dark:text-gray-300">
-                        <span className="font-medium text-gray-800 dark:text-gray-200">Ejemplo:</span> Si 1 kg (compra) = 1000 g (base), el factor es 1000.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                {!isConversionFactorEditable && (
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setIsConversionFactorEditable(true)}
-                    className="ml-auto h-8 text-sm"
-                    disabled={isLoading}
-                  >
-                    Editar
-                  </Button>
-                )}
-              </div>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.001"
-                  placeholder="Ej. 1000 (si 1kg = 1000g)"
-                  {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                  className="h-12 text-base"
-                  disabled={isLoading || !isConversionFactorEditable}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="costo_unitario"
-          render={({ field }) => (
-            <FormItem>
-              <div className="flex items-center space-x-2">
-                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Costo Unitario (S/ por Unidad de Compra)</FormLabel>
-                <TooltipProvider>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <Info className="h-4 w-4 text-gray-500 dark:text-gray-400 cursor-help" />
-                    </TooltipTrigger>
-                    <TooltipContent className="max-w-xs text-base p-3 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                      <p className="font-semibold mb-1 text-gray-900 dark:text-gray-100">Costo Unitario</p>
-                      <p className="text-gray-700 dark:text-gray-300">Este costo se actualiza automáticamente al registrar una "Entrada por Compra" en Movimientos de Stock.</p>
-                      <p className="mt-2 text-gray-700 dark:text-gray-300">
-                        <span className="font-medium text-gray-800 dark:text-gray-200">Nota:</span> Puedes editarlo manualmente si es necesario.
-                      </p>
-                    </TooltipContent>
-                  </Tooltip>
-                </TooltipProvider>
-                {/* Removed conditional "Editar" button for costo_unitario */}
-              </div>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="0.01"
-                  placeholder="Ej. 2.50"
-                  {...field}
-                  onChange={(e) => field.onChange(parseFloat(e.target.value))}
-                  className="h-12 text-base"
-                  disabled={isLoading} // Always enabled, only disabled by overall form loading state
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="stock_quantity"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad en Stock (en Unidad de Compra)</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="1"
-                  placeholder="Ej. 100"
-                  {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value))}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="min_stock_level"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nivel Mínimo de Stock (en Unidad de Compra)</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  step="1"
-                  placeholder="Ej. 10"
-                  {...field}
-                  onChange={(e) => field.onChange(parseInt(e.target.value))}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="supplier_name"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre del Proveedor (Opcional)</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Ej. Distribuidora La Huerta"
-                  {...field}
-                  value={field.value || ""}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="supplier_phone"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Teléfono del Proveedor (Opcional)</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Ej. +51987654321"
-                  {...field}
-                  value={field.value || ""}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name="supplier_address" // NEW: Added supplier_address field
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Dirección del Proveedor (Opcional)</FormLabel>
-              <FormControl>
-                <Input
-                  placeholder="Ej. Av. Los Girasoles 123, Lima"
-                  {...field}
-                  value={field.value || ""}
-                  className="h-12 text-base"
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <div className="flex justify-end space-x-4 pt-4">
-          <Button
-            type="button"
-            variant="outline"
-            onClick={onCancel}
-            className="px-6 py-3 text-lg"
-            disabled={isLoading}
-          >
-            Cancelar
-          </Button>
-          <Button
-            type="submit"
-            className="px-6 py-3 text-lg bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
-            disabled={isLoading}
-          >
-            {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-            {initialData ? "Guardar Cambios" : "Añadir Insumo"}
-          </Button>
-        </div>
-      </form>
-    </Form>
+    <FormProvider {...form}>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-2">
+          <InsumoBasicDetailsFormSection
+            isLoading={isLoading}
+            isConversionFactorEditable={isConversionFactorEditable}
+            setIsConversionFactorEditable={setIsConversionFactorEditable}
+            UNIDADES_BASE={UNIDADES_BASE}
+            UNIDADES_COMPRA={UNIDADES_COMPRA}
+            INSUMO_CATEGORIES={INSUMO_CATEGORIES}
+          />
+          <InsumoStockAndCostFormSection isLoading={isLoading} />
+          <InsumoSupplierFormSection isLoading={isLoading} />
+
+          <div className="flex justify-end space-x-4 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onCancel}
+              className="px-6 py-3 text-lg"
+              disabled={isLoading}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              className="px-6 py-3 text-lg bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
+              disabled={isLoading}
+            >
+              {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+              {initialData ? "Guardar Cambios" : "Añadir Insumo"}
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </FormProvider>
   );
 };
 
