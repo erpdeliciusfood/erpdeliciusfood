@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,11 +8,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, UtensilsCrossed } from "lucide-react";
+import { Edit, Trash2, UtensilsCrossed, Building2 } from "lucide-react"; // Added Building2 icon
 import { Insumo } from "@/types";
 import { useDeleteInsumo } from "@/hooks/useInsumos";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge"; // Import Badge
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"; // Import Dialog components
+import InsumoSupplierDetailsDialog from "./InsumoSupplierDetailsDialog"; // Import the supplier details dialog
 
 interface InsumoListProps {
   insumos: Insumo[];
@@ -21,9 +23,21 @@ interface InsumoListProps {
 
 const InsumoList: React.FC<InsumoListProps> = ({ insumos, onEdit }) => {
   const deleteMutation = useDeleteInsumo();
+  const [isSupplierDetailsDialogOpen, setIsSupplierDetailsDialogOpen] = useState(false);
+  const [selectedInsumoForDetails, setSelectedInsumoForDetails] = useState<Insumo | null>(null);
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
+  };
+
+  const handleOpenSupplierDetails = (insumo: Insumo) => {
+    setSelectedInsumoForDetails(insumo);
+    setIsSupplierDetailsDialogOpen(true);
+  };
+
+  const handleCloseSupplierDetails = () => {
+    setIsSupplierDetailsDialogOpen(false);
+    setSelectedInsumoForDetails(null);
   };
 
   if (insumos.length === 0) {
@@ -41,7 +55,7 @@ const InsumoList: React.FC<InsumoListProps> = ({ insumos, onEdit }) => {
         <TableHeader className="bg-gray-50 dark:bg-gray-700">
           <TableRow>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Nombre</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Categoría</TableHead> {/* Added Category Header */}
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Categoría</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Unidad de Compra</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Unitario (S/)</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Stock</TableHead>
@@ -54,7 +68,7 @@ const InsumoList: React.FC<InsumoListProps> = ({ insumos, onEdit }) => {
               <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{insumo.nombre}</TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
                 <Badge variant="secondary" className="text-sm px-2 py-1">{insumo.category}</Badge>
-              </TableCell> {/* Added Category Cell */}
+              </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{insumo.purchase_unit}</TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {insumo.costo_unitario.toFixed(2)}</TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">{insumo.stock_quantity}</TableCell>
@@ -66,6 +80,14 @@ const InsumoList: React.FC<InsumoListProps> = ({ insumos, onEdit }) => {
                   className="h-10 w-10 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150 ease-in-out"
                 >
                   <Edit className="h-5 w-5 text-blue-600" />
+                </Button>
+                <Button
+                  variant="outline"
+                  size="icon"
+                  onClick={() => handleOpenSupplierDetails(insumo)}
+                  className="h-10 w-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out"
+                >
+                  <Building2 className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                 </Button>
                 <AlertDialog>
                   <AlertDialogTrigger asChild>
@@ -100,6 +122,15 @@ const InsumoList: React.FC<InsumoListProps> = ({ insumos, onEdit }) => {
           ))}
         </TableBody>
       </Table>
+
+      <Dialog open={isSupplierDetailsDialogOpen} onOpenChange={setIsSupplierDetailsDialogOpen}>
+        {selectedInsumoForDetails && (
+          <InsumoSupplierDetailsDialog
+            insumo={selectedInsumoForDetails}
+            onClose={handleCloseSupplierDetails}
+          />
+        )}
+      </Dialog>
     </div>
   );
 };
