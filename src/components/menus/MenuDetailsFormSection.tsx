@@ -109,12 +109,17 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
                   field.onChange(value);
                   if (value === "daily") {
                     form.setValue("event_type_id", null); // Clear event type ID
-                    const newMenuDate = preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null;
-                    form.setValue("menu_date", newMenuDate); // Set menu date
+                    // Determine the correct date to set:
+                    // If editing an existing daily menu, use its original date.
+                    // If creating a new daily menu, use the preselectedDate from the calendar.
+                    const dateToSet = initialData?.menu_date && initialData.menu_date !== null
+                      ? initialData.menu_date // Use existing menu's date
+                      : (preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null); // Use preselected date or null
+                    form.setValue("menu_date", dateToSet);
                     // Auto-generate title if it's a new menu or if the title is currently empty
                     if (!initialData || !form.getValues("title")) {
-                      if (newMenuDate) {
-                        const newTitle = format(new Date(newMenuDate), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: es });
+                      if (dateToSet) {
+                        const newTitle = format(new Date(dateToSet), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: es });
                         form.setValue("title", newTitle, { shouldValidate: true });
                       }
                     }
