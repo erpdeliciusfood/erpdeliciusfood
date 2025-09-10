@@ -34,17 +34,17 @@ const formSchema = z.object({
     message: "La cantidad de cambio debe ser mayor a 0.",
   }).max(999999.99, {
     message: "La cantidad de cambio no debe exceder 999999.99.",
-  }).optional(), // Made optional as it's conditional
+  }).optional(),
   total_purchase_amount: z.coerce.number().min(0.01, {
     message: "El monto total de la compra debe ser mayor a 0.",
   }).max(9999999.99, {
     message: "El monto total de la compra no debe exceder 9,999,999.99.",
-  }).optional(), // Optional, conditional
+  }).optional(),
   total_purchase_quantity: z.coerce.number().min(0.01, {
     message: "La cantidad comprada debe ser mayor a 0.",
   }).max(999999.99, {
     message: "La cantidad comprada no debe exceder 999,999.99.",
-  }).optional(), // Optional, conditional
+  }).optional(),
   notes: z.string().max(500, {
     message: "Las notas no deben exceder los 500 caracteres.",
   }).nullable(),
@@ -64,7 +64,7 @@ const formSchema = z.object({
         path: ["total_purchase_quantity"],
       });
     }
-  } else {
+  } else { // adjustment_in or adjustment_out
     if (data.quantity_change === undefined || data.quantity_change <= 0) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
@@ -97,6 +97,9 @@ const StockMovementForm: React.FC<StockMovementFormProps> = ({ onSuccess, onCanc
   });
 
   const movementType = form.watch("movement_type");
+  const selectedInsumoId = form.watch("insumo_id");
+  const selectedInsumo = availableInsumos?.find(insumo => insumo.id === selectedInsumoId);
+  const purchaseUnit = selectedInsumo?.purchase_unit || "unidad";
 
   useEffect(() => {
     // Reset form fields when it's opened or closed, or when movement type changes
@@ -210,7 +213,7 @@ const StockMovementForm: React.FC<StockMovementFormProps> = ({ onSuccess, onCanc
               name="total_purchase_quantity"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad Comprada (en Unidad de Compra)</FormLabel>
+                  <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad Comprada {selectedInsumoId && `(en ${purchaseUnit})`}</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
@@ -233,7 +236,7 @@ const StockMovementForm: React.FC<StockMovementFormProps> = ({ onSuccess, onCanc
             name="quantity_change"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad de Cambio (en Unidad de Compra)</FormLabel>
+                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad de Cambio {selectedInsumoId && `(en ${purchaseUnit})`}</FormLabel>
                 <FormControl>
                   <Input
                     type="number"
