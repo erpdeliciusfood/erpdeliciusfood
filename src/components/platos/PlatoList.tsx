@@ -57,7 +57,6 @@ const PlatoList: React.FC<PlatoListProps> = ({ platos, onEdit }) => {
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Nombre</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Descripción</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Producción (S/)</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Precio de Venta (S/)</TableHead> {/* REINTRODUCED */}
             <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
           </TableRow>
         </TableHeader>
@@ -69,7 +68,6 @@ const PlatoList: React.FC<PlatoListProps> = ({ platos, onEdit }) => {
                 <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{plato.nombre}</TableCell>
                 <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{plato.descripcion || "N/A"}</TableCell>
                 <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {productionCost.toFixed(2)}</TableCell>
-                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {plato.precio_venta.toFixed(2)}</TableCell> {/* REINTRODUCED */}
                 <TableCell className="flex justify-center space-x-2 py-3 px-6">
                   <Button
                     variant="outline"

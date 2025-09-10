@@ -3,7 +3,6 @@ import { Loader2, BarChart3, CalendarDays, ChevronDown, DollarSign } from "lucid
 import { useInsumos } from "@/hooks/useInsumos";
 import StockOverview from "@/components/reports/StockOverview";
 import ConsumptionReport from "@/components/reports/ConsumptionReport";
-import SalesProfitabilityReport from "@/components/reports/SalesProfitabilityReport"; // REINTRODUCED
 import FinancialOverviewReport from "@/components/reports/FinancialOverviewReport";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Button } from "@/components/ui/button";
@@ -145,7 +144,6 @@ const Reports = () => {
       <div className="grid grid-cols-1 gap-8 mb-8">
         {dateRange.from && dateRange.to ? (
           <>
-            <SalesProfitabilityReport startDate={dateRange.from} endDate={dateRange.to} /> {/* REINTRODUCED */}
             <FinancialOverviewReport startDate={dateRange.from} endDate={dateRange.to} />
             <ConsumptionReport startDate={dateRange.from} endDate={dateRange.to} />
           </>
