@@ -21,9 +21,9 @@ export interface InsumoFormValues {
   base_unit: string;
   costo_unitario: number;
   stock_quantity: number;
-  // supplier_name: string | null; // REMOVED
-  // supplier_phone: string | null; // REMOVED
-  // supplier_address: string | null; // REMOVED
+  supplier_name: string | null; // UNCOMMENTED
+  supplier_phone: string | null; // UNCOMMENTED
+  supplier_address: string | null; // UNCOMMENTED
   purchase_unit: string;
   conversion_factor: number;
   min_stock_level: number;
