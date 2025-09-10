@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, Utensils, UserCircle2, Home, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText, Warehouse } from "lucide-react";
+import { LogOut, Utensils, UserCircle2, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText, Warehouse } from "lucide-react";
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
@@ -27,9 +27,9 @@ const Header: React.FC = () => {
   return (
     <header className="bg-primary dark:bg-primary-foreground text-primary-foreground dark:text-primary p-4 shadow-md">
       <div className="container mx-auto flex justify-between items-center">
-        <Link to="/" className="text-2xl font-bold flex items-center">
-          <Home className="mr-2 h-6 w-6" />
-          ERP App
+        <Link to="/" className="flex items-center">
+          <img src="/brand.svg" alt="App Logo" className="h-8 w-auto mr-2 text-primary-foreground dark:text-primary" />
+          <span className="text-2xl font-bold">ERP App</span>
         </Link>
         <nav className="flex items-center space-x-4">
           <Link to="/insumos">
@@ -38,7 +38,7 @@ const Header: React.FC = () => {
               Insumos
             </Button>
           </Link>
-          <Link to="/recetas"> {/* Changed link path and text */}
+          <Link to="/recetas">
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <ChefHat className="mr-2 h-5 w-5" />
               Recetas
