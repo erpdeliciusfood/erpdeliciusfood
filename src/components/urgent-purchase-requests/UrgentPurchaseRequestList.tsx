@@ -229,7 +229,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                   </Button>
                 )}
 
-                {request.status === 'approved' && ( // Only show edit for approved requests
+                {(request.status === 'pending' || request.status === 'approved') && ( // Allow editing for pending and approved requests
                   <Button
                     variant="outline"
                     size="icon"
