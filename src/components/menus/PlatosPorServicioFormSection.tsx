@@ -108,7 +108,6 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
                 </FormItem>
               )}
             />
-            {/* Changed receta_id to plato_id */}
             <FormField
               control={form.control}
               name={`platos_por_servicio.${index}.plato_id`}
@@ -198,7 +197,6 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
             </Button>
           </div>
         ))}
-        {/* Changed receta_id to plato_id */}
         <Button
           type="button"
           variant="outline"
