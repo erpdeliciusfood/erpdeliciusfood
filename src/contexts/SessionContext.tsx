@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Session, User } from '@supabase/supabase-js';
+import { Session, User, AuthChangeEvent } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
-import { useNavigate, useLocation } from 'react-router-dom'; // Import useLocation
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
 
 interface SessionContextType {
@@ -17,14 +17,13 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
-  const location = useLocation(); // Get current location
+  const location = useLocation();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, currentSession: Session | null) => {
       if (currentSession) {
         setSession(currentSession);
         setUser(currentSession.user);
-        // Only redirect to '/' if not already on a protected route or if just signed in
         if (event === 'SIGNED_IN' && location.pathname === '/login') {
           navigate('/');
         } else if (event === 'USER_UPDATED') {
@@ -33,7 +32,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
       } else {
         setSession(null);
         setUser(null);
-        if (location.pathname !== '/login') { // Only redirect to login if not already there
+        if (location.pathname !== '/login') {
           navigate('/login');
         }
       }
@@ -41,15 +40,15 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     });
 
     // Fetch initial session
-    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
+    supabase.auth.getSession().then(({ data: { session: initialSession } }: { data: { session: Session | null } }) => {
       if (initialSession) {
         setSession(initialSession);
         setUser(initialSession.user);
-        if (location.pathname === '/login') { // If user is already logged in and tries to access /login, redirect to /
+        if (location.pathname === '/login') {
           navigate('/');
         }
       } else {
-        if (location.pathname !== '/login') { // If no session and not on login page, redirect to login
+        if (location.pathname !== '/login') {
           navigate('/login');
         }
       }
@@ -57,7 +56,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
     });
 
     return () => subscription.unsubscribe();
-  }, [navigate, location]); // Add location to dependency array
+  }, [navigate, location]);
 
   if (isLoading) {
     return (
