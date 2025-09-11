@@ -42,7 +42,7 @@ const formSchema = z.object({
     if (item.quantity_to_deduct > item.current_stock_quantity) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
-        message: `La cantidad a deducir (${item.quantity_to_deduct}) no puede ser mayor que el stock actual (${item.current_stock_quantity}).`,
+        message: `La cantidad a deducir (${item.quantity_to_deduct.toFixed(2)}) no puede ser mayor que el stock actual (${item.current_stock_quantity.toFixed(2)}).`,
         path: [`insumos_to_deduct.${index}.quantity_to_deduct`],
       });
     }
@@ -185,18 +185,23 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
                   name={`insumos_to_deduct.${index}.quantity_to_deduct`}
                   render={({ field: quantityField }) => (
                     <FormItem className="w-full md:w-1/3">
-                      <FormLabel className="sr-only">Cantidad a Deducir</FormLabel>
+                      <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                        Cantidad a Deducir ({item.purchase_unit})
+                      </FormLabel>
                       <FormControl>
                         <Input
                           type="number"
                           step="0.01"
-                          placeholder={`Cantidad (${item.purchase_unit})`}
+                          placeholder={`Sugerido: ${item.suggested_quantity.toFixed(2)} ${item.purchase_unit}`}
                           {...quantityField}
                           onChange={(e) => quantityField.onChange(parseFloat(e.target.value))}
                           className="h-10 text-base"
                           disabled={isDeductingStock}
                         />
                       </FormControl>
+                      <FormDescription className="text-sm text-gray-600 dark:text-gray-400">
+                        Cantidad sugerida: {item.suggested_quantity.toFixed(2)} {item.purchase_unit}. Puedes ajustar este valor.
+                      </FormDescription>
                       <FormMessage />
                     </FormItem>
                   )}
