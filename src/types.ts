@@ -169,6 +169,7 @@ export interface AggregatedInsumoNeed {
   current_stock_quantity: number;
   total_needed_base_unit: number; // Added this line
   total_needed_purchase_unit: number;
+  missing_quantity: number; // NEW: Quantity missing if stock is insufficient
 }
 
 export interface StockMovement {
