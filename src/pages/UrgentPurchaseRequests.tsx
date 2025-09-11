@@ -13,7 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 const UrgentPurchaseRequests = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingRequest, setEditingRequest] = useState<UrgentPurchaseRequest | null>(null);
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState<UrgentPurchaseRequest['status'] | 'all'>('all'); // NEW: State for status filter
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<UrgentPurchaseRequest['status'] | 'all'>('pending'); // MODIFIED: Default filter to 'pending'
 
   const { data: requests, isLoading, isError, error } = useUrgentPurchaseRequests(
     selectedStatusFilter === 'all' ? undefined : selectedStatusFilter // Pass status filter to the hook
