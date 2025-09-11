@@ -24,18 +24,19 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { UrgentPurchaseRequest, UrgentPurchaseRequestFormValues } from "@/types";
-import { useUpdateUrgentPurchaseRequest } from "@/hooks/useUrgentPurchaseRequests";
+import { useAddUrgentPurchaseRequest, useUpdateUrgentPurchaseRequest } from "@/hooks/useUrgentPurchaseRequests"; // NEW: Import useAddUrgentPurchaseRequest
 import { useInsumos } from "@/hooks/useInsumos"; // To display insumo name
 import { format } from "date-fns"; // NEW: Import format
 import { es } from "date-fns/locale"; // NEW: Import es locale
 
 const formSchema = z.object({
+  insumo_id: z.string().min(1, { message: "Debe seleccionar un insumo." }), // NEW: Add insumo_id to schema for creation
   quantity_requested: z.coerce.number().min(1, { message: "La cantidad solicitada debe ser al menos 1." }).max(999999, { message: "La cantidad no debe exceder 999999." }),
   notes: z.string().max(500, { message: "Las notas no deben exceder los 500 caracteres." }).nullable(),
   priority: z.enum(['urgent', 'high', 'medium', 'low'], { required_error: "La prioridad es requerida." }),
   status: z.enum(['pending', 'approved', 'rejected', 'fulfilled'], { required_error: "El estado es requerido." }),
-  rejection_reason: z.string().max(500, { message: "El motivo de rechazo no debe exceder los 500 caracteres." }).nullable().optional(), // NEW: Add rejection_reason to schema
-  fulfilled_purchase_record_id: z.string().nullable().optional(), // NEW: Add fulfilled_purchase_record_id to schema
+  rejection_reason: z.string().max(500, { message: "El motivo de rechazo no debe exceder los 500 caracteres." }).nullable().optional(),
+  fulfilled_purchase_record_id: z.string().nullable().optional(),
 });
 
 interface UrgentPurchaseRequestFormProps {
@@ -49,53 +50,73 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
   onSuccess,
   onCancel,
 }) => {
+  const addUrgentPurchaseRequestMutation = useAddUrgentPurchaseRequest(); // NEW
   const updateUrgentPurchaseRequestMutation = useUpdateUrgentPurchaseRequest();
-  const { isLoading: isLoadingInsumos } = useInsumos(undefined, undefined, 1, 1); 
+  const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos(undefined, undefined, 1, 9999); // Fetch all insumos for selection
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
+      insumo_id: initialData?.insumo_id || "", // NEW: Set default for insumo_id
       quantity_requested: initialData?.quantity_requested || 1,
       notes: initialData?.notes || "",
       priority: initialData?.priority || 'urgent',
       status: initialData?.status || 'pending',
-      rejection_reason: initialData?.rejection_reason || "", // NEW: Set default for rejection_reason
-      fulfilled_purchase_record_id: initialData?.fulfilled_purchase_record_id || "", // NEW: Set default for fulfilled_purchase_record_id
+      rejection_reason: initialData?.rejection_reason || "",
+      fulfilled_purchase_record_id: initialData?.fulfilled_purchase_record_id || "",
     },
   });
 
   useEffect(() => {
     if (initialData) {
       form.reset({
+        insumo_id: initialData.insumo_id,
         quantity_requested: initialData.quantity_requested,
         notes: initialData.notes || "",
         priority: initialData.priority,
         status: initialData.status,
-        rejection_reason: initialData.rejection_reason || "", // NEW: Reset rejection_reason
-        fulfilled_purchase_record_id: initialData.fulfilled_purchase_record_id || "", // NEW: Reset fulfilled_purchase_record_id
+        rejection_reason: initialData.rejection_reason || "",
+        fulfilled_purchase_record_id: initialData.fulfilled_purchase_record_id || "",
+      });
+    } else {
+      // Reset for new request
+      form.reset({
+        insumo_id: "",
+        quantity_requested: 1,
+        notes: "",
+        priority: 'urgent',
+        status: 'pending',
+        rejection_reason: "",
+        fulfilled_purchase_record_id: "",
       });
     }
   }, [initialData, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    if (!initialData?.id) return; // Should not happen if initialData is provided
-
-    const requestData: Partial<UrgentPurchaseRequestFormValues & { status: UrgentPurchaseRequest['status'] }> = {
+    const requestData: UrgentPurchaseRequestFormValues = {
+      insumo_id: values.insumo_id,
       quantity_requested: values.quantity_requested,
       notes: values.notes,
       priority: values.priority,
       status: values.status,
-      // rejection_reason and fulfilled_purchase_record_id are read-only in this form,
-      // so they are not sent in the update payload. They are managed by other dialogs.
+      // rejection_reason and fulfilled_purchase_record_id are read-only in this form for editing,
+      // and not directly set during creation from this form.
     };
-    await updateUrgentPurchaseRequestMutation.mutateAsync({ id: initialData.id, request: requestData });
+
+    if (initialData?.id) {
+      // Editing existing request
+      await updateUrgentPurchaseRequestMutation.mutateAsync({ id: initialData.id, request: requestData });
+    } else {
+      // Creating new request
+      await addUrgentPurchaseRequestMutation.mutateAsync(requestData);
+    }
     onSuccess();
   };
 
-  const isLoading = updateUrgentPurchaseRequestMutation.isPending || isLoadingInsumos;
-  const insumoName = initialData?.insumos?.nombre || "Insumo Desconocido";
-  const purchaseUnit = initialData?.insumos?.purchase_unit || "unidad";
-  const currentStatus = form.watch("status"); // Watch current status to conditionally display fields
+  const isLoading = addUrgentPurchaseRequestMutation.isPending || updateUrgentPurchaseRequestMutation.isPending || isLoadingInsumos;
+  const insumoName = initialData?.insumos?.nombre || availableInsumosData?.data.find(i => i.id === form.watch("insumo_id"))?.nombre || "Insumo Desconocido"; // NEW: Get insumo name from availableInsumosData if creating
+  const purchaseUnit = initialData?.insumos?.purchase_unit || availableInsumosData?.data.find(i => i.id === form.watch("insumo_id"))?.purchase_unit || "unidad"; // NEW: Get purchase unit from availableInsumosData if creating
+  const currentStatus = form.watch("status");
 
   return (
     <Form {...form}>
@@ -103,16 +124,46 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Insumo</FormLabel>
-            <Input
-              value={`${insumoName} (${purchaseUnit})`}
-              readOnly
-              className="h-10 text-base mt-1 bg-gray-100 dark:bg-gray-700"
-            />
+            {initialData ? ( // If editing, show read-only insumo name
+              <Input
+                value={`${insumoName} (${purchaseUnit})`}
+                readOnly
+                className="h-10 text-base mt-1 bg-gray-100 dark:bg-gray-700"
+              />
+            ) : ( // If creating, show a select for insumo
+              <FormField
+                control={form.control}
+                name="insumo_id"
+                render={({ field }) => (
+                  <FormItem>
+                    <Select
+                      onValueChange={field.onChange}
+                      defaultValue={field.value}
+                      disabled={isLoading || !availableInsumosData?.data || availableInsumosData.data.length === 0}
+                    >
+                      <FormControl>
+                        <SelectTrigger className="h-12 text-base">
+                          <SelectValue placeholder="Selecciona un insumo" />
+                        </SelectTrigger>
+                      </FormControl>
+                      <SelectContent>
+                        {availableInsumosData?.data.map((insumo) => (
+                          <SelectItem key={insumo.id} value={insumo.id}>
+                            {insumo.nombre} ({insumo.purchase_unit})
+                          </SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
           </div>
           <div>
             <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Fecha de Solicitud</FormLabel>
             <Input
-              value={initialData?.request_date ? format(new Date(initialData.request_date), "PPP", { locale: es }) : "N/A"}
+              value={initialData?.request_date ? format(new Date(initialData.request_date), "PPP", { locale: es }) : format(new Date(), "PPP", { locale: es })}
               readOnly
               className="h-10 text-base mt-1 bg-gray-100 dark:bg-gray-700"
             />
@@ -290,12 +341,12 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
             disabled={isLoading}
           >
             {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-            Guardar Cambios
+            {initialData ? "Guardar Cambios" : "Crear Solicitud"}
           </Button>
         </div>
       </form>
     </Form>
-  ); // NEW: Added missing closing parenthesis and semicolon
+  );
 };
 
 export default UrgentPurchaseRequestForm;
