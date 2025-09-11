@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, AlertTriangle, Utensils } from "lucide-react";
+import { Loader2, AlertTriangle, Utensils, RotateCcw } from "lucide-react"; // NEW: Import RotateCcw icon
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { AggregatedInsumoNeed } from "@/types";
@@ -188,17 +188,30 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
                       <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
                         Cantidad a Deducir ({item.purchase_unit})
                       </FormLabel>
-                      <FormControl>
-                        <Input
-                          type="number"
-                          step="0.01"
-                          placeholder={`Sugerido: ${item.suggested_quantity.toFixed(2)} ${item.purchase_unit}`}
-                          {...quantityField}
-                          onChange={(e) => quantityField.onChange(parseFloat(e.target.value))}
-                          className="h-10 text-base"
+                      <div className="flex items-center gap-2"> {/* NEW: Wrapper for input and reset button */}
+                        <FormControl>
+                          <Input
+                            type="number"
+                            step="0.01"
+                            placeholder={`Sugerido: ${item.suggested_quantity.toFixed(2)} ${item.purchase_unit}`}
+                            {...quantityField}
+                            onChange={(e) => quantityField.onChange(parseFloat(e.target.value))}
+                            className="h-10 text-base"
+                            disabled={isDeductingStock}
+                          />
+                        </FormControl>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          onClick={() => form.setValue(`insumos_to_deduct.${index}.quantity_to_deduct`, item.suggested_quantity, { shouldValidate: true })}
+                          className="h-10 w-10 flex-shrink-0"
                           disabled={isDeductingStock}
-                        />
-                      </FormControl>
+                          title="Restablecer a cantidad sugerida"
+                        >
+                          <RotateCcw className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                        </Button>
+                      </div>
                       <FormDescription className="text-sm text-gray-600 dark:text-gray-400">
                         Cantidad sugerida: {item.suggested_quantity.toFixed(2)} {item.purchase_unit}. Puedes ajustar este valor.
                       </FormDescription>
