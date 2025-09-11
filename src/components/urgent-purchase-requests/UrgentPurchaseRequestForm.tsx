@@ -34,7 +34,8 @@ const formSchema = z.object({
   notes: z.string().max(500, { message: "Las notas no deben exceder los 500 caracteres." }).nullable(),
   priority: z.enum(['urgent', 'high', 'medium', 'low'], { required_error: "La prioridad es requerida." }),
   status: z.enum(['pending', 'approved', 'rejected', 'fulfilled'], { required_error: "El estado es requerido." }),
-  // fulfilled_purchase_record_id: z.string().nullable().optional(), // Optional: if we want to link to a specific purchase record
+  rejection_reason: z.string().max(500, { message: "El motivo de rechazo no debe exceder los 500 caracteres." }).nullable().optional(), // NEW: Add rejection_reason to schema
+  fulfilled_purchase_record_id: z.string().nullable().optional(), // NEW: Add fulfilled_purchase_record_id to schema
 });
 
 interface UrgentPurchaseRequestFormProps {
@@ -49,7 +50,6 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
   onCancel,
 }) => {
   const updateUrgentPurchaseRequestMutation = useUpdateUrgentPurchaseRequest();
-  // Removed 'insumoData' as it was unused. 'isLoadingInsumos' is still useful for overall loading state.
   const { isLoading: isLoadingInsumos } = useInsumos(undefined, undefined, 1, 1); 
 
   const form = useForm<z.infer<typeof formSchema>>({
@@ -59,6 +59,8 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
       notes: initialData?.notes || "",
       priority: initialData?.priority || 'urgent',
       status: initialData?.status || 'pending',
+      rejection_reason: initialData?.rejection_reason || "", // NEW: Set default for rejection_reason
+      fulfilled_purchase_record_id: initialData?.fulfilled_purchase_record_id || "", // NEW: Set default for fulfilled_purchase_record_id
     },
   });
 
@@ -69,6 +71,8 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
         notes: initialData.notes || "",
         priority: initialData.priority,
         status: initialData.status,
+        rejection_reason: initialData.rejection_reason || "", // NEW: Reset rejection_reason
+        fulfilled_purchase_record_id: initialData.fulfilled_purchase_record_id || "", // NEW: Reset fulfilled_purchase_record_id
       });
     }
   }, [initialData, form]);
@@ -81,6 +85,8 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
       notes: values.notes,
       priority: values.priority,
       status: values.status,
+      // rejection_reason and fulfilled_purchase_record_id are read-only in this form,
+      // so they are not sent in the update payload. They are managed by other dialogs.
     };
     await updateUrgentPurchaseRequestMutation.mutateAsync({ id: initialData.id, request: requestData });
     onSuccess();
@@ -89,6 +95,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
   const isLoading = updateUrgentPurchaseRequestMutation.isPending || isLoadingInsumos;
   const insumoName = initialData?.insumos?.nombre || "Insumo Desconocido";
   const purchaseUnit = initialData?.insumos?.purchase_unit || "unidad";
+  const currentStatus = form.watch("status"); // Watch current status to conditionally display fields
 
   return (
     <Form {...form}>
@@ -201,6 +208,52 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
           </div>
         )}
 
+        {currentStatus === 'rejected' && (
+          <FormField
+            control={form.control}
+            name="rejection_reason"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Motivo de Rechazo</FormLabel>
+                <FormControl>
+                  <Textarea
+                    placeholder="Motivo del rechazo"
+                    {...field}
+                    value={field.value || ""}
+                    className="min-h-[80px] text-base bg-gray-100 dark:bg-gray-700"
+                    readOnly
+                    disabled // Ensure it's truly disabled for editing here
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {currentStatus === 'fulfilled' && (
+          <FormField
+            control={form.control}
+            name="fulfilled_purchase_record_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">ID de Registro de Compra Cumplida</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="ID del registro de compra"
+                    {...field}
+                    value={field.value || ""}
+                    className="h-10 text-base bg-gray-100 dark:bg-gray-700"
+                    readOnly
+                    disabled // Ensure it's truly disabled for editing here
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
         <FormField
           control={form.control}
           name="notes"
@@ -242,7 +295,3 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
         </div>
       </form>
     </Form>
-  );
-};
-
-export default UrgentPurchaseRequestForm;
