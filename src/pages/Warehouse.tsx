@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { Loader2, Warehouse, CalendarDays, ChevronDown } from "lucide-react";
+import { Loader2, Warehouse, CalendarDays, ChevronDown, PlusCircle } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -10,16 +10,23 @@ import { cn } from "@/lib/utils";
 import { useMenus } from "@/hooks/useMenus";
 import DailyPrepOverview from "@/components/warehouse/DailyPrepOverview";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
-import StockDashboard from "@/components/warehouse/StockDashboard"; // NEW: Import StockDashboard
+import StockDashboard from "@/components/warehouse/StockDashboard";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"; // NEW: Import Dialog components
+import UrgentPurchaseRequestForm from "@/components/urgent-purchase-requests/UrgentPurchaseRequestForm"; // NEW: Import UrgentPurchaseRequestForm
 
 const WarehousePage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
+  const [isUrgentRequestFormOpen, setIsUrgentRequestFormOpen] = useState(false); // NEW: State for urgent request form
 
   const formattedSelectedDate = selectedDate ? format(selectedDate, "yyyy-MM-dd") : undefined;
   const { data: menusForSelectedDate, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenus(formattedSelectedDate, formattedSelectedDate);
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
+  };
+
+  const handleUrgentRequestFormClose = () => { // NEW: Handler to close the form
+    setIsUrgentRequestFormOpen(false);
   };
 
   if (isLoadingMenus) {
@@ -51,10 +58,33 @@ const WarehousePage: React.FC = () => {
       />
 
       <div className="mb-8">
-        <StockDashboard /> {/* NEW: Render the StockDashboard here */}
+        <StockDashboard />
       </div>
 
       <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4">
+        {/* NEW: Urgent Purchase Request Button */}
+        <Dialog open={isUrgentRequestFormOpen} onOpenChange={setIsUrgentRequestFormOpen}>
+          <DialogTrigger asChild>
+            <Button
+              className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-xl w-full sm:w-auto"
+            >
+              <PlusCircle className="mr-3 h-6 w-6" />
+              Crear Solicitud Urgente
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px] md:max-w-lg p-6 max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                Crear Nueva Solicitud Urgente
+              </DialogTitle>
+            </DialogHeader>
+            <UrgentPurchaseRequestForm
+              onSuccess={handleUrgentRequestFormClose}
+              onCancel={handleUrgentRequestFormClose}
+            />
+          </DialogContent>
+        </Dialog>
+
         <div className="flex items-center space-x-2">
           <Popover>
             <PopoverTrigger asChild>
