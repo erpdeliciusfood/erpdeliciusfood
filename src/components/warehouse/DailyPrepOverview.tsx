@@ -12,6 +12,8 @@ import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast
 import { useQueryClient } from "@tanstack/react-query";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { ColoredProgress } from "@/components/ui/colored-progress"; // NEW: Import ColoredProgress component
+import { cn } from "@/lib/utils";
 
 interface DailyPrepOverviewProps {
   selectedDate: Date;
@@ -211,11 +213,38 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                 <TableBody>
                   {aggregatedInsumoNeeds.map((need) => {
                     const isSufficient = need.current_stock_quantity >= need.total_needed_purchase_unit;
+                    const progressValue = need.total_needed_purchase_unit > 0
+                      ? Math.min(100, (need.current_stock_quantity / need.total_needed_purchase_unit) * 100)
+                      : 100; // If no need, consider 100% covered
+                    const progressColor = isSufficient ? "bg-green-500" : "bg-red-500";
+
                     return (
-                      <TableRow key={need.insumo_id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
+                      <TableRow
+                        key={need.insumo_id}
+                        className={cn(
+                          "border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out",
+                          !isSufficient && "bg-red-50/50 dark:bg-red-900/20" // Highlight rows with insufficient stock
+                        )}
+                      >
                         <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{need.insumo_nombre}</TableCell>
                         <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">
-                          {need.current_stock_quantity.toFixed(2)} {need.purchase_unit}
+                          <div className="flex flex-col items-end">
+                            <span className="font-semibold">{need.current_stock_quantity.toFixed(2)} {need.purchase_unit}</span>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <ColoredProgress
+                                    value={progressValue}
+                                    className="w-24 h-2 mt-1 cursor-help"
+                                    indicatorColorClass={progressColor}
+                                  />
+                                </TooltipTrigger>
+                                <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
+                                  <p>{progressValue.toFixed(0)}% Cubierto</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
                         </TableCell>
                         <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">
                           <TooltipProvider>
@@ -243,11 +272,11 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                         </TableCell>
                         <TableCell className="text-center">
                           {isSufficient ? (
-                            <Badge className="bg-green-500 hover:bg-green-600 text-white">
+                            <Badge className="bg-green-500 hover:bg-green-600 text-white text-base px-3 py-1">
                               <CheckCircle2 className="h-4 w-4 mr-1" /> Suficiente
                             </Badge>
                           ) : (
-                            <Badge variant="destructive">
+                            <Badge variant="destructive" className="text-base px-3 py-1">
                               <AlertTriangle className="h-4 w-4 mr-1" /> Insuficiente
                             </Badge>
                           )}
