@@ -41,7 +41,7 @@ export const getMenus = async (startDate?: string, endDate?: string): Promise<Me
       event_types (id, name, description),
       menu_platos (
         *,
-        meal_services (id, name, description, order_index),
+        meal_services (id, name, description),
         platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id)
       )
     `)
@@ -67,7 +67,7 @@ export const getMenuById = async (id: string): Promise<Menu> => {
       event_types (id, name, description),
       menu_platos (
         *,
-        meal_services (id, name, description, order_index),
+        meal_services (id, name, description),
         platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id)
       )
     `)

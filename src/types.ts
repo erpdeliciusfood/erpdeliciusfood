@@ -105,7 +105,7 @@ export interface MealService {
   id: string;
   name: string;
   description?: string;
-  order_index: number; // Para ordenar los servicios de comida (ej. Desayuno, Almuerzo, Cena)
+  // order_index: number; // Para ordenar los servicios de comida (ej. Desayuno, Almuerzo, Cena)
 }
 
 export interface MenuPlato {
@@ -129,10 +129,7 @@ export interface Menu {
   event_type?: EventType | null; // Corrected from event_types
   menu_platos: MenuPlato[];
   created_at: string; // Added
-  // Removed: meal_service_id: string;
-  // Removed: meal_service: MealService;
-  // Removed: total_cost: number;
-  // Removed: total_servings: number;
+  // Removed: meal_service_id, meal_service, total_cost, total_servings
 }
 
 // Form values for Menu
@@ -321,7 +318,7 @@ export interface DishCategoryBreakdown {
 export interface MealServiceBreakdown {
   serviceId: string;
   serviceName: string;
-  serviceOrderIndex: number;
+  // serviceOrderIndex: number; // Removed
   categories: DishCategoryBreakdown[];
 }
 

@@ -36,7 +36,7 @@ export const getServiceReports = async (): Promise<ServiceReport[]> => {
     .from("service_reports")
     .select(`
       *,
-      meal_services (id, name, description, order_index),
+      meal_services (id, name, description),
       service_report_platos (
         *,
         platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id) -- Añadido user_id
@@ -126,7 +126,7 @@ export const getServiceReportsById = async (id: string): Promise<ServiceReport> 
     .from("service_reports")
     .select(`
       *,
-      meal_services (id, name, description, order_index),
+      meal_services (id, name, description),
       service_report_platos (
         *,
         platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id) -- Añadido user_id

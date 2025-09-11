@@ -85,7 +85,7 @@ const MenuBreakdown: React.FC = () => {
           mealServiceEntry = {
             serviceId: menuPlato.meal_service.id,
             serviceName: menuPlato.meal_service.name,
-            serviceOrderIndex: menuPlato.meal_service.order_index,
+            // serviceOrderIndex: menuPlato.meal_service.order_index, // Removed
             categories: [],
           };
           dailyBreakdown.mealServicesBreakdown.push(mealServiceEntry);
@@ -116,7 +116,8 @@ const MenuBreakdown: React.FC = () => {
     );
 
     sortedBreakdown.forEach(daily => {
-      daily.mealServicesBreakdown.sort((a, b) => a.serviceOrderIndex - b.serviceOrderIndex);
+      // Sort by serviceName alphabetically since order_index is removed
+      daily.mealServicesBreakdown.sort((a, b) => a.serviceName.localeCompare(b.serviceName));
       daily.mealServicesBreakdown.forEach(service => {
         service.categories.sort((a, b) => a.categoryName.localeCompare(b.categoryName));
         service.categories.forEach(category => {
