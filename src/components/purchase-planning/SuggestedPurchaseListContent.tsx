@@ -286,7 +286,9 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white text-lg px-3 py-1 inline-flex items-center">
-                        {insumo.purchase_suggestion_rounded} {insumo.purchase_unit}
+                        <span className="whitespace-nowrap"> {/* NEW: Added whitespace-nowrap */}
+                          {insumo.purchase_suggestion_rounded} {insumo.purchase_unit}
+                        </span>
                         {insumo.purchase_suggestion_rounded_up && (
                           <Info className="ml-1 h-4 w-4 text-white cursor-help" />
                         )}
