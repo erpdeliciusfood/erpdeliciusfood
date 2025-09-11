@@ -87,8 +87,7 @@ export interface RecetaFormValues {
   nombre: string;
   descripcion: string;
   category: string;
-  tiempo_preparacion: number;
-  costo_total: number;
+  // Removed tiempo_preparacion and costo_total as they are not directly from the form
   insumos: {
     insumo_id: string;
     cantidad_necesaria: number;

@@ -66,8 +66,10 @@ export const createReceta = async (receta: RecetaFormValues): Promise<Receta> =>
   const { data: newReceta, error: recetaError } = await supabase
     .from("recetas") // Changed from platos
     .insert({
-      ...recetaData,
+      nombre: recetaData.nombre,
+      descripcion: recetaData.descripcion,
       categoria: recetaData.category, // Map to DB field
+      // tiempo_preparacion and costo_total are not passed from form
     })
     .select()
     .single();
@@ -95,8 +97,10 @@ export const updateReceta = async (id: string, receta: RecetaFormValues): Promis
   const { data: updatedReceta, error: recetaError } = await supabase
     .from("recetas") // Changed from platos
     .update({
-      ...recetaData,
+      nombre: recetaData.nombre,
+      descripcion: recetaData.descripcion,
       categoria: recetaData.category, // Map to DB field
+      // tiempo_preparacion and costo_total are not passed from form
     })
     .eq("id", id)
     .select()
