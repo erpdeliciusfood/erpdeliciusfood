@@ -23,7 +23,7 @@ interface DailyMenuListProps {
 
 const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
   const deleteMutation = useDeleteMenu();
-  const { data: _availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
+  const { isLoading: isLoadingMealServices } = useMealServices();
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
