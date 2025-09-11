@@ -13,8 +13,9 @@ import { DateRange } from "react-day-picker";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // NEW: Import Select components
-import { InsumoNeeded } from "@/types"; // NEW: Import InsumoNeeded type for filter options
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { InsumoNeeded } from "@/types";
+import UrgentPurchaseAlert from "@/components/purchase-planning/UrgentPurchaseAlert"; // NEW: Import UrgentPurchaseAlert
 
 const PurchasePlanning = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -23,7 +24,7 @@ const PurchasePlanning = () => {
   });
   const [periodType, setPeriodType] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('monthly');
   const [isRegisterPurchaseFormOpen, setIsRegisterPurchaseFormOpen] = useState(false);
-  const [selectedReasonFilter, setSelectedReasonFilter] = useState<'all' | InsumoNeeded['reason_for_purchase_suggestion']>('all'); // NEW: State for reason filter
+  const [selectedReasonFilter, setSelectedReasonFilter] = useState<'all' | InsumoNeeded['reason_for_purchase_suggestion']>('all');
 
   const handlePeriodChange = (period: 'daily' | 'weekly' | 'monthly' | 'custom') => {
     setPeriodType(period);
@@ -64,7 +65,7 @@ const PurchasePlanning = () => {
         description="Analiza las necesidades de insumos según tus menús y stock."
         icon={ShoppingBag}
       />
-      <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4"> {/* Adjusted layout for buttons */}
+      <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4">
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
               <Button variant="outline" className="flex items-center gap-2">
@@ -123,7 +124,6 @@ const PurchasePlanning = () => {
             </Popover>
           )}
 
-          {/* NEW: Filter by Reason */}
           <Select onValueChange={(value: 'all' | InsumoNeeded['reason_for_purchase_suggestion']) => setSelectedReasonFilter(value)} value={selectedReasonFilter}>
             <SelectTrigger className="w-full md:w-[200px] h-12 text-base">
               <SelectValue placeholder="Filtrar por motivo" />
@@ -159,6 +159,10 @@ const PurchasePlanning = () => {
               />
             </DialogContent>
           </Dialog>
+      </div>
+
+      <div className="grid grid-cols-1 gap-6 mb-8"> {/* NEW: Grid for alerts and analysis */}
+        <UrgentPurchaseAlert /> {/* NEW: Render UrgentPurchaseAlert here */}
       </div>
 
       <div className="flex-grow">
