@@ -65,25 +65,25 @@ const LowStockAlerts: React.FC = () => {
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Insumo</TableHead>
-                  <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Stock Actual</TableHead>
-                  <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Stock Mínimo</TableHead>
-                  <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Unidad</TableHead>
+                  <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Insumo</TableHead>
+                  <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Stock Actual</TableHead>
+                  <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Stock Mínimo</TableHead>
+                  <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Unidad</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {lowStockInsumos.map((insumo: Insumo) => (
                   <TableRow key={insumo.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{insumo.nombre}</TableCell>
-                    <TableCell className="text-right text-base">
+                    <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[180px]">{insumo.nombre}</TableCell>
+                    <TableCell className="text-right text-base py-3 px-6 min-w-[150px]">
                       <Badge variant="destructive" className="text-lg px-3 py-1">
                         {insumo.stock_quantity}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">
+                    <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[150px]">
                       {insumo.min_stock_level}
                     </TableCell>
-                    <TableCell className="text-base text-gray-700 dark:text-gray-300">{insumo.purchase_unit}</TableCell>
+                    <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[120px]">{insumo.purchase_unit}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

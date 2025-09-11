@@ -95,21 +95,21 @@ const ConsumptionReport: React.FC<ConsumptionReportProps> = ({ startDate, endDat
             <Table>
               <TableHeader>
                 <TableRow>
-                  <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Insumo</TableHead>
-                  <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Cantidad Consumida</TableHead>
-                  <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Unidad Base</TableHead>
+                  <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Insumo</TableHead>
+                  <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Cantidad Consumida</TableHead>
+                  <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Unidad Base</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {insumoConsumptionData.map((data) => (
                   <TableRow key={data.insumoId} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                    <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{data.insumoName}</TableCell>
-                    <TableCell className="text-right text-base">
+                    <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[180px]">{data.insumoName}</TableCell>
+                    <TableCell className="text-right text-base py-3 px-6 min-w-[150px]">
                       <Badge variant="outline" className="text-lg px-3 py-1">
                         {data.totalConsumed.toFixed(2)}
                       </Badge>
                     </TableCell>
-                    <TableCell className="text-base text-gray-700 dark:text-gray-300">{data.baseUnit}</TableCell>
+                    <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[120px]">{data.baseUnit}</TableCell>
                   </TableRow>
                 ))}
               </TableBody>

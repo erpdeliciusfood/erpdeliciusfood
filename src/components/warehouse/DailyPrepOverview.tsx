@@ -26,7 +26,7 @@ interface DailyPrepOverviewProps {
 
 const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, menus }) => {
   const [stockFilter, setStockFilter] = useState<'all' | 'sufficient' | 'insufficient'>('all');
-  const [selectedInsumoIds, setSelectedInsumoIds] = useState<Set<string>>(new Set());
+  const [selectedInsumoIds, setSelectedInsumoIds] = new Set();
   const [isSelectAllChecked, setIsSelectAllChecked] = useState(false);
   const [isDeductQuantitiesDialogOpen, setIsDeductQuantitiesDialogOpen] = useState(false);
   const [isUrgentPurchaseRequestDialogOpen, setIsUrgentPurchaseRequestDialogOpen] = useState(false); // NEW: State for urgent purchase dialog
@@ -247,19 +247,19 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
               <Table>
                 <TableHeader>
                   <TableRow>
-                    <TableHead className="w-[50px] text-center">
+                    <TableHead className="w-[50px] text-center py-4 px-6">
                       <Checkbox
                         checked={isSelectAllChecked}
                         onCheckedChange={(checked: boolean) => handleSelectAllChange(checked)}
                         disabled={aggregatedInsumoNeeds.filter(need => need.total_needed_purchase_unit > 0).length === 0}
                       />
                     </TableHead>
-                    <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Insumo</TableHead>
-                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Stock Actual</TableHead>
-                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Necesidad</TableHead>
-                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Faltante</TableHead>
-                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Estado</TableHead>
-                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Acciones</TableHead> {/* NEW: Actions column */}
+                    <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Insumo</TableHead>
+                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Stock Actual</TableHead>
+                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Necesidad</TableHead>
+                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Faltante</TableHead>
+                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Estado</TableHead>
+                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Acciones</TableHead> {/* NEW: Actions column */}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -278,15 +278,15 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                           !isSufficient && "bg-red-50/50 dark:bg-red-900/20"
                         )}
                       >
-                        <TableCell className="text-center">
+                        <TableCell className="text-center py-3 px-6">
                           <Checkbox
                             checked={selectedInsumoIds.has(need.insumo_id)}
                             onCheckedChange={(checked: boolean) => handleCheckboxChange(need.insumo_id, checked)}
                             disabled={need.total_needed_purchase_unit === 0}
                           />
                         </TableCell>
-                        <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{need.insumo_nombre}</TableCell>
-                        <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">
+                        <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[180px]">{need.insumo_nombre}</TableCell>
+                        <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[150px]">
                           <div className="flex flex-col items-end">
                             <span className="font-semibold">{need.current_stock_quantity.toFixed(2)} {need.purchase_unit}</span>
                             <TooltipProvider>
@@ -305,7 +305,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                             </TooltipProvider>
                           </div>
                         </TableCell>
-                        <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">
+                        <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[150px]">
                           <TooltipProvider>
                             <Tooltip>
                               <TooltipTrigger asChild>
@@ -320,7 +320,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                             </Tooltip>
                           </TooltipProvider>
                         </TableCell>
-                        <TableCell className="text-right text-base">
+                        <TableCell className="text-right text-base py-3 px-6 min-w-[120px]">
                           {need.missing_quantity > 0 ? (
                             <Badge variant="destructive" className="text-base px-2 py-1">
                               {need.missing_quantity.toFixed(2)} {need.purchase_unit}
@@ -329,7 +329,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                             <span className="text-gray-500 dark:text-gray-400">0 {need.purchase_unit}</span>
                           )}
                         </TableCell>
-                        <TableCell className="text-center">
+                        <TableCell className="text-center py-3 px-6 min-w-[150px]">
                           {isSufficient ? (
                             <Badge className="bg-green-500 hover:bg-green-600 text-white text-base px-3 py-1">
                               <CheckCircle2 className="h-4 w-4 mr-1" /> Suficiente
@@ -340,7 +340,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                             </Badge>
                           )}
                         </TableCell>
-                        <TableCell className="text-center">
+                        <TableCell className="text-center py-3 px-6 min-w-[150px]">
                           {!isSufficient && need.missing_quantity > 0 && (
                             <Button
                               variant="outline"
