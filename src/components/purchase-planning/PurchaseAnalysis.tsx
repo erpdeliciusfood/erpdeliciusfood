@@ -13,6 +13,7 @@ import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordFor
 import PurchaseCostSummary from "./PurchaseCostSummary";
 import PurchaseTableActions from "./PurchaseTableActions";
 import InsumoPurchaseTable from "./InsumoPurchaseTable";
+import ReasonBadge from "@/components/shared/ReasonBadge"; // NEW: Import ReasonBadge
 
 interface PurchaseAnalysisProps {
   startDate: Date;
@@ -195,21 +196,6 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
     setSelectedInsumoForIndividualPurchase(null);
   };
 
-  const getReasonBadge = (reason: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert') => {
-    switch (reason) {
-      case 'menu_demand':
-        return <Badge variant="outline" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">Demanda de Menú</Badge>;
-      case 'min_stock_level':
-        return <Badge variant="outline" className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300">Stock Mínimo</Badge>;
-      case 'both':
-        return <Badge variant="outline" className="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">Ambos</Badge>;
-      case 'zero_stock_alert':
-        return <Badge variant="destructive" className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">Stock Cero</Badge>;
-      default:
-        return <Badge variant="secondary">Desconocido</Badge>;
-    }
-  };
-
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-10">
@@ -258,7 +244,6 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
               handleCheckboxChange={handleCheckboxChange}
               handleOpenSupplierDetails={handleOpenSupplierDetails}
               handleOpenIndividualPurchaseForm={handleOpenIndividualPurchaseForm}
-              getReasonBadge={getReasonBadge}
             />
           ) : (
             <div className="text-center py-6 text-gray-600 dark:text-gray-400">

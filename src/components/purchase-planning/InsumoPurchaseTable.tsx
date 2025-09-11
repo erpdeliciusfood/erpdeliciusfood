@@ -6,6 +6,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info, Building2, PlusCircle } from "lucide-react";
 import { Insumo, InsumoNeeded } from "@/types";
+import ReasonBadge from "@/components/shared/ReasonBadge"; // NEW: Import ReasonBadge
 
 interface InsumoPurchaseTableProps {
   insumosForPurchase: InsumoNeeded[];
@@ -13,7 +14,6 @@ interface InsumoPurchaseTableProps {
   handleCheckboxChange: (insumoId: string, checked: boolean) => void;
   handleOpenSupplierDetails: (insumo: Insumo) => void;
   handleOpenIndividualPurchaseForm: (insumo: InsumoNeeded) => void;
-  getReasonBadge: (reason: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert') => JSX.Element;
 }
 
 const InsumoPurchaseTable: React.FC<InsumoPurchaseTableProps> = ({
@@ -22,7 +22,6 @@ const InsumoPurchaseTable: React.FC<InsumoPurchaseTableProps> = ({
   handleCheckboxChange,
   handleOpenSupplierDetails,
   handleOpenIndividualPurchaseForm,
-  getReasonBadge,
 }) => {
   return (
     <div className="overflow-x-auto">
@@ -106,7 +105,7 @@ const InsumoPurchaseTable: React.FC<InsumoPurchaseTableProps> = ({
                 S/ {insumo.estimated_purchase_cost.toFixed(2)}
               </TableCell>
               <TableCell className="text-center text-base py-3 px-6">
-                {getReasonBadge(insumo.reason_for_purchase_suggestion)}
+                <ReasonBadge reason={insumo.reason_for_purchase_suggestion} /> {/* NEW: Use ReasonBadge */}
               </TableCell>
               <TableCell className="text-center py-3 px-6">
                 <Button

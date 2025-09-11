@@ -93,17 +93,17 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
       <Table className="w-full">
         <TableHeader className="bg-gray-50 dark:bg-gray-700">
           <TableRow>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Fecha Compra</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Insumo</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Cantidad Ordenada</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Cantidad Recibida</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Pendiente</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Unitario (S/)</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Monto Total (S/)</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Proveedor</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Estado</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Fecha Recepción</TableHead>
-            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Fecha Compra</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Insumo</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Cant. Ordenada</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Cant. Recibida</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[100px]">Pendiente</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Costo Unitario (S/)</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Monto Total (S/)</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Proveedor</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Estado</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Fecha Recepción</TableHead>
+            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[200px]">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -111,19 +111,19 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
             const quantityPending = record.quantity_purchased - record.quantity_received;
             return (
               <TableRow key={record.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
-                <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left">
+                <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[150px]">
                   {format(new Date(record.purchase_date), "PPP", { locale: es })}
                 </TableCell>
-                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left">
+                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[180px]">
                   {record.insumos?.nombre || "Insumo Desconocido"}
                 </TableCell>
-                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[120px]">
                   {record.quantity_purchased.toFixed(2)} {record.insumos?.purchase_unit || "unidad"}
                 </TableCell>
-                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[120px]">
                   {record.quantity_received.toFixed(2)} {record.insumos?.purchase_unit || "unidad"}
                 </TableCell>
-                <TableCell className="text-right text-base py-3 px-6">
+                <TableCell className="text-right text-base py-3 px-6 min-w-[100px]">
                   {quantityPending > 0 ? (
                     <Badge variant="destructive" className="text-base px-2 py-1">
                       {quantityPending.toFixed(2)} {record.insumos?.purchase_unit || "unidad"}
@@ -134,13 +134,13 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                     </Badge>
                   )}
                 </TableCell>
-                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[150px]">
                   S/ {record.unit_cost_at_purchase.toFixed(2)}
                 </TableCell>
-                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[150px]">
                   S/ {record.total_amount.toFixed(2)}
                 </TableCell>
-                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left">
+                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[180px]">
                   <div className="flex items-center">
                     {record.supplier_name_at_purchase || "N/A"}
                     {record.from_registered_supplier ? (
@@ -154,13 +154,13 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left">
+                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[150px]">
                   {getStatusBadge(record.status)}
                 </TableCell>
-                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left">
+                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[150px]">
                   {record.received_date ? format(new Date(record.received_date), "PPP", { locale: es }) : "N/A"}
                 </TableCell>
-                <TableCell className="flex justify-center space-x-2 py-3 px-6">
+                <TableCell className="flex justify-center space-x-2 py-3 px-6 min-w-[200px]">
                   {record.status === 'ordered' && quantityPending > 0 && (
                     <Button
                       variant="outline"

@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { useAddPurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
+import ReasonBadge from "@/components/shared/ReasonBadge"; // NEW: Import ReasonBadge
 
 interface InsumoNeeded extends Insumo {
   quantity_needed_for_period_raw: number;
@@ -152,21 +153,6 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
     onClose();
   };
 
-  const getReasonBadge = (reason: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert') => {
-    switch (reason) {
-      case 'menu_demand':
-        return <Badge variant="outline" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">Demanda de Menú</Badge>;
-      case 'min_stock_level':
-        return <Badge variant="outline" className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300">Stock Mínimo</Badge>;
-      case 'both':
-        return <Badge variant="outline" className="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">Ambos</Badge>;
-      case 'zero_stock_alert':
-        return <Badge variant="destructive" className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">Stock Cero</Badge>;
-      default:
-        return <Badge variant="secondary">Desconocido</Badge>;
-    }
-  };
-
   if (purchasableInsumos.length === 0) {
     return (
       <div className="text-center py-6 text-gray-600 dark:text-gray-400">
@@ -260,7 +246,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
             </CardHeader>
             <CardContent className="text-gray-700 dark:text-gray-300">
               <p className="mb-1">
-                <span className="font-semibold">Motivo de Sugerencia:</span> {getReasonBadge(insumo.reason_for_purchase_suggestion)}
+                <span className="font-semibold">Motivo de Sugerencia:</span> <ReasonBadge reason={insumo.reason_for_purchase_suggestion} /> {/* NEW: Use ReasonBadge */}
               </p>
               <p className="mb-1">
                 <span className="font-semibold">Unidad de Compra:</span> {insumo.purchase_unit}
