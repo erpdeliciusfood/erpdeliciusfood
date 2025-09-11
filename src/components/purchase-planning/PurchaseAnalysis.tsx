@@ -1,18 +1,18 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useMenus } from "@/hooks/useMenus";
 import { useInsumos } from "@/hooks/useInsumos";
-import { Loader2, ShoppingBag } from "lucide-react"; // Removed Info, Building2
+import { Loader2, ShoppingBag } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // Re-added Card import
 import { Badge } from "@/components/ui/badge";
 import { Insumo } from "@/types";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"; // Removed Tooltip and related components
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import InsumoSupplierDetailsDialog from "@/components/insumos/InsumoSupplierDetailsDialog";
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
-import PurchaseCostSummary from "./PurchaseCostSummary"; // NEW: Import new component
-import PurchaseTableActions from "./PurchaseTableActions"; // NEW: Import new component
-import InsumoPurchaseTable from "./InsumoPurchaseTable"; // NEW: Import new component
+import PurchaseCostSummary from "./PurchaseCostSummary";
+import PurchaseTableActions from "./PurchaseTableActions";
+import InsumoPurchaseTable from "./InsumoPurchaseTable";
 
 interface PurchaseAnalysisProps {
   startDate: Date;

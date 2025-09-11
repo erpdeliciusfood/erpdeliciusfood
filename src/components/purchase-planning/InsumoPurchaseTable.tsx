@@ -30,16 +30,16 @@ const InsumoPurchaseTable: React.FC<InsumoPurchaseTableProps> = ({
         <TableHeader>
           <TableRow>
             <TableHead className="w-[50px] text-center"></TableHead> {/* Checkbox column, header handled by PurchaseTableActions */}
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Insumo</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Unidad Compra</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Costo Unitario (S/)</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Stock Actual</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Necesidad Periodo</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Sugerencia Compra</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Costo Estimado (S/)</TableHead>
-            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Motivo</TableHead>
-            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Proveedor</TableHead>
-            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Acciones</TableHead>
+            <TableHead className="w-[200px] text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Insumo</TableHead>
+            <TableHead className="w-[120px] text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Unidad Compra</TableHead>
+            <TableHead className="w-[150px] text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Costo Unitario (S/)</TableHead>
+            <TableHead className="w-[120px] text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Stock Actual</TableHead>
+            <TableHead className="w-[150px] text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Necesidad Periodo</TableHead>
+            <TableHead className="w-[150px] text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Sugerencia Compra</TableHead>
+            <TableHead className="w-[150px] text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Costo Estimado (S/)</TableHead>
+            <TableHead className="w-[150px] text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Motivo</TableHead>
+            <TableHead className="w-[100px] text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Proveedor</TableHead>
+            <TableHead className="w-[150px] text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -53,7 +53,7 @@ const InsumoPurchaseTable: React.FC<InsumoPurchaseTableProps> = ({
                 />
               </TableCell>
               <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{insumo.nombre}</TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300">{insumo.purchase_unit}</TableCell>
+              <TableCell className="text-left text-base text-gray-700 dark:text-gray-300">{insumo.purchase_unit}</TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">S/ {insumo.costo_unitario.toFixed(2)}</TableCell>
               <TableCell className="text-right text-base">
                 <Badge variant={insumo.current_stock <= (insumo.min_stock_level ?? 0) ? "destructive" : "outline"}>
@@ -64,7 +64,7 @@ const InsumoPurchaseTable: React.FC<InsumoPurchaseTableProps> = ({
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="inline-flex items-center">
+                      <span className="inline-flex items-center cursor-help">
                         {insumo.quantity_needed_for_period_rounded} {insumo.purchase_unit}
                         {insumo.quantity_needed_for_period_rounded_up && (
                           <Info className="ml-1 h-4 w-4 text-blue-500 cursor-help" />
@@ -84,10 +84,10 @@ const InsumoPurchaseTable: React.FC<InsumoPurchaseTableProps> = ({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white text-lg px-3 py-1 inline-flex items-center">
+                        <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white text-lg px-3 py-1 inline-flex items-center cursor-help">
                           {insumo.purchase_suggestion_rounded} {insumo.purchase_unit}
                           {insumo.purchase_suggestion_rounded_up && (
-                            <Info className="ml-1 h-4 w-4 text-white cursor-help" />
+                            <Info className="ml-1 h-4 w-4 text-white" />
                           )}
                         </Badge>
                       </TooltipTrigger>
