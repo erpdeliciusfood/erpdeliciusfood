@@ -28,12 +28,10 @@ export const createStockMovement = async (
   if (!currentInsumo) throw new Error("Insumo not found.");
 
   let newStockQuantity = currentInsumo.stock_quantity;
-  let newPendingReceptionQuantity = currentInsumo.pending_reception_quantity;
-  let newPendingDeliveryQuantity = currentInsumo.pending_delivery_quantity;
   let newCostoUnitario = currentInsumo.costo_unitario;
   let actualQuantityChange: number = 0;
 
-  // Update quantities based on movement type
+  // Determine how stock_quantity and costo_unitario change based on movement type
   if (movement_type === "purchase_in") { // This now means 'received by warehouse'
     if (total_purchase_amount === undefined || total_purchase_quantity === undefined || total_purchase_quantity <= 0) {
       throw new Error("Monto total y cantidad comprada son requeridos para entradas por compra.");
@@ -41,9 +39,11 @@ export const createStockMovement = async (
     newCostoUnitario = total_purchase_amount / total_purchase_quantity; // Update cost based on this specific purchase
     newStockQuantity += total_purchase_quantity;
     actualQuantityChange = total_purchase_quantity;
-  } else if (movement_type === "reception_in") { // NEW: Received by company
-    newPendingReceptionQuantity += quantity_change!;
-    actualQuantityChange = quantity_change!;
+  } else if (movement_type === "reception_in") {
+    // For 'reception_in', pending_reception_quantity is updated by the RPC in purchaseRecords.ts.
+    // stock_quantity does NOT change yet. We just record the movement.
+    actualQuantityChange = quantity_change!; // Record the quantity that moved into pending_reception
+    // newStockQuantity remains currentInsumo.stock_quantity
   } else if (movement_type === "adjustment_in") {
     newStockQuantity += quantity_change!;
     actualQuantityChange = quantity_change!;
@@ -53,14 +53,15 @@ export const createStockMovement = async (
   }
   // 'consumption_out' is handled by the Edge Function, so it's not part of this client-side creation
 
-  // Update the insumo's stock_quantity, costo_unitario, and new stock fields
+  // Only update stock_quantity and costo_unitario here.
+  // pending_reception_quantity and pending_delivery_quantity are managed by the RPC.
   const { data: updatedInsumo, error: updateInsumoError } = await supabase
     .from("insumos")
     .update({ 
       stock_quantity: parseFloat(newStockQuantity.toFixed(2)),
       costo_unitario: parseFloat(newCostoUnitario.toFixed(2)),
-      pending_reception_quantity: parseFloat(newPendingReceptionQuantity.toFixed(2)),
-      pending_delivery_quantity: parseFloat(newPendingDeliveryQuantity.toFixed(2)), // Ensure this is also updated if needed by other flows
+      // Do NOT update pending_reception_quantity or pending_delivery_quantity here for 'reception_in'
+      // as they are handled by the RPC in purchaseRecords.ts
     })
     .eq("id", insumo_id)
     .select("id, stock_quantity, costo_unitario, pending_reception_quantity, pending_delivery_quantity")
