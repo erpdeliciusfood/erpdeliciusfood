@@ -4,7 +4,7 @@ import { Menu, MenuFormValues, Receta } from "@/types";
 // Helper to map DB fields to Menu interface fields
 const mapDbMenuToMenu = (dbMenu: any): Menu => ({
   id: dbMenu.id,
-  user_id: dbMenu.user_id, // Mapped user_id
+  user_id: dbMenu.user_id,
   title: dbMenu.title,
   description: dbMenu.description,
   date: dbMenu.menu_date, // Mapped from menu_date in DB
@@ -14,12 +14,12 @@ const mapDbMenuToMenu = (dbMenu: any): Menu => ({
     id: mp.id,
     menu_id: mp.menu_id,
     meal_service_id: mp.meal_service_id,
-    receta_id: mp.receta_id,
+    plato_id: mp.plato_id, // Changed from receta_id
     dish_category: mp.dish_category,
     quantity_needed: mp.quantity_needed,
     receta: {
       id: mp.platos.id,
-      user_id: mp.platos.user_id, // Añadido user_id
+      user_id: mp.platos.user_id,
       nombre: mp.platos.nombre,
       descripcion: mp.platos.descripcion,
       category: mp.platos.categoria,
@@ -99,10 +99,10 @@ export const createMenu = async (menu: MenuFormValues): Promise<Menu> => {
   if (menuError) throw menuError;
 
   if (platos_por_servicio && platos_por_servicio.length > 0) {
-    const menuPlatosToInsert = platos_por_servicio.map((item: { meal_service_id: string; receta_id: string; dish_category: string; quantity_needed: number; }) => ({
+    const menuPlatosToInsert = platos_por_servicio.map((item: { meal_service_id: string; plato_id: string; dish_category: string; quantity_needed: number; }) => ({ // Changed receta_id to plato_id
       menu_id: newMenu.id,
       meal_service_id: item.meal_service_id,
-      receta_id: item.receta_id,
+      plato_id: item.plato_id, // Changed receta_id to plato_id
       dish_category: item.dish_category,
       quantity_needed: item.quantity_needed,
     }));
@@ -135,10 +135,10 @@ export const updateMenu = async (id: string, menu: MenuFormValues): Promise<Menu
   await supabase.from("menu_platos").delete().eq("menu_id", id);
 
   if (platos_por_servicio && platos_por_servicio.length > 0) {
-    const menuPlatosToInsert = platos_por_servicio.map((item: { meal_service_id: string; receta_id: string; dish_category: string; quantity_needed: number; }) => ({
+    const menuPlatosToInsert = platos_por_servicio.map((item: { meal_service_id: string; plato_id: string; dish_category: string; quantity_needed: number; }) => ({ // Changed receta_id to plato_id
       menu_id: updatedMenu.id,
       meal_service_id: item.meal_service_id,
-      receta_id: item.receta_id,
+      plato_id: item.plato_id, // Changed receta_id to plato_id
       dish_category: item.dish_category,
       quantity_needed: item.quantity_needed,
     }));

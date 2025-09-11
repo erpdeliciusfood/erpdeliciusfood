@@ -112,7 +112,7 @@ export interface MenuPlato {
   id: string;
   menu_id: string;
   meal_service_id: string; // Added, as per MenuFormValues structure
-  receta_id: string; // Changed from plato_id
+  plato_id: string; // Changed from receta_id
   dish_category: string; // Ej: "Entrada", "Plato de Fondo", "Postre"
   quantity_needed: number;
   receta: Receta; // Changed from plato
@@ -142,7 +142,7 @@ export interface MenuFormValues {
   event_type_id?: string | null;
   platos_por_servicio: {
     meal_service_id: string;
-    receta_id: string; // Changed from plato_id
+    plato_id: string; // Changed from receta_id
     dish_category: string;
     quantity_needed: number;
   }[];
@@ -305,8 +305,8 @@ export interface UrgentPurchaseRequestFormValues {
 
 // NEW INTERFACES FOR MENU BREAKDOWN (updated platoId/platoNombre to recetaId/recetaNombre)
 export interface DishDetail {
-  recetaId: string; // Changed from platoId
-  recetaNombre: string; // Changed from platoNombre
+  platoId: string; // Changed from recetaId
+  recetaNombre: string;
   quantityNeeded: number;
 }
 

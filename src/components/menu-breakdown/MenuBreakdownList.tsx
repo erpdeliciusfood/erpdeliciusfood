@@ -41,7 +41,7 @@ const MenuBreakdownList: React.FC<MenuBreakdownListProps> = ({ breakdown }) => {
                           <TableBody>
                             {service.categories.flatMap((category) =>
                               category.dishes.map((dish, index) => (
-                                <TableRow key={`${dish.recetaId}-${index}`}>
+                                <TableRow key={`${dish.platoId}-${index}`}> {/* Corrected from recetaId to platoId */}
                                   {index === 0 && (
                                     <TableCell
                                       rowSpan={category.dishes.length}

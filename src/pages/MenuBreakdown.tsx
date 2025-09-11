@@ -104,7 +104,7 @@ const MenuBreakdown: React.FC = () => {
         }
 
         dishCategoryEntry.dishes.push({
-          recetaId: menuPlato.receta.id,
+          platoId: menuPlato.receta.id, // Changed recetaId to platoId
           recetaNombre: menuPlato.receta.nombre,
           quantityNeeded: menuPlato.quantity_needed,
         });

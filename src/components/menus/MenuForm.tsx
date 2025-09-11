@@ -32,7 +32,7 @@ const formSchema = z.object({
   platos_por_servicio: z.array(
     z.object({
       meal_service_id: z.string().min(1, { message: "Debe seleccionar un servicio de comida." }),
-      receta_id: z.string().min(1, { message: "Debe seleccionar una receta." }), // Corrected property name
+      plato_id: z.string().min(1, { message: "Debe seleccionar una receta." }), // Changed receta_id to plato_id
       dish_category: z.string().min(1, { message: "Debe seleccionar una categoría de receta." }),
       quantity_needed: z.coerce.number().min(1, {
         message: "La cantidad debe ser al menos 1.",
@@ -57,15 +57,15 @@ const formSchema = z.object({
     });
   }
 
-  // Custom validation for duplicate receta_id, meal_service_id, and dish_category combinations
+  // Custom validation for duplicate plato_id, meal_service_id, and dish_category combinations
   const seenCombinations = new Set<string>();
   data.platos_por_servicio.forEach((platoServicio, index) => {
-    const combinationKey = `${platoServicio.meal_service_id}-${platoServicio.receta_id}-${platoServicio.dish_category}`; // Corrected property name
+    const combinationKey = `${platoServicio.meal_service_id}-${platoServicio.plato_id}-${platoServicio.dish_category}`; // Changed receta_id to plato_id
     if (seenCombinations.has(combinationKey)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Esta receta ya está asignada a este servicio y categoría. Por favor, selecciona una combinación única.",
-        path: [`platos_por_servicio.${index}.receta_id`], // Corrected property name
+        path: [`platos_por_servicio.${index}.plato_id`], // Changed receta_id to plato_id
       });
     }
     seenCombinations.add(combinationKey);
@@ -96,7 +96,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       menu_type: preselectedDate ? "daily" : "event", // Dynamically set default menu_type
       menu_date: preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null,
       event_type_id: null,
-      platos_por_servicio: [{ meal_service_id: "", receta_id: "", dish_category: "", quantity_needed: 1 }], // Corrected property name
+      platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }], // Changed receta_id to plato_id
     },
   });
 
@@ -110,10 +110,10 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         event_type_id: initialData.event_type_id || null,
         platos_por_servicio: initialData.menu_platos?.map(mp => ({
           meal_service_id: mp.meal_service_id,
-          receta_id: mp.receta_id, // Corrected property name
+          plato_id: mp.plato_id, // Changed receta_id to plato_id
           dish_category: mp.dish_category,
           quantity_needed: mp.quantity_needed,
-        })) || [{ meal_service_id: "", receta_id: "", dish_category: "", quantity_needed: 1 }], // Corrected property name
+        })) || [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }], // Changed receta_id to plato_id
       });
     } else {
       form.reset({
@@ -122,7 +122,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         menu_type: preselectedDate ? "daily" : "event", // Dynamically set default menu_type
         menu_date: preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null,
         event_type_id: null,
-        platos_por_servicio: [{ meal_service_id: "", receta_id: "", dish_category: "", quantity_needed: 1 }], // Corrected property name
+        platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }], // Changed receta_id to plato_id
       });
     }
   }, [initialData, form, preselectedDate]);
