@@ -15,7 +15,7 @@ import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordFor
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InsumoNeeded } from "@/types";
-import UrgentPurchaseAlert from "@/components/purchase-planning/UrgentPurchaseAlert"; // NEW: Import UrgentPurchaseAlert
+import UrgentPurchaseAlert from "@/components/purchase-planning/UrgentPurchaseAlert";
 
 const PurchasePlanning = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -65,10 +65,38 @@ const PurchasePlanning = () => {
         description="Analiza las necesidades de insumos según tus menús y stock."
         icon={ShoppingBag}
       />
-      <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4">
-        <DropdownMenu>
+
+      {/* NEW: Action and Filter Bar */}
+      <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
+        {/* Left side: Primary Action Button */}
+        <Dialog open={isRegisterPurchaseFormOpen} onOpenChange={setIsRegisterPurchaseFormOpen}>
+          <DialogTrigger asChild>
+            <Button
+              onClick={() => setIsRegisterPurchaseFormOpen(true)}
+              className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
+            >
+              <PlusCircle className="mr-3 h-6 w-6" />
+              Registrar Nueva Compra
+            </Button>
+          </DialogTrigger>
+          <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                Registrar Nueva Compra
+              </DialogTitle>
+            </DialogHeader>
+            <PurchaseRecordForm
+              onSuccess={handleRegisterPurchaseFormClose}
+              onCancel={handleRegisterPurchaseFormClose}
+            />
+          </DialogContent>
+        </Dialog>
+
+        {/* Right side: Filters */}
+        <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
+          <DropdownMenu>
             <DropdownMenuTrigger asChild>
-              <Button variant="outline" className="flex items-center gap-2">
+              <Button variant="outline" className="flex items-center gap-2 w-full sm:w-[180px] h-12 text-base">
                 {periodType === 'daily' && 'Hoy'}
                 {periodType === 'weekly' && 'Esta Semana'}
                 {periodType === 'monthly' && 'Este Mes'}
@@ -91,7 +119,7 @@ const PurchasePlanning = () => {
                   id="date"
                   variant={"outline"}
                   className={cn(
-                    "w-[300px] justify-start text-left font-normal",
+                    "w-full sm:w-[300px] justify-start text-left font-normal h-12 text-base",
                     !dateRange.from && "text-muted-foreground"
                   )}
                 >
@@ -125,7 +153,7 @@ const PurchasePlanning = () => {
           )}
 
           <Select onValueChange={(value: 'all' | InsumoNeeded['reason_for_purchase_suggestion']) => setSelectedReasonFilter(value)} value={selectedReasonFilter}>
-            <SelectTrigger className="w-full md:w-[200px] h-12 text-base">
+            <SelectTrigger className="w-full sm:w-[200px] h-12 text-base">
               <SelectValue placeholder="Filtrar por motivo" />
             </SelectTrigger>
             <SelectContent>
@@ -136,33 +164,12 @@ const PurchasePlanning = () => {
               <SelectItem value="zero_stock_alert">Stock Cero</SelectItem>
             </SelectContent>
           </Select>
-
-          <Dialog open={isRegisterPurchaseFormOpen} onOpenChange={setIsRegisterPurchaseFormOpen}>
-            <DialogTrigger asChild>
-              <Button
-                onClick={() => setIsRegisterPurchaseFormOpen(true)}
-                className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
-              >
-                <PlusCircle className="mr-3 h-6 w-6" />
-                Registrar Compra
-              </Button>
-            </DialogTrigger>
-            <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
-              <DialogHeader>
-                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                  Registrar Nueva Compra
-                </DialogTitle>
-              </DialogHeader>
-              <PurchaseRecordForm
-                onSuccess={handleRegisterPurchaseFormClose}
-                onCancel={handleRegisterPurchaseFormClose}
-              />
-            </DialogContent>
-          </Dialog>
+        </div>
       </div>
 
-      <div className="grid grid-cols-1 gap-6 mb-8"> {/* NEW: Grid for alerts and analysis */}
-        <UrgentPurchaseAlert /> {/* NEW: Render UrgentPurchaseAlert here */}
+      {/* Main Content Area */}
+      <div className="grid grid-cols-1 gap-6 mb-8">
+        <UrgentPurchaseAlert />
       </div>
 
       <div className="flex-grow">
