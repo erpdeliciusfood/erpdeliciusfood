@@ -9,7 +9,7 @@ import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { useAddStockMovement } from "@/hooks/useStockMovements";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
-import { useQueryClient } from "@tanstack/react-query"; // RE-ADDED: Import useQueryClient
+import { useQueryClient } from "@tanstack/react-query";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ColoredProgress } from "@/components/ui/colored-progress";
@@ -22,7 +22,7 @@ interface DailyPrepOverviewProps {
 }
 
 const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, menus }) => {
-  const queryClient = useQueryClient(); // RE-ADDED: useQueryClient
+  const queryClient = useQueryClient();
   const addStockMovementMutation = useAddStockMovement();
   const [isDeductingStock, setIsDeductingStock] = useState(false);
   const [stockFilter, setStockFilter] = useState<'all' | 'sufficient' | 'insufficient'>('all');
@@ -113,9 +113,9 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     }
 
     setIsDeductingStock(false);
-    queryClient.invalidateQueries({ queryKey: ["stockMovements"] }); // RE-ADDED: Invalidate stock movements
-    queryClient.invalidateQueries({ queryKey: ["insumos"] }); // RE-ADDED: Invalidate insumos
-    queryClient.invalidateQueries({ queryKey: ["menus"] }); // RE-ADDED: Invalidate menus
+    queryClient.invalidateQueries({ queryKey: ["stockMovements"] });
+    queryClient.invalidateQueries({ queryKey: ["insumos"] });
+    queryClient.invalidateQueries({ queryKey: ["menus"] });
   };
 
   const allStockSufficient = aggregatedInsumoNeeds.every(
@@ -186,7 +186,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <AlertDialog> {/* AlertDialogTrigger is inside TooltipTrigger */}
+                  <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
                         disabled={isDeductingStock || aggregatedInsumoNeeds.length === 0 || !allStockSufficient}
@@ -207,8 +207,9 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                       </AlertDialogHeader>
                       <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
                         <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
+                        {/* Calling the function here */}
                         <AlertDialogAction
-                          onClick={() => handleDeductStock()} {/* Calling the function here */}
+                          onClick={() => handleDeductStock()}
                           className="w-full sm:w-auto px-6 py-3 text-lg bg-destructive hover:bg-destructive-foreground text-destructive-foreground hover:text-destructive transition-colors duration-200 ease-in-out"
                           disabled={isDeductingStock}
                         >
