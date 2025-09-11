@@ -14,7 +14,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { InsumoNeeded } from "@/types";
 import UrgentPurchaseAlert from "@/components/purchase-planning/UrgentPurchaseAlert";
 
 const PurchasePlanning = () => {

@@ -15,7 +15,6 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { DateRange } from "react-day-picker";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
 import PurchaseAnalysis from "@/components/purchase-planning/PurchaseAnalysis";
-import { InsumoNeeded } from "@/types";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const Reports = () => {
