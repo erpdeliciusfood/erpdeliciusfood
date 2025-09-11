@@ -294,3 +294,28 @@ export interface UrgentPurchaseRequestFormValues {
   insistence_count?: number; // NEW: Allow updating this field
   rejection_reason?: string | null; // NEW: Allow updating this field
 }
+
+// NEW: Interfaces for Menu Breakdown
+export interface DishDetail {
+  platoId: string;
+  platoNombre: string;
+  quantityNeeded: number;
+  // Puedes añadir más detalles si son necesarios, como la descripción del plato
+}
+
+export interface DishCategoryBreakdown {
+  categoryName: string; // "Entrada", "Plato de Fondo", etc.
+  dishes: DishDetail[];
+}
+
+export interface MealServiceBreakdown {
+  serviceId: string;
+  serviceName: string; // "Desayuno", "Almuerzo", etc.
+  categories: DishCategoryBreakdown[];
+}
+
+export interface DailyMenuBreakdown {
+  date: string; // "YYYY-MM-DD"
+  menusForDay: Menu[]; // Referencia a los menús originales para ese día
+  mealServicesBreakdown: MealServiceBreakdown[];
+}
