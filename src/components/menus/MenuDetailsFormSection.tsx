@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
-import { format, formatISO } from "date-fns";
+import { format } from "date-fns"; // Removed formatISO
 import { es } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import {
@@ -114,7 +114,7 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
                     // If creating a new daily menu, use the preselectedDate from the calendar.
                     const dateToSet = initialData?.menu_date && initialData.menu_date !== null
                       ? initialData.menu_date // Use existing menu's date
-                      : (preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null); // Use preselected date or null
+                      : (preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null); // Use format
                     form.setValue("menu_date", dateToSet);
                     // Auto-generate title if it's a new menu or if the title is currently empty
                     if (!initialData || !form.getValues("title")) {
@@ -182,7 +182,7 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
                   <Calendar
                     mode="single"
                     selected={field.value ? new Date(field.value) : undefined}
-                    onSelect={(date) => field.onChange(date ? formatISO(date, { representation: 'date' }) : null)}
+                    onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : null)} // Use format
                     disabled={(date) =>
                       date < new Date("1900-01-01") || isLoading
                     }

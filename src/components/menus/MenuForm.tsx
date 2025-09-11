@@ -14,7 +14,7 @@ import { useEventTypes } from "@/hooks/useEventTypes";
 import { Loader2 } from "lucide-react";
 import MenuDetailsFormSection from "./MenuDetailsFormSection";
 import PlatosPorServicioFormSection from "./PlatosPorServicioFormSection";
-import { formatISO } from "date-fns";
+import { format } from "date-fns"; // Import format
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -95,7 +95,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       title: "",
       description: "",
       menu_type: preselectedDate ? "daily" : "event", // Dynamically set default menu_type
-      menu_date: preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null,
+      menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null, // Use format
       event_type_id: null,
       platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
     },
@@ -121,7 +121,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         title: "",
         description: "",
         menu_type: preselectedDate ? "daily" : "event", // Dynamically set default menu_type
-        menu_date: preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null,
+        menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null, // Use format
         event_type_id: null,
         platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
       });
