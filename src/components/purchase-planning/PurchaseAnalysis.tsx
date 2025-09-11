@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useMenus } from "@/hooks/useMenus";
 import { useInsumos } from "@/hooks/useInsumos";
-import { Loader2, ShoppingBag, DollarSign, Info, Building2 } from "lucide-react";
+import { Loader2, ShoppingBag, DollarSign, Info, Building2, PlusCircle } from "lucide-react"; // NEW: PlusCircle icon
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import InsumoSupplierDetailsDialog from "@/components/insumos/InsumoSupplierDetailsDialog";
 import SuggestedPurchaseListContent from "@/components/purchase-planning/SuggestedPurchaseListContent"; // Updated import
 import { Checkbox } from "@/components/ui/checkbox"; // NEW: Import Checkbox
+import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm"; // NEW: Import PurchaseRecordForm
 
 interface PurchaseAnalysisProps {
   startDate: Date;
@@ -43,6 +44,10 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
   const [isSupplierDetailsDialogOpen, setIsSupplierDetailsDialogOpen] = useState(false);
   const [selectedInsumoForDetails, setSelectedInsumoForDetails] = useState<Insumo | null>(null);
   const [isSuggestedPurchaseListOpen, setIsSuggestedPurchaseListOpen] = useState(false);
+
+  // NEW: State for individual purchase registration dialog
+  const [isIndividualPurchaseFormOpen, setIsIndividualPurchaseFormOpen] = useState(false);
+  const [selectedInsumoForIndividualPurchase, setSelectedInsumoForIndividualPurchase] = useState<InsumoNeeded | null>(null);
 
   // NEW: State for selected insumos in the main table
   const [selectedInsumoIds, setSelectedInsumoIds] = useState<Set<string>>(new Set());
@@ -190,6 +195,22 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
     // queryClient.invalidateQueries({ queryKey: ["insumos"] });
   };
 
+  // NEW: Handlers for individual purchase registration
+  const handleOpenIndividualPurchaseForm = (insumo: InsumoNeeded) => {
+    setSelectedInsumoForIndividualPurchase(insumo);
+    setIsIndividualPurchaseFormOpen(true);
+  };
+
+  const handleCloseIndividualPurchaseForm = () => {
+    setIsIndividualPurchaseFormOpen(false);
+    setSelectedInsumoForIndividualPurchase(null);
+    // Invalidate queries to refresh data after a purchase is made
+    // This will cause PurchaseAnalysis to re-calculate needs and stock
+    // queryClient.invalidateQueries({ queryKey: ["purchaseRecords"] }); // Already handled by form's onSuccess
+    // queryClient.invalidateQueries({ queryKey: ["stockMovements"] }); // Already handled by form's onSuccess
+    // queryClient.invalidateQueries({ queryKey: ["insumos"] }); // Already handled by form's onSuccess
+  };
+
   const getReasonBadge = (reason: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert') => {
     switch (reason) {
       case 'menu_demand':
@@ -328,6 +349,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Costo Estimado (S/)</TableHead>
                     <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Motivo</TableHead>
                     <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Proveedor</TableHead>
+                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Acciones</TableHead> {/* NEW: Actions column */}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -407,6 +429,19 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
                           <Building2 className="h-5 w-5 text-gray-600 dark:text-gray-300" />
                         </Button>
                       </TableCell>
+                      <TableCell className="text-center py-3 px-6"> {/* NEW: Actions column content */}
+                        {insumo.purchase_suggestion_rounded > 0 && (
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleOpenIndividualPurchaseForm(insumo)}
+                            className="px-3 py-1 text-sm bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
+                          >
+                            <PlusCircle className="mr-1 h-4 w-4" />
+                            Registrar Compra
+                          </Button>
+                        )}
+                      </TableCell>
                     </TableRow>
                   ))}
                 </TableBody>
@@ -438,6 +473,29 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
             insumo={selectedInsumoForDetails}
             onClose={handleCloseSupplierDetails}
           />
+        )}
+      </Dialog>
+
+      {/* NEW: Dialog for individual purchase registration */}
+      <Dialog open={isIndividualPurchaseFormOpen} onOpenChange={setIsIndividualPurchaseFormOpen}>
+        {selectedInsumoForIndividualPurchase && (
+          <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                Registrar Compra de {selectedInsumoForIndividualPurchase.nombre}
+              </DialogTitle>
+            </DialogHeader>
+            <PurchaseRecordForm
+              prefilledInsumoId={selectedInsumoForIndividualPurchase.id}
+              prefilledQuantity={selectedInsumoForIndividualPurchase.purchase_suggestion_rounded}
+              prefilledUnitCost={selectedInsumoForIndividualPurchase.costo_unitario}
+              prefilledSupplierName={selectedInsumoForIndividualPurchase.supplier_name || ""}
+              prefilledSupplierPhone={selectedInsumoForIndividualPurchase.supplier_phone || ""}
+              prefilledSupplierAddress={selectedInsumoForIndividualPurchase.supplier_address || ""}
+              onSuccess={handleCloseIndividualPurchaseForm}
+              onCancel={handleCloseIndividualPurchaseForm}
+            />
+          </DialogContent>
         )}
       </Dialog>
     </div>
