@@ -37,8 +37,19 @@ export const useAddPurchaseRecord = () => {
 
 export const useUpdatePurchaseRecord = () => {
   const queryClient = useQueryClient();
-  return useMutation<PurchaseRecord, Error, { id: string; record: PurchaseRecordFormValues }, { toastId: string }>({
-    mutationFn: ({ id, record }) => updatePurchaseRecord(id, record),
+  return useMutation<
+    PurchaseRecord,
+    Error,
+    {
+      id: string;
+      record: PurchaseRecordFormValues;
+      partialReceptionQuantity?: number; // NEW: Optional partial quantity
+      targetStatus?: 'received_by_company' | 'received_by_warehouse'; // NEW: Optional target status
+    },
+    { toastId: string }
+  >({
+    mutationFn: ({ id, record, partialReceptionQuantity, targetStatus }) =>
+      updatePurchaseRecord(id, record, partialReceptionQuantity, targetStatus), // Pass new parameters
     onMutate: () => {
       const toastId: string = showLoading("Actualizando registro de compra...");
       return { toastId };
@@ -47,6 +58,8 @@ export const useUpdatePurchaseRecord = () => {
       dismissToast(context.toastId);
       queryClient.invalidateQueries({ queryKey: ["purchaseRecords"] });
       queryClient.invalidateQueries({ queryKey: ["purchaseRecords", id] });
+      queryClient.invalidateQueries({ queryKey: ["stockMovements"] }); // Invalidate stock movements
+      queryClient.invalidateQueries({ queryKey: ["insumos"] }); // Invalidate insumos to reflect stock/cost changes
       showSuccess("Registro de compra actualizado exitosamente.");
     },
     onError: (error, __, context) => {
