@@ -4,32 +4,33 @@ import { Menu, MenuFormValues, Receta } from "@/types"; // Removed unused MenuPl
 // Helper to map DB fields to Menu interface fields
 const mapDbMenuToMenu = (dbMenu: any): Menu => ({
   id: dbMenu.id,
-  date: dbMenu.date,
-  meal_service_id: dbMenu.meal_service_id,
+  user_id: dbMenu.user_id, // Mapped user_id
+  title: dbMenu.title,
+  description: dbMenu.description,
+  date: dbMenu.menu_date, // Mapped from menu_date in DB
   event_type_id: dbMenu.event_type_id,
-  meal_service: dbMenu.meal_services, // Assuming 'meal_services' is the joined table
-  event_type: dbMenu.event_types, // Assuming 'event_types' is the joined table
+  event_type: dbMenu.event_types,
   menu_platos: dbMenu.menu_platos?.map((mp: any) => ({
     id: mp.id,
     menu_id: mp.menu_id,
-    meal_service_id: mp.meal_service_id, // Ensure this is mapped if it exists in DB
+    meal_service_id: mp.meal_service_id,
     receta_id: mp.receta_id,
     dish_category: mp.dish_category,
     quantity_needed: mp.quantity_needed,
     receta: {
       id: mp.platos.id,
+      user_id: mp.platos.user_id, // Añadido user_id
       nombre: mp.platos.nombre,
       descripcion: mp.platos.descripcion,
-      category: mp.platos.categoria, // Map DB field
+      category: mp.platos.categoria,
       tiempo_preparacion: mp.platos.tiempo_preparacion,
       costo_total: mp.platos.costo_total,
-      plato_insumos: [], // Not fetching deep insumos here for brevity
+      plato_insumos: [],
     } as Receta,
+    meal_service: mp.meal_services, // Assuming meal_services is joined on menu_platos
   })) || [],
-  total_cost: dbMenu.total_cost,
-  total_servings: dbMenu.total_servings,
-  title: dbMenu.title,
-  description: dbMenu.description,
+  created_at: dbMenu.created_at, // Mapped created_at
+  // Removed: meal_service_id, meal_service, total_cost, total_servings
 });
 
 export const getMenus = async (startDate?: string, endDate?: string): Promise<Menu[]> => {
@@ -37,20 +38,20 @@ export const getMenus = async (startDate?: string, endDate?: string): Promise<Me
     .from("menus")
     .select(`
       *,
-      meal_services (id, name, description, order_index),
       event_types (id, name, description),
       menu_platos (
         *,
-        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total)
+        meal_services (id, name, description, order_index), -- Join meal_services here
+        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id) -- Añadido user_id
       )
     `)
-    .order("date", { ascending: true });
+    .order("menu_date", { ascending: true }); // Order by menu_date
 
   if (startDate) {
-    query = query.gte("date", startDate);
+    query = query.gte("menu_date", startDate);
   }
   if (endDate) {
-    query = query.lte("date", endDate);
+    query = query.lte("menu_date", endDate);
   }
 
   const { data, error } = await query;
@@ -63,11 +64,11 @@ export const getMenuById = async (id: string): Promise<Menu> => {
     .from("menus")
     .select(`
       *,
-      meal_services (id, name, description, order_index),
       event_types (id, name, description),
       menu_platos (
         *,
-        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total)
+        meal_services (id, name, description, order_index), -- Join meal_services here
+        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id) -- Añadido user_id
       )
     `)
     .eq("id", id)
@@ -79,21 +80,28 @@ export const getMenuById = async (id: string): Promise<Menu> => {
 export const createMenu = async (menu: MenuFormValues): Promise<Menu> => {
   const { platos_por_servicio, menu_type, menu_date, ...menuData } = menu;
 
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !session) {
+    throw new Error("User not authenticated or session not found.");
+  }
+  const userId = session.user.id;
+
   const { data: newMenu, error: menuError } = await supabase
     .from("menus")
     .insert({
       ...menuData,
-      date: menu_type === 'daily' ? menu_date : null, // Use 'date' field
-      event_type_id: menu_type === 'event' ? menu.event_type_id : null, // Corrected access
+      user_id: userId, // Add user_id
+      menu_date: menu_type === 'daily' ? menu_date : null, // Use 'menu_date' field
+      event_type_id: menu_type === 'event' ? menu.event_type_id : null,
     })
     .select()
     .single();
   if (menuError) throw menuError;
 
   if (platos_por_servicio && platos_por_servicio.length > 0) {
-    const menuPlatosToInsert = platos_por_servicio.map((item: { meal_service_id: string; receta_id: string; dish_category: string; quantity_needed: number; }) => ({ // Typed item
+    const menuPlatosToInsert = platos_por_servicio.map((item: { meal_service_id: string; receta_id: string; dish_category: string; quantity_needed: number; }) => ({
       menu_id: newMenu.id,
-      meal_service_id: item.meal_service_id, // Ensure this is passed
+      meal_service_id: item.meal_service_id,
       receta_id: item.receta_id,
       dish_category: item.dish_category,
       quantity_needed: item.quantity_needed,
@@ -109,13 +117,14 @@ export const createMenu = async (menu: MenuFormValues): Promise<Menu> => {
 
 export const updateMenu = async (id: string, menu: MenuFormValues): Promise<Menu> => {
   const { platos_por_servicio, menu_type, menu_date, ...menuData } = menu;
+  if (!id) throw new Error("Menu ID is required for update.");
 
   const { data: updatedMenu, error: menuError } = await supabase
     .from("menus")
     .update({
       ...menuData,
-      date: menu_type === 'daily' ? menu_date : null, // Use 'date' field
-      event_type_id: menu_type === 'event' ? menu.event_type_id : null, // Corrected access
+      menu_date: menu_type === 'daily' ? menu_date : null, // Use 'menu_date' field
+      event_type_id: menu_type === 'event' ? menu.event_type_id : null,
     })
     .eq("id", id)
     .select()
@@ -126,9 +135,9 @@ export const updateMenu = async (id: string, menu: MenuFormValues): Promise<Menu
   await supabase.from("menu_platos").delete().eq("menu_id", id);
 
   if (platos_por_servicio && platos_por_servicio.length > 0) {
-    const menuPlatosToInsert = platos_por_servicio.map((item: { meal_service_id: string; receta_id: string; dish_category: string; quantity_needed: number; }) => ({ // Typed item
+    const menuPlatosToInsert = platos_por_servicio.map((item: { meal_service_id: string; receta_id: string; dish_category: string; quantity_needed: number; }) => ({
       menu_id: updatedMenu.id,
-      meal_service_id: item.meal_service_id, // Ensure this is passed
+      meal_service_id: item.meal_service_id,
       receta_id: item.receta_id,
       dish_category: item.dish_category,
       quantity_needed: item.quantity_needed,

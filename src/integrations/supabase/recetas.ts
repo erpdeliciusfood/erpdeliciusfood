@@ -4,6 +4,7 @@ import { Receta, RecetaFormValues, Insumo } from "@/types"; // Changed type impo
 // Helper to map DB fields to Receta interface fields
 const mapDbRecetaToReceta = (dbReceta: any): Receta => ({
   id: dbReceta.id,
+  user_id: dbReceta.user_id, // Añadido user_id
   nombre: dbReceta.nombre,
   descripcion: dbReceta.descripcion,
   category: dbReceta.categoria, // Map DB field 'categoria' to 'category'

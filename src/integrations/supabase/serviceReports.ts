@@ -13,10 +13,11 @@ const mapDbServiceReportToServiceReport = (dbReport: any): ServiceReport => ({
   service_report_platos: dbReport.service_report_platos?.map((srp: any) => ({
     id: srp.id,
     service_report_id: srp.service_report_id,
-    receta_id: srp.receta_id,
+    receta_id: srp.receta_id, // Changed from plato_id
     quantity_sold: srp.quantity_sold,
     receta: {
       id: srp.platos.id,
+      user_id: srp.platos.user_id, // Añadido user_id
       nombre: srp.platos.nombre,
       descripcion: srp.platos.descripcion,
       category: srp.platos.categoria,
@@ -38,7 +39,7 @@ export const getServiceReports = async (): Promise<ServiceReport[]> => {
       meal_services (id, name, description, order_index),
       service_report_platos (
         *,
-        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total)
+        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id) -- Añadido user_id
       )
     `)
     .order("report_date", { ascending: false });
@@ -124,7 +125,7 @@ export const getServiceReportsById = async (id: string): Promise<ServiceReport> 
       meal_services (id, name, description, order_index),
       service_report_platos (
         *,
-        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total)
+        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id) -- Añadido user_id
       )
     `)
     .eq("id", id)

@@ -73,6 +73,7 @@ export interface PlatoInsumo {
 
 export interface Receta { // Renamed from Plato
   id: string;
+  user_id: string; // Added
   nombre: string;
   descripcion: string;
   category: string; // Standardized from categoria
@@ -120,18 +121,18 @@ export interface MenuPlato {
 
 export interface Menu {
   id: string;
-  date: string | null; // Formato 'YYYY-MM-DD', can be null for event menus
-  meal_service_id: string;
-  event_type_id?: string | null;
-  meal_service: MealService;
-  event_type?: EventType | null; // Corrected from event_types
-  menu_platos: MenuPlato[];
-  total_cost: number;
-  total_servings: number;
-
-  // Added based on errors
+  user_id: string; // Added
   title: string;
   description?: string | null;
+  date: string | null; // Formato 'YYYY-MM-DD', can be null for event menus (mapped from menu_date in DB)
+  event_type_id?: string | null;
+  event_type?: EventType | null; // Corrected from event_types
+  menu_platos: MenuPlato[];
+  created_at: string; // Added
+  // Removed: meal_service_id: string;
+  // Removed: meal_service: MealService;
+  // Removed: total_cost: number;
+  // Removed: total_servings: number;
 }
 
 // Form values for Menu
