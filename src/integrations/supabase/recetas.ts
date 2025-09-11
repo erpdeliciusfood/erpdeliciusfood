@@ -63,6 +63,14 @@ export const getRecetaById = async (id: string): Promise<Receta> => {
 
 export const createReceta = async (receta: RecetaFormValues): Promise<Receta> => {
   const { insumos, ...recetaData } = receta;
+
+  // Obtener el ID del usuario actual
+  const { data: { session }, error: sessionError } = await supabase.auth.getSession();
+  if (sessionError || !session) {
+    throw new Error("User not authenticated or session not found.");
+  }
+  const userId = session.user.id;
+
   const { data: newReceta, error: recetaError } = await supabase
     .from("platos") // Changed from "recetas" to "platos"
     .insert({
@@ -71,7 +79,7 @@ export const createReceta = async (receta: RecetaFormValues): Promise<Receta> =>
       categoria: recetaData.category, // Map 'category' from form to DB 'categoria'
       tiempo_preparacion: 0, // Default value, as it's not in RecetaFormValues
       costo_total: 0, // Default value, as it's calculated, not from form
-      // user_id will be automatically set by RLS or trigger if configured
+      user_id: userId, // Explicitly set user_id
     })
     .select()
     .single();
