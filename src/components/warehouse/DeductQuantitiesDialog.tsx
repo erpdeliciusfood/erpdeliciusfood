@@ -1,6 +1,6 @@
 "use client";
 
-import React from "react"; // Removed unused useState, useEffect
+import React from "react";
 import {
   DialogContent,
   DialogHeader,
@@ -19,7 +19,8 @@ import { AggregatedInsumoNeed } from "@/types";
 import { useAddStockMovement } from "@/hooks/useStockMovements";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form"; // NEW: Import FormDescription
+import { Checkbox } from "@/components/ui/checkbox"; // NEW: Import Checkbox
 
 const formSchema = z.object({
   deductor_name: z.string().min(1, { message: "El nombre de quien realiza la acción es requerido." }).max(100, { message: "El nombre no debe exceder los 100 caracteres." }),
@@ -32,7 +33,10 @@ const formSchema = z.object({
       suggested_quantity: z.number(), // The quantity initially suggested by the system
       quantity_to_deduct: z.coerce.number().min(0, { message: "La cantidad a deducir no puede ser negativa." }),
     })
-  ).min(1, { message: "Debe haber al menos un insumo para deducir." })
+  ).min(1, { message: "Debe haber al menos un insumo para deducir." }),
+  confirm_deduction: z.boolean().refine(val => val === true, { // NEW: Confirmation checkbox
+    message: "Debe confirmar que la deducción real de productos ha sido realizada.",
+  }),
 }).superRefine((data, ctx) => {
   data.insumos_to_deduct.forEach((item, index) => {
     if (item.quantity_to_deduct > item.current_stock_quantity) {
@@ -80,6 +84,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
         suggested_quantity: need.total_needed_purchase_unit,
         quantity_to_deduct: need.total_needed_purchase_unit,
       })),
+      confirm_deduction: false, // NEW: Default to false
     },
   });
 
@@ -130,6 +135,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
   };
 
   const hasErrors = Object.keys(form.formState.errors).length > 0;
+  const isConfirmChecked = form.watch("confirm_deduction"); // NEW: Watch the checkbox state
 
   return (
     <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
@@ -208,6 +214,32 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
             </div>
           )}
 
+          {/* NEW: Confirmation Checkbox */}
+          <FormField
+            control={form.control}
+            name="confirm_deduction"
+            render={({ field }) => (
+              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
+                <FormControl>
+                  <Checkbox
+                    checked={field.value}
+                    onCheckedChange={field.onChange}
+                    disabled={isDeductingStock}
+                  />
+                </FormControl>
+                <div className="space-y-1 leading-none">
+                  <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                    Confirmo que la deducción real de productos ha sido realizada.
+                  </FormLabel>
+                  <FormDescription className="text-sm text-gray-600 dark:text-gray-400">
+                    Esta acción actualizará el stock en el sistema.
+                  </FormDescription>
+                </div>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
           <div className="flex justify-end space-x-4 pt-4">
             <Button
               type="button"
@@ -221,7 +253,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
             <Button
               type="submit"
               className="px-6 py-3 text-lg bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
-              disabled={isDeductingStock || hasErrors}
+              disabled={isDeductingStock || hasErrors || !isConfirmChecked} {/* Disable if not confirmed */}
             >
               {isDeductingStock && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
               Confirmar Deducción
