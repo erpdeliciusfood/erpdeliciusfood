@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Menu, MenuFormValues, Receta } from "@/types"; // Removed unused MenuPlato, MealService, EventType
+import { Menu, MenuFormValues, Receta } from "@/types";
 
 // Helper to map DB fields to Menu interface fields
 const mapDbMenuToMenu = (dbMenu: any): Menu => ({
@@ -41,8 +41,8 @@ export const getMenus = async (startDate?: string, endDate?: string): Promise<Me
       event_types (id, name, description),
       menu_platos (
         *,
-        meal_services (id, name, description, order_index), -- Join meal_services here
-        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id) -- Añadido user_id
+        meal_services (id, name, description, order_index),
+        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id)
       )
     `)
     .order("menu_date", { ascending: true }); // Order by menu_date
@@ -67,8 +67,8 @@ export const getMenuById = async (id: string): Promise<Menu> => {
       event_types (id, name, description),
       menu_platos (
         *,
-        meal_services (id, name, description, order_index), -- Join meal_services here
-        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id) -- Añadido user_id
+        meal_services (id, name, description, order_index),
+        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id)
       )
     `)
     .eq("id", id)
