@@ -24,13 +24,13 @@ import {
 } from "@/components/ui/select";
 import { Loader2 } from "lucide-react";
 import { UrgentPurchaseRequest, UrgentPurchaseRequestFormValues } from "@/types";
-import { useAddUrgentPurchaseRequest, useUpdateUrgentPurchaseRequest } from "@/hooks/useUrgentPurchaseRequests"; // NEW: Import useAddUrgentPurchaseRequest
-import { useInsumos } from "@/hooks/useInsumos"; // To display insumo name
-import { format } from "date-fns"; // NEW: Import format
-import { es } from "date-fns/locale"; // NEW: Import es locale
+import { useAddUrgentPurchaseRequest, useUpdateUrgentPurchaseRequest } from "@/hooks/useUrgentPurchaseRequests";
+import { useInsumos } from "@/hooks/useInsumos";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
 
 const formSchema = z.object({
-  insumo_id: z.string().min(1, { message: "Debe seleccionar un insumo." }), // NEW: Add insumo_id to schema for creation
+  insumo_id: z.string().min(1, { message: "Debe seleccionar un insumo." }),
   quantity_requested: z.coerce.number().min(1, { message: "La cantidad solicitada debe ser al menos 1." }).max(999999, { message: "La cantidad no debe exceder 999999." }),
   notes: z.string().max(500, { message: "Las notas no deben exceder los 500 caracteres." }).nullable(),
   priority: z.enum(['urgent', 'high', 'medium', 'low'], { required_error: "La prioridad es requerida." }),
@@ -50,14 +50,14 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
   onSuccess,
   onCancel,
 }) => {
-  const addUrgentPurchaseRequestMutation = useAddUrgentPurchaseRequest(); // NEW
+  const addUrgentPurchaseRequestMutation = useAddUrgentPurchaseRequest();
   const updateUrgentPurchaseRequestMutation = useUpdateUrgentPurchaseRequest();
-  const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos(undefined, undefined, 1, 9999); // Fetch all insumos for selection
+  const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos(undefined, undefined, 1, 9999);
 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      insumo_id: initialData?.insumo_id || "", // NEW: Set default for insumo_id
+      insumo_id: initialData?.insumo_id || "",
       quantity_requested: initialData?.quantity_requested || 1,
       notes: initialData?.notes || "",
       priority: initialData?.priority || 'urgent',
@@ -79,7 +79,6 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
         fulfilled_purchase_record_id: initialData.fulfilled_purchase_record_id || "",
       });
     } else {
-      // Reset for new request
       form.reset({
         insumo_id: "",
         quantity_requested: 1,
@@ -93,29 +92,27 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
   }, [initialData, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const requestData: UrgentPurchaseRequestFormValues = {
+    const requestData: Partial<UrgentPurchaseRequestFormValues & { status: UrgentPurchaseRequest['status']; fulfilled_purchase_record_id?: string | null; rejection_reason?: string | null }> = {
       insumo_id: values.insumo_id,
       quantity_requested: values.quantity_requested,
       notes: values.notes,
       priority: values.priority,
       status: values.status,
-      // rejection_reason and fulfilled_purchase_record_id are read-only in this form for editing,
-      // and not directly set during creation from this form.
+      rejection_reason: values.status === 'rejected' ? values.rejection_reason : null,
+      fulfilled_purchase_record_id: values.status === 'fulfilled' ? values.fulfilled_purchase_record_id : null,
     };
 
     if (initialData?.id) {
-      // Editing existing request
       await updateUrgentPurchaseRequestMutation.mutateAsync({ id: initialData.id, request: requestData });
     } else {
-      // Creating new request
-      await addUrgentPurchaseRequestMutation.mutateAsync(requestData);
+      await addUrgentPurchaseRequestMutation.mutateAsync(requestData as UrgentPurchaseRequestFormValues); // Cast for creation
     }
     onSuccess();
   };
 
   const isLoading = addUrgentPurchaseRequestMutation.isPending || updateUrgentPurchaseRequestMutation.isPending || isLoadingInsumos;
-  const insumoName = initialData?.insumos?.nombre || availableInsumosData?.data.find(i => i.id === form.watch("insumo_id"))?.nombre || "Insumo Desconocido"; // NEW: Get insumo name from availableInsumosData if creating
-  const purchaseUnit = initialData?.insumos?.purchase_unit || availableInsumosData?.data.find(i => i.id === form.watch("insumo_id"))?.purchase_unit || "unidad"; // NEW: Get purchase unit from availableInsumosData if creating
+  const insumoName = initialData?.insumos?.nombre || availableInsumosData?.data.find(i => i.id === form.watch("insumo_id"))?.nombre || "Insumo Desconocido";
+  const purchaseUnit = initialData?.insumos?.purchase_unit || availableInsumosData?.data.find(i => i.id === form.watch("insumo_id"))?.purchase_unit || "unidad";
   const currentStatus = form.watch("status");
 
   return (
@@ -124,13 +121,13 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
         <div className="grid grid-cols-2 gap-4">
           <div>
             <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Insumo</FormLabel>
-            {initialData ? ( // If editing, show read-only insumo name
+            {initialData ? (
               <Input
                 value={`${insumoName} (${purchaseUnit})`}
                 readOnly
                 className="h-10 text-base mt-1 bg-gray-100 dark:bg-gray-700"
               />
-            ) : ( // If creating, show a select for insumo
+            ) : (
               <FormField
                 control={form.control}
                 name="insumo_id"
@@ -229,7 +226,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value}
-                disabled={isLoading}
+                disabled={isLoading || !initialData} // Only allow editing status for existing requests
               >
                 <FormControl>
                   <SelectTrigger className="h-12 text-base">
@@ -271,9 +268,8 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
                     placeholder="Motivo del rechazo"
                     {...field}
                     value={field.value || ""}
-                    className="min-h-[80px] text-base bg-gray-100 dark:bg-gray-700"
-                    readOnly
-                    disabled // Ensure it's truly disabled for editing here
+                    className="min-h-[80px] text-base"
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <FormMessage />
@@ -294,9 +290,8 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
                     placeholder="ID del registro de compra"
                     {...field}
                     value={field.value || ""}
-                    className="h-10 text-base bg-gray-100 dark:bg-gray-700"
-                    readOnly
-                    disabled // Ensure it's truly disabled for editing here
+                    className="h-10 text-base"
+                    disabled={isLoading}
                   />
                 </FormControl>
                 <FormMessage />
