@@ -12,12 +12,12 @@ const mapDbStockMovementToStockMovement = (dbMovement: any): StockMovement => ({
   insumo: {
     id: dbMovement.insumos.id,
     nombre: dbMovement.insumos.nombre,
-    base_unit: dbMovement.insumos.unidad_medida,
+    base_unit: dbMovement.insumos.base_unit, // Corrected from unidad_medida
     costo_unitario: dbMovement.insumos.costo_unitario,
-    stock_quantity: dbMovement.insumos.stock_actual,
-    min_stock_level: dbMovement.insumos.stock_minimo,
-    category: dbMovement.insumos.categoria,
-    purchase_unit: dbMovement.insumos.unidad_medida,
+    stock_quantity: dbMovement.insumos.stock_quantity, // Corrected from stock_actual
+    min_stock_level: dbMovement.insumos.min_stock_level, // Corrected from stock_minimo
+    category: dbMovement.insumos.category, // Corrected from categoria
+    purchase_unit: dbMovement.insumos.purchase_unit,
     conversion_factor: dbMovement.insumos.conversion_factor || 1,
     pending_reception_quantity: dbMovement.insumos.pending_reception_quantity || 0,
     pending_delivery_quantity: dbMovement.insumos.pending_delivery_quantity || 0,
@@ -33,7 +33,7 @@ export const getStockMovements = async (): Promise<StockMovement[]> => {
     .from("stock_movements")
     .select(`
       *,
-      insumos (id, nombre, unidad_medida, costo_unitario, stock_actual, stock_minimo, categoria, conversion_factor, pending_reception_quantity, pending_delivery_quantity),
+      insumos (id, nombre, base_unit, costo_unitario, stock_quantity, min_stock_level, category, conversion_factor, pending_reception_quantity, pending_delivery_quantity, purchase_unit),
       users (id, email)
     `)
     .order("created_at", { ascending: false });
@@ -57,7 +57,7 @@ export const createStockMovement = async (movementData: StockMovementFormValues,
     })
     .select(`
       *,
-      insumos (id, nombre, unidad_medida, costo_unitario, stock_actual, stock_minimo, categoria, conversion_factor, pending_reception_quantity, pending_delivery_quantity),
+      insumos (id, nombre, base_unit, costo_unitario, stock_quantity, min_stock_level, category, conversion_factor, pending_reception_quantity, pending_delivery_quantity, purchase_unit),
       users (id, email)
     `)
     .single();
