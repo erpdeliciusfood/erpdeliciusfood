@@ -6,8 +6,8 @@ const mapDbServiceReportToServiceReport = (dbReport: any): ServiceReport => ({
   id: dbReport.id,
   report_date: dbReport.report_date,
   meal_service_id: dbReport.meal_service_id,
-  total_servings: dbReport.total_servings,
-  total_revenue: dbReport.total_revenue,
+  total_servings: dbReport.total_servings, // Keep for ServiceReport interface
+  total_revenue: dbReport.total_revenue,   // Keep for ServiceReport interface
   notes: dbReport.notes,
   meal_service: dbReport.meal_services, // Assuming 'meal_services' is the joined table
   service_report_platos: dbReport.service_report_platos?.map((srp: any) => ({
@@ -52,6 +52,9 @@ export const createServiceReport = async (report: ServiceReportFormValues): Prom
     .from("service_reports")
     .insert({
       ...reportData,
+      // total_servings and total_revenue are not directly inserted from form,
+      // they are either calculated in DB or derived in frontend.
+      // Ensure tickets_issued, meals_sold, additional_services_revenue are passed.
     })
     .select()
     .single();
@@ -80,6 +83,8 @@ export const updateServiceReport = async (id: string, report: ServiceReportFormV
     .from("service_reports")
     .update({
       ...reportData,
+      // total_servings and total_revenue are not directly updated from form.
+      // Ensure tickets_issued, meals_sold, additional_services_revenue are passed.
     })
     .eq("id", id)
     .select()

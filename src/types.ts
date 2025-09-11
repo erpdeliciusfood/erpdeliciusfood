@@ -180,16 +180,14 @@ export interface ServiceReportFormValues {
   id?: string; // Added for updates
   report_date: string;
   meal_service_id: string;
-  total_servings: number;
-  total_revenue: number;
   notes?: string | null;
   platos_vendidos: {
     receta_id: string; // Changed from plato_id
     quantity_sold: number;
   }[];
-  tickets_issued?: number; // Added
-  meals_sold?: number; // Added
-  additional_services_revenue?: number; // Added
+  tickets_issued: number; // Added
+  meals_sold: number; // Added
+  additional_services_revenue: number; // Added
 }
 
 // PurchaseItem is now likely unused or for a different context if PurchaseRecord is single-item.
