@@ -50,7 +50,7 @@ const InsumoImporter: React.FC<InsumoImporterProps> = ({ onSuccess, onCancel }) 
     const headers = "nombre,category,base_unit,purchase_unit,costo_unitario,conversion_factor,stock_quantity,min_stock_level,supplier_name,supplier_phone,supplier_address";
     const exampleRow = "Quinua tricolor,Cereales,gramos,kilo,16.75,1000,0,0,Amagreen / Mayorista Saludable,,";
     const csvContent = [headers, exampleRow].join("\n");
-    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-t;" });
+    const blob = new Blob([csvContent], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
     if (link.download !== undefined) {
       const url = URL.createObjectURL(blob);
