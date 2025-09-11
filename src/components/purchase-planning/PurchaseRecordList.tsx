@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, ShoppingBag, CheckCircle2, XCircle, Truck, Warehouse, Loader2, Trash2 } from "lucide-react"; // NEW: Trash2 icon
+import { Edit, ShoppingBag, CheckCircle2, XCircle, Truck, Warehouse, Loader2, Trash2 } from "lucide-react";
 import { PurchaseRecord } from "@/types";
 import { useDeletePurchaseRecord, useUpdatePurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -17,7 +17,7 @@ import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { showSuccess, showError } from "@/utils/toast";
 import { Dialog } from "@/components/ui/dialog";
-import PartialReceptionDialog from "./PartialReceptionDialog"; // NEW: Import PartialReceptionDialog
+import PartialReceptionDialog from "./PartialReceptionDialog";
 
 interface PurchaseRecordListProps {
   purchaseRecords: PurchaseRecord[];
@@ -28,29 +28,26 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
   const deleteMutation = useDeletePurchaseRecord();
   const updateMutation = useUpdatePurchaseRecord();
 
-  const [isPartialReceptionDialogOpen, setIsPartialReceptionDialogOpen] = useState(false); // NEW: State for partial reception dialog
-  const [selectedRecordForReception, setSelectedRecordForReception] = useState<PurchaseRecord | null>(null); // NEW: State for record to receive
-  const [targetStatusForReception, setTargetStatusForReception] = useState<'received_by_company' | 'received_by_warehouse' | null>(null); // NEW: State for target status
+  const [isPartialReceptionDialogOpen, setIsPartialReceptionDialogOpen] = useState(false);
+  const [selectedRecordForReception, setSelectedRecordForReception] = useState<PurchaseRecord | null>(null);
+  const [targetStatusForReception, setTargetStatusForReception] = useState<'received_by_company' | 'received_by_warehouse' | null>(null);
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
   };
 
-  // NEW: Function to open partial reception dialog
   const handleOpenPartialReceptionDialog = (record: PurchaseRecord, targetStatus: 'received_by_company' | 'received_by_warehouse') => {
     setSelectedRecordForReception(record);
     setTargetStatusForReception(targetStatus);
     setIsPartialReceptionDialogOpen(true);
   };
 
-  // NEW: Function to close partial reception dialog
   const handleClosePartialReceptionDialog = () => {
     setIsPartialReceptionDialogOpen(false);
     setSelectedRecordForReception(null);
     setTargetStatusForReception(null);
   };
 
-  // Function to handle status transitions (only for cancellation now, reception handled by dialog)
   const handleCancelStatusChange = async (record: PurchaseRecord) => {
     try {
       await updateMutation.mutateAsync({
@@ -58,7 +55,7 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
         record: {
           ...record,
           status: 'cancelled',
-          received_date: null, // Clear received date on cancellation
+          received_date: null,
         },
       });
       showSuccess(`Estado de la compra actualizado a "Cancelado" exitosamente.`);
@@ -98,9 +95,9 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
           <TableRow>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Fecha Compra</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Insumo</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Cantidad Ordenada</TableHead> {/* NEW */}
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Cantidad Recibida</TableHead> {/* NEW */}
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Pendiente</TableHead> {/* NEW */}
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Cantidad Ordenada</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Cantidad Recibida</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Pendiente</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Unitario (S/)</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Monto Total (S/)</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Proveedor</TableHead>
@@ -114,10 +111,10 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
             const quantityPending = record.quantity_purchased - record.quantity_received;
             return (
               <TableRow key={record.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
-                <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">
+                <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left">
                   {format(new Date(record.purchase_date), "PPP", { locale: es })}
                 </TableCell>
-                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left">
                   {record.insumos?.nombre || "Insumo Desconocido"}
                 </TableCell>
                 <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
@@ -143,7 +140,7 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                 <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
                   S/ {record.total_amount.toFixed(2)}
                 </TableCell>
-                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left">
                   <div className="flex items-center">
                     {record.supplier_name_at_purchase || "N/A"}
                     {record.from_registered_supplier ? (
@@ -157,10 +154,10 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                     )}
                   </div>
                 </TableCell>
-                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left">
                   {getStatusBadge(record.status)}
                 </TableCell>
-                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left">
                   {record.received_date ? format(new Date(record.received_date), "PPP", { locale: es }) : "N/A"}
                 </TableCell>
                 <TableCell className="flex justify-center space-x-2 py-3 px-6">
@@ -239,7 +236,7 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                     </AlertDialog>
                   )}
 
-                  {record.status === 'cancelled' && ( // Only show delete for cancelled records
+                  {record.status === 'cancelled' && (
                     <AlertDialog>
                       <AlertDialogTrigger asChild>
                         <Button
@@ -280,7 +277,6 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
         </TableBody>
       </Table>
 
-      {/* NEW: Partial Reception Dialog */}
       <Dialog open={isPartialReceptionDialogOpen} onOpenChange={setIsPartialReceptionDialogOpen}>
         {selectedRecordForReception && targetStatusForReception && (
           <PartialReceptionDialog

@@ -233,7 +233,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
 
   return (
     <div className="space-y-8">
-      <PurchaseCostSummary totalEstimatedPurchaseCost={totalEstimatedPurchaseCost} />
+      <PurchaseCostSummary totalEstimatedPurchaseCost={totalEstimatedPurchaseCost} isLoading={isLoading} /> {/* Pass isLoading */}
 
       <Card className="w-full shadow-lg dark:bg-gray-800">
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-2">
@@ -263,17 +263,9 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
           ) : (
             <div className="text-center py-6 text-gray-600 dark:text-gray-400">
               <ShoppingBag className="mx-auto h-12 w-12 mb-3 text-gray-400 dark:text-gray-600" />
-              <p className="text-lg">
-                {menus && menus.length === 0
-                  ? "No hay menús planificados para el período seleccionado."
-                  : allInsumosData?.data && allInsumosData.data.length === 0
-                  ? "No hay insumos registrados en tu inventario."
-                  : "No se encontraron necesidades de insumos para el período seleccionado o tu stock actual es suficiente."}
-              </p>
-              <p className="text-md mt-2">
-                {menus && menus.length === 0 && "Asegúrate de haber creado menús para este rango de fechas."}
-                {allInsumosData?.data && allInsumosData.data.length === 0 && "Añade insumos a tu inventario para empezar a planificar compras."}
-                {menus && menus.length > 0 && allInsumosData?.data && allInsumosData.data.length > 0 && "Asegúrate de tener menús planificados con recetas e insumos para este rango de fechas, o que tus niveles de stock estén por debajo de lo necesario o de tu stock mínimo."}
+              <p className="text-xl font-semibold mb-2">No se encontraron sugerencias de compra.</p>
+              <p className="text-md">
+                Asegúrate de que los menús estén planificados con recetas e insumos para este rango de fechas, o que tus niveles de stock estén por debajo de lo necesario o de tu stock mínimo.
               </p>
             </div>
           )}

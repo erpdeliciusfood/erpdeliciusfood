@@ -52,7 +52,7 @@ const InsumoPurchaseTable: React.FC<InsumoPurchaseTableProps> = ({
                   disabled={insumo.purchase_suggestion_rounded === 0}
                 />
               </TableCell>
-              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{insumo.nombre}</TableCell>
+              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 text-left">{insumo.nombre}</TableCell>
               <TableCell className="text-left text-base text-gray-700 dark:text-gray-300">{insumo.purchase_unit}</TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">S/ {insumo.costo_unitario.toFixed(2)}</TableCell>
               <TableCell className="text-right text-base">
