@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, Utensils, UserCircle2, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText, Warehouse, AlertCircle } from "lucide-react"; // NEW: AlertCircle icon
+import { LogOut, Utensils, UserCircle2, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText, Warehouse, AlertCircle, ClipboardList } from "lucide-react"; // NEW: ClipboardList icon
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
@@ -56,6 +56,12 @@ const Header: React.FC = () => {
               Menús
             </Button>
           </Link>
+          <Link to="/menu-breakdown"> {/* NEW: Link to Menu Breakdown */}
+            <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
+              <ClipboardList className="mr-2 h-5 w-5" />
+              Quebrado Menús
+            </Button>
+          </Link>
           <Link to="/service-reports">
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <FileText className="mr-2 h-5 w-5" />
@@ -74,7 +80,7 @@ const Header: React.FC = () => {
               Registros Compra
             </Button>
           </Link>
-          <Link to="/urgent-purchase-requests"> {/* NEW: Link to Urgent Purchase Requests */}
+          <Link to="/urgent-purchase-requests">
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <AlertCircle className="mr-2 h-5 w-5" />
               Solicitudes Urgentes
