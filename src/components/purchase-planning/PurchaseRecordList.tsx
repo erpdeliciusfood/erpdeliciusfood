@@ -190,7 +190,7 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                     </Button>
                   )}
 
-                  {(record.status === 'ordered' || record.status === 'received_by_company') && (
+                  {(record.status === 'ordered' || record.status === 'received_by_company' || record.status === 'received_by_warehouse') && (
                     <Button
                       variant="outline"
                       size="icon"
