@@ -49,10 +49,14 @@ export const getServiceReports = async (): Promise<ServiceReport[]> => {
 
 export const createServiceReport = async (report: ServiceReportFormValues): Promise<ServiceReport> => {
   const { platos_vendidos, ...reportData } = report;
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) throw new Error("User not authenticated.");
+
   const { data: newReport, error: reportError } = await supabase
     .from("service_reports")
     .insert({
       ...reportData,
+      user_id: user.id, // Add user_id here
       // total_servings and total_revenue are not directly inserted from form,
       // they are either calculated in DB or derived in frontend.
       // Ensure tickets_issued, meals_sold, additional_services_revenue are passed.
