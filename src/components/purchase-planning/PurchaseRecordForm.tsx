@@ -3,7 +3,6 @@ import { useForm, FormProvider } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
-// import { Input } from "@/components/ui/input"; // Removed as it's used in sub-components
 import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
@@ -20,7 +19,7 @@ import { Loader2 } from "lucide-react";
 import PurchaseDetailsFormSection from "./PurchaseDetailsFormSection";
 import SupplierDetailsFormSection from "./SupplierDetailsFormSection";
 import StatusAndReceivedDateFormSection from "./StatusAndReceivedDateFormSection";
-import { format } from "date-fns"; // Import format only, formatISO is used in sub-components
+import { format } from "date-fns";
 
 const formSchema = z.object({
   insumo_id: z.string().min(1, { message: "Debe seleccionar un insumo." }),
@@ -48,7 +47,7 @@ interface PurchaseRecordFormProps {
   prefilledSupplierName?: string;
   prefilledSupplierPhone?: string;
   prefilledSupplierAddress?: string;
-  onSuccess: (record?: PurchaseRecord) => void; // NEW: onSuccess can now receive the created/updated record
+  onSuccess: (record?: PurchaseRecord) => void;
   onCancel: () => void;
 }
 
@@ -80,8 +79,9 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
       supplier_address_at_purchase: prefilledSupplierAddress || "",
       from_registered_supplier: true,
       notes: "",
-      status: 'ordered',
-      received_date: null,
+      status: prefilledInsumoId ? 'received_by_warehouse' : 'ordered', // NEW: Default to received_by_warehouse if prefilled
+      received_date: prefilledInsumoId ? format(new Date(), "yyyy-MM-dd") : null, // NEW: Set received date if prefilled
+      quantity_received: prefilledInsumoId ? prefilledQuantity : 0, // NEW: Set quantity_received if prefilled
     },
   });
 
@@ -108,6 +108,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         notes: initialData.notes || "",
         status: initialData.status,
         received_date: initialData.received_date || null,
+        quantity_received: initialData.quantity_received,
       });
     } else {
       form.reset({
@@ -121,8 +122,9 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         supplier_address_at_purchase: prefilledSupplierAddress || "",
         from_registered_supplier: true,
         notes: "",
-        status: 'ordered',
-        received_date: null,
+        status: prefilledInsumoId ? 'received_by_warehouse' : 'ordered', // NEW: Default to received_by_warehouse if prefilled
+        received_date: prefilledInsumoId ? format(new Date(), "yyyy-MM-dd") : null, // NEW: Set received date if prefilled
+        quantity_received: prefilledInsumoId ? prefilledQuantity : 0, // NEW: Set quantity_received if prefilled
       });
     }
   }, [initialData, form, prefilledInsumoId, prefilledQuantity, prefilledUnitCost, prefilledSupplierName, prefilledSupplierPhone, prefilledSupplierAddress]);
@@ -135,7 +137,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
   }, [quantityPurchased, unitCostAtPurchase, form]);
 
   useEffect(() => {
-    if (selectedInsumoId && !initialData) {
+    if (selectedInsumoId && !initialData && !prefilledInsumoId) { // Only auto-fill if not editing and not prefilled
       const selectedInsumo = availableInsumosData?.data.find((insumo: Insumo) => insumo.id === selectedInsumoId);
       if (selectedInsumo) {
         form.setValue("supplier_name_at_purchase", selectedInsumo.supplier_name || "");
@@ -144,7 +146,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         form.setValue("from_registered_supplier", true);
       }
     }
-  }, [selectedInsumoId, availableInsumosData?.data, form, initialData]);
+  }, [selectedInsumoId, availableInsumosData?.data, form, initialData, prefilledInsumoId]);
 
   useEffect(() => {
     if (initialData && initialData.status !== currentStatus) {
@@ -159,10 +161,10 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
   const onSubmit = async (values: PurchaseRecordFormValues) => {
     if (initialData) {
       const updatedRecord = await updateMutation.mutateAsync({ id: initialData.id, record: values });
-      onSuccess(updatedRecord); // Pass the updated record
+      onSuccess(updatedRecord);
     } else {
       const newRecord = await addMutation.mutateAsync(values);
-      onSuccess(newRecord); // Pass the new record
+      onSuccess(newRecord);
     }
   };
 
@@ -184,11 +186,13 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
             isLoading={isLoading}
           />
 
-          {initialData && (
+          {/* Only show status and received date section if it's an existing record or not prefilled */}
+          {initialData || !prefilledInsumoId ? (
             <StatusAndReceivedDateFormSection
               isLoading={isLoading}
             />
-          )}
+          ) : null}
+
 
           <FormField
             control={form.control}

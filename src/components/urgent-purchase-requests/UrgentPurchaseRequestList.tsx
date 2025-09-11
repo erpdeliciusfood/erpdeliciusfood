@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, ShoppingBag, CheckCircle2, XCircle, Loader2, Repeat2 } from "lucide-react"; // NEW: Repeat2 icon
+import { Edit, Trash2, ShoppingBag, CheckCircle2, XCircle, Loader2, Repeat2 } from "lucide-react";
 import { UrgentPurchaseRequest } from "@/types";
 import { useDeleteUrgentPurchaseRequest, useUpdateUrgentPurchaseRequest } from "@/hooks/useUrgentPurchaseRequests";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -16,8 +16,9 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { showSuccess, showError } from "@/utils/toast";
-import { Dialog } from "@/components/ui/dialog"; // NEW: Import Dialog
-import FulfillUrgentRequestDialog from "./FulfillUrgentRequestDialog"; // NEW: Import FulfillUrgentRequestDialog
+import { Dialog } from "@/components/ui/dialog";
+import FulfillUrgentRequestDialog from "./FulfillUrgentRequestDialog";
+import RejectUrgentRequestDialog from "./RejectUrgentRequestDialog"; // NEW: Import RejectUrgentRequestDialog
 
 interface UrgentPurchaseRequestListProps {
   requests: UrgentPurchaseRequest[];
@@ -28,32 +29,47 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
   const deleteMutation = useDeleteUrgentPurchaseRequest();
   const updateMutation = useUpdateUrgentPurchaseRequest();
 
-  const [isFulfillDialogOpen, setIsFulfillDialogOpen] = useState(false); // NEW: State for fulfill dialog
-  const [requestToFulfill, setRequestToFulfill] = useState<UrgentPurchaseRequest | null>(null); // NEW: State for request to fulfill
+  const [isFulfillDialogOpen, setIsFulfillDialogOpen] = useState(false);
+  const [requestToFulfill, setRequestToFulfill] = useState<UrgentPurchaseRequest | null>(null);
+
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false); // NEW: State for reject dialog
+  const [requestToReject, setRequestToReject] = useState<UrgentPurchaseRequest | null>(null); // NEW: State for request to reject
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
   };
 
-  const handleStatusChange = async (request: UrgentPurchaseRequest, newStatus: UrgentPurchaseRequest['status']) => {
+  const handleApproveRequest = async (request: UrgentPurchaseRequest) => {
     try {
       await updateMutation.mutateAsync({
         id: request.id,
-        request: { status: newStatus },
+        request: { status: 'approved' },
       });
-      showSuccess(`Estado de la solicitud de compra urgente actualizado a "${newStatus}" exitosamente.`);
+      showSuccess(`Solicitud de compra urgente para ${request.insumos?.nombre || "Insumo Desconocido"} aprobada exitosamente. Se ha notificado al almacén.`);
     } catch (error: any) {
-      showError(`Error al actualizar el estado de la solicitud: ${error.message}`);
+      showError(`Error al aprobar la solicitud: ${error.message}`);
     }
   };
 
-  // NEW: Handler for opening the fulfill dialog
-  const handleOpenFulfillDialog = (request: UrgentPurchaseRequest) => {
-    setRequestToFulfill(request);
+  // NEW: Handler for opening the reject dialog
+  const handleOpenRejectDialog = (request: UrgentPurchaseRequest) => {
+    setRequestToReject(request);
+    setIsRejectDialogOpen(true);
+  };
+
+  // NEW: Handler for closing the reject dialog
+  const handleCloseRejectDialog = () => {
+    setIsRejectDialogOpen(false);
+    setRequestToReject(null);
+  };
+
+  // Handler for opening the fulfill dialog
+  const handleOpenFulfillDialog = (insumo: UrgentPurchaseRequest) => {
+    setRequestToFulfill(insumo);
     setIsFulfillDialogOpen(true);
   };
 
-  // NEW: Handler for closing the fulfill dialog
+  // Handler for closing the fulfill dialog
   const handleCloseFulfillDialog = () => {
     setIsFulfillDialogOpen(false);
     setRequestToFulfill(null);
@@ -108,7 +124,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Cantidad</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Prioridad</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Estado</TableHead>
-            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Insistencia</TableHead> {/* NEW: Insistence column */}
+            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Insistencia</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Notas</TableHead>
             <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
           </TableRow>
@@ -131,7 +147,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
                 {getStatusBadge(request.status)}
               </TableCell>
-              <TableCell className="text-center text-base text-gray-700 dark:text-gray-300 py-3 px-6"> {/* NEW: Display insistence_count */}
+              <TableCell className="text-center text-base text-gray-700 dark:text-gray-300 py-3 px-6">
                 {request.insistence_count > 1 ? (
                   <Badge variant="destructive" className="text-base px-2 py-1 flex items-center justify-center mx-auto w-fit">
                     <Repeat2 className="h-4 w-4 mr-1" /> {request.insistence_count}
@@ -144,6 +160,11 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
                 {request.notes || "N/A"}
+                {request.status === 'rejected' && request.rejection_reason && (
+                  <p className="text-sm text-red-500 dark:text-red-400 mt-1">
+                    <span className="font-semibold">Motivo:</span> {request.rejection_reason}
+                  </p>
+                )}
               </TableCell>
               <TableCell className="flex justify-center space-x-2 py-3 px-6">
                 {request.status === 'pending' && (
@@ -165,13 +186,13 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                           <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Aprobar Solicitud de Compra Urgente?</AlertDialogTitle>
                           <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
                             ¿Estás seguro de que deseas aprobar la solicitud de compra de <span className="font-semibold">{request.insumos?.nombre || "Insumo Desconocido"}</span>?
-                            Esto marcará la solicitud como "Aprobada".
+                            Esto marcará la solicitud como "Aprobada" y notificará al almacén.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
                           <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
                           <AlertDialogAction
-                            onClick={() => handleStatusChange(request, 'approved')}
+                            onClick={() => handleApproveRequest(request)}
                             className="w-full sm:w-auto px-6 py-3 text-lg bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out"
                             disabled={updateMutation.isPending}
                           >
@@ -182,43 +203,20 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                       </AlertDialogContent>
                     </AlertDialog>
 
-                    <AlertDialog>
-                      <AlertDialogTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          className="h-10 w-10 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition-colors duration-150 ease-in-out"
-                          title="Rechazar Solicitud"
-                          disabled={updateMutation.isPending}
-                        >
-                          <XCircle className="h-5 w-5 text-red-600" />
-                        </Button>
-                      </AlertDialogTrigger>
-                      <AlertDialogContent className="p-6">
-                        <AlertDialogHeader>
-                          <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Rechazar Solicitud de Compra Urgente?</AlertDialogTitle>
-                          <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                            ¿Estás seguro de que deseas rechazar la solicitud de compra de <span className="font-semibold">{request.insumos?.nombre || "Insumo Desconocido"}</span>?
-                            Esto marcará la solicitud como "Rechazada".
-                          </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
-                          <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
-                          <AlertDialogAction
-                            onClick={() => handleStatusChange(request, 'rejected')}
-                            className="w-full sm:w-auto px-6 py-3 text-lg bg-destructive hover:bg-destructive-foreground text-destructive-foreground hover:text-destructive transition-colors duration-200 ease-in-out"
-                            disabled={updateMutation.isPending}
-                          >
-                            {updateMutation.isPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                            Rechazar
-                          </AlertDialogAction>
-                        </AlertDialogFooter>
-                      </AlertDialogContent>
-                    </AlertDialog>
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={() => handleOpenRejectDialog(request)} // NEW: Open reject dialog
+                      className="h-10 w-10 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition-colors duration-150 ease-in-out"
+                      title="Rechazar Solicitud"
+                      disabled={updateMutation.isPending}
+                    >
+                      <XCircle className="h-5 w-5 text-red-600" />
+                    </Button>
                   </>
                 )}
 
-                {(request.status === 'pending' || request.status === 'approved') && ( // Only show "Mark as Purchased" for pending/approved
+                {(request.status === 'pending' || request.status === 'approved') && (
                   <Button
                     variant="outline"
                     size="icon"
@@ -231,11 +229,11 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                   </Button>
                 )}
 
-                {request.status === 'approved' && (
+                {request.status === 'approved' && ( // Only show edit for approved requests
                   <Button
                     variant="outline"
                     size="icon"
-                    onClick={() => onEdit(request)} // This could open a form to link to a purchase record
+                    onClick={() => onEdit(request)}
                     className="h-10 w-10 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150 ease-in-out"
                     title="Editar Solicitud"
                     disabled={updateMutation.isPending}
@@ -244,7 +242,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                   </Button>
                 )}
 
-                {(request.status === 'pending' || request.status === 'approved' || request.status === 'rejected') && (
+                {(request.status === 'pending' || request.status === 'approved' || request.status === 'rejected') && ( // Allow deletion for these statuses
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button
@@ -284,12 +282,22 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
         </TableBody>
       </Table>
 
-      {/* NEW: Fulfill Urgent Request Dialog */}
+      {/* Fulfill Urgent Request Dialog */}
       <Dialog open={isFulfillDialogOpen} onOpenChange={setIsFulfillDialogOpen}>
         {requestToFulfill && (
           <FulfillUrgentRequestDialog
             urgentRequest={requestToFulfill}
             onClose={handleCloseFulfillDialog}
+          />
+        )}
+      </Dialog>
+
+      {/* NEW: Reject Urgent Request Dialog */}
+      <Dialog open={isRejectDialogOpen} onOpenChange={setIsRejectDialogOpen}>
+        {requestToReject && (
+          <RejectUrgentRequestDialog
+            urgentRequest={requestToReject}
+            onClose={handleCloseRejectDialog}
           />
         )}
       </Dialog>
