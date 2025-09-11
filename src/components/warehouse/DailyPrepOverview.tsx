@@ -1,23 +1,24 @@
+"use client";
+
 import React, { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Loader2, Package, CheckCircle2, AlertTriangle, MinusCircle, Utensils, PackageX, Info } from "lucide-react";
+import { Package, CheckCircle2, AlertTriangle, MinusCircle, Utensils, PackageX, Info } from "lucide-react";
 import { Menu, AggregatedInsumoNeed } from "@/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
-import { useAddStockMovement } from "@/hooks/useStockMovements";
-import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
-import { useQueryClient } from "@tanstack/react-query";
-import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { showError } from "@/utils/toast";
+// Removed useQueryClient as it's no longer used here
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ColoredProgress } from "@/components/ui/colored-progress";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+// Removed Input and Label as they are no longer used directly in this component
+import DeductQuantitiesDialog from "./DeductQuantitiesDialog"; // NEW: Import the new dialog
+import { Dialog } from "@/components/ui/dialog"; // NEW: Import Dialog for the DeductQuantitiesDialog
 
 interface DailyPrepOverviewProps {
   selectedDate: Date;
@@ -25,13 +26,13 @@ interface DailyPrepOverviewProps {
 }
 
 const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, menus }) => {
-  const queryClient = useQueryClient();
-  const addStockMovementMutation = useAddStockMovement();
-  const [isDeductingStock, setIsDeductingStock] = useState(false);
+  // Removed useQueryClient as it's no longer used in this component
+  // Removed useAddStockMovement as it's now used inside DeductQuantitiesDialog
   const [stockFilter, setStockFilter] = useState<'all' | 'sufficient' | 'insufficient'>('all');
   const [selectedInsumoIds, setSelectedInsumoIds] = useState<Set<string>>(new Set());
   const [isSelectAllChecked, setIsSelectAllChecked] = useState(false);
-  const [deductorName, setDeductorName] = useState<string>("");
+  // Removed deductorName state as it's moved to DeductQuantitiesDialog
+  const [isDeductQuantitiesDialogOpen, setIsDeductQuantitiesDialogOpen] = useState(false); // NEW: State for the new dialog
 
   const aggregatedInsumoNeeds: AggregatedInsumoNeed[] = useMemo(() => {
     const needsMap = new Map<string, AggregatedInsumoNeed>();
@@ -86,13 +87,13 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     return allNeeds;
   }, [menus, stockFilter]);
 
-  // NEW: Effect to update "Select All" checkbox state
+  // Effect to update "Select All" checkbox state
   useEffect(() => {
     const allDeductibleIds = aggregatedInsumoNeeds.filter(need => need.total_needed_purchase_unit > 0).map(need => need.insumo_id);
     setIsSelectAllChecked(allDeductibleIds.length > 0 && selectedInsumoIds.size === allDeductibleIds.length);
   }, [aggregatedInsumoNeeds, selectedInsumoIds]);
 
-  // NEW: Handle individual checkbox change
+  // Handle individual checkbox change
   const handleCheckboxChange = (insumoId: string, checked: boolean) => {
     setSelectedInsumoIds(prev => {
       const newSet = new Set(prev);
@@ -105,7 +106,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     });
   };
 
-  // NEW: Handle "Select All" checkbox change
+  // Handle "Select All" checkbox change
   const handleSelectAllChange = (checked: boolean) => {
     if (checked) {
       const allDeductibleIds = aggregatedInsumoNeeds.filter(need => need.total_needed_purchase_unit > 0).map(need => need.insumo_id);
@@ -116,69 +117,26 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     setIsSelectAllChecked(checked);
   };
 
-  const handleDeductStock = async () => {
-    if (!deductorName.trim()) {
-      showError("Por favor, ingresa el nombre de quien realiza la acción.");
-      return;
-    }
-
-    setIsDeductingStock(true);
-    const deductToastId = showLoading("Deduciendo insumos para la preparación diaria...");
-    let successfulDeductions = 0;
-    let failedDeductions = 0;
-
-    const insumosToDeduct = aggregatedInsumoNeeds.filter(
-      (need) => selectedInsumoIds.has(need.insumo_id) && need.total_needed_purchase_unit > 0
+  // NEW: Function to open the DeductQuantitiesDialog
+  const handleOpenDeductQuantitiesDialog = () => {
+    const selectedInsumosWithSufficientStock = aggregatedInsumoNeeds.filter(
+      (need) => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity >= need.total_needed_purchase_unit
     );
 
-    // Check if all selected items have sufficient stock before proceeding
-    const insufficientSelectedItems = insumosToDeduct.filter(
-      (need) => need.current_stock_quantity < need.total_needed_purchase_unit
-    );
-
-    if (insufficientSelectedItems.length > 0) {
-      dismissToast(deductToastId);
-      showError("No se puede deducir el stock. Algunos insumos seleccionados tienen cantidades insuficientes.");
-      setIsDeductingStock(false);
+    if (selectedInsumosWithSufficientStock.length === 0) {
+      showError("No se puede deducir el stock. Asegúrate de seleccionar insumos con stock suficiente.");
       return;
     }
-
-    for (const need of insumosToDeduct) {
-      try {
-        await addStockMovementMutation.mutateAsync({
-          insumo_id: need.insumo_id,
-          movement_type: 'daily_prep_out',
-          quantity_change: need.total_needed_purchase_unit,
-          notes: `Salida por preparación diaria para el menú del ${format(selectedDate, "PPP", { locale: es })}. Realizado por: ${deductorName}`,
-          menu_id: menus[0]?.id || null,
-        });
-        successfulDeductions++;
-      } catch (error: any) {
-        failedDeductions++;
-        showError(`Error al deducir ${need.insumo_nombre}: ${error.message}`);
-      }
-    }
-
-    dismissToast(deductToastId);
-    if (successfulDeductions > 0) {
-      showSuccess(`Se dedujeron ${successfulDeductions} insumos exitosamente para la preparación diaria.`);
-    }
-    if (failedDeductions > 0) {
-      showError(`Fallaron ${failedDeductions} deducciones de insumos.`);
-    }
-
-    setIsDeductingStock(false);
-    setSelectedInsumoIds(new Set()); // Clear selection after deduction
-    setDeductorName(""); // Clear name after deduction
-    queryClient.invalidateQueries({ queryKey: ["stockMovements"] });
-    queryClient.invalidateQueries({ queryKey: ["insumos"] });
-    queryClient.invalidateQueries({ queryKey: ["menus"] });
+    setIsDeductQuantitiesDialogOpen(true);
   };
 
-  // Removed 'allStockSufficient' as it was unused.
-  // const allStockSufficient = aggregatedInsumoNeeds.every(
-  //   (need) => need.current_stock_quantity >= need.total_needed_purchase_unit
-  // );
+  // NEW: Function to close the DeductQuantitiesDialog
+  const handleCloseDeductQuantitiesDialog = () => {
+    setIsDeductQuantitiesDialogOpen(false);
+    setSelectedInsumoIds(new Set()); // Clear selection after deduction
+    setIsSelectAllChecked(false);
+    // No need to invalidate queries here, as it's done in the dialog's onSubmit
+  };
 
   const insufficientStockCount = aggregatedInsumoNeeds.filter(
     (need) => need.current_stock_quantity < need.total_needed_purchase_unit
@@ -188,11 +146,10 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
   // Determine if the "Deducir Stock" button should be disabled
   const isDeductButtonDisabled =
-    isDeductingStock ||
     selectedInsumoIds.size === 0 ||
-    !deductorName.trim() ||
     aggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0;
 
+  const selectedInsumosForDialog = aggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id));
 
   return (
     <div className="space-y-8">
@@ -252,66 +209,23 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button
-                        disabled={isDeductButtonDisabled}
-                        className="px-6 py-3 text-lg bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
-                      >
-                        {isDeductingStock && <Loader2 className="mr-2 h-6 w-6 animate-spin" />}
-                        <MinusCircle className="mr-3 h-6 w-6" />
-                        Deducir Stock para Preparación
-                      </Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="p-6">
-                      <AlertDialogHeader>
-                        <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Confirmar Deducción de Stock</AlertDialogTitle>
-                        <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                          Estás a punto de deducir el stock de {selectedInsumoIds.size} insumo(s) seleccionado(s) para la preparación diaria del {formattedDate}.
-                          Esta acción registrará los movimientos de salida en el historial de stock.
-                        </AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <div className="space-y-4 py-4">
-                        <Label htmlFor="deductor-name" className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre de quien realiza la acción</Label>
-                        <Input
-                          id="deductor-name"
-                          placeholder="Ej. Juan Pérez"
-                          value={deductorName}
-                          onChange={(e) => setDeductorName(e.target.value)}
-                          className="h-10 text-base"
-                          disabled={isDeductingStock}
-                        />
-                        {!deductorName.trim() && (
-                          <p className="text-red-500 text-sm">El nombre es requerido para la trazabilidad.</p>
-                        )}
-                      </div>
-                      <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
-                        <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDeductStock()}
-                          className="w-full sm:w-auto px-6 py-3 text-lg bg-destructive hover:bg-destructive-foreground text-destructive-foreground hover:text-destructive transition-colors duration-200 ease-in-out"
-                          disabled={isDeductButtonDisabled || !deductorName.trim()}
-                        >
-                          {isDeductingStock && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                          Confirmar Deducción
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
+                  <Button
+                    onClick={handleOpenDeductQuantitiesDialog} // NEW: Open the new dialog
+                    disabled={isDeductButtonDisabled}
+                    className="px-6 py-3 text-lg bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
+                  >
+                    <MinusCircle className="mr-3 h-6 w-6" />
+                    Deducir Stock para Preparación
+                  </Button>
                 </TooltipTrigger>
-                {isDeductButtonDisabled && selectedInsumoIds.size > 0 && !deductorName.trim() && (
+                {isDeductButtonDisabled && selectedInsumoIds.size === 0 && (
                   <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                    <p>Por favor, ingresa el nombre de quien realiza la acción.</p>
+                    <p>Selecciona al menos un insumo para deducir.</p>
                   </TooltipContent>
                 )}
                 {isDeductButtonDisabled && aggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0 && (
                   <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
                     <p>No se puede deducir el stock porque hay insumos seleccionados con cantidades insuficientes.</p>
-                  </TooltipContent>
-                )}
-                {isDeductButtonDisabled && selectedInsumoIds.size === 0 && (
-                  <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                    <p>Selecciona al menos un insumo para deducir.</p>
                   </TooltipContent>
                 )}
               </Tooltip>
@@ -328,7 +242,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                       <Checkbox
                         checked={isSelectAllChecked}
                         onCheckedChange={(checked: boolean) => handleSelectAllChange(checked)}
-                        disabled={isDeductingStock || aggregatedInsumoNeeds.filter(need => need.total_needed_purchase_unit > 0).length === 0}
+                        disabled={aggregatedInsumoNeeds.filter(need => need.total_needed_purchase_unit > 0).length === 0}
                       />
                     </TableHead>
                     <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Insumo</TableHead>
@@ -358,7 +272,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                           <Checkbox
                             checked={selectedInsumoIds.has(need.insumo_id)}
                             onCheckedChange={(checked: boolean) => handleCheckboxChange(need.insumo_id, checked)}
-                            disabled={isDeductingStock || need.total_needed_purchase_unit === 0}
+                            disabled={need.total_needed_purchase_unit === 0}
                           />
                         </TableCell>
                         <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{need.insumo_nombre}</TableCell>
@@ -439,6 +353,16 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
           )}
         </CardContent>
       </Card>
+
+      {/* NEW: Deduct Quantities Dialog */}
+      <Dialog open={isDeductQuantitiesDialogOpen} onOpenChange={setIsDeductQuantitiesDialogOpen}>
+        <DeductQuantitiesDialog
+          selectedInsumoNeeds={selectedInsumosForDialog}
+          selectedDate={selectedDate}
+          menuId={menus[0]?.id || null} // Assuming all menus for a day share the same menuId or we take the first one
+          onClose={handleCloseDeductQuantitiesDialog}
+        />
+      </Dialog>
     </div>
   );
 };

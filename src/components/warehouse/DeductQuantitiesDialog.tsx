@@ -1,0 +1,236 @@
+"use client";
+
+import React from "react"; // Removed unused useState, useEffect
+import {
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useForm, useFieldArray } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Loader2, AlertTriangle, Utensils } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { AggregatedInsumoNeed } from "@/types";
+import { useAddStockMovement } from "@/hooks/useStockMovements";
+import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
+import { useQueryClient } from "@tanstack/react-query";
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
+
+const formSchema = z.object({
+  deductor_name: z.string().min(1, { message: "El nombre de quien realiza la acción es requerido." }).max(100, { message: "El nombre no debe exceder los 100 caracteres." }),
+  insumos_to_deduct: z.array(
+    z.object({
+      insumo_id: z.string(),
+      insumo_nombre: z.string(),
+      purchase_unit: z.string(),
+      current_stock_quantity: z.number(),
+      suggested_quantity: z.number(), // The quantity initially suggested by the system
+      quantity_to_deduct: z.coerce.number().min(0, { message: "La cantidad a deducir no puede ser negativa." }),
+    })
+  ).min(1, { message: "Debe haber al menos un insumo para deducir." })
+}).superRefine((data, ctx) => {
+  data.insumos_to_deduct.forEach((item, index) => {
+    if (item.quantity_to_deduct > item.current_stock_quantity) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: `La cantidad a deducir (${item.quantity_to_deduct}) no puede ser mayor que el stock actual (${item.current_stock_quantity}).`,
+        path: [`insumos_to_deduct.${index}.quantity_to_deduct`],
+      });
+    }
+    if (item.quantity_to_deduct === 0) {
+      ctx.addIssue({
+        code: z.ZodIssueCode.custom,
+        message: "La cantidad a deducir no puede ser cero. Si no desea deducir este insumo, desmárquelo en la lista anterior.",
+        path: [`insumos_to_deduct.${index}.quantity_to_deduct`],
+      });
+    }
+  });
+});
+
+interface DeductQuantitiesDialogProps {
+  selectedInsumoNeeds: AggregatedInsumoNeed[];
+  selectedDate: Date;
+  menuId: string | null;
+  onClose: () => void;
+}
+
+const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
+  selectedInsumoNeeds,
+  selectedDate,
+  menuId,
+  onClose,
+}) => {
+  const queryClient = useQueryClient();
+  const addStockMovementMutation = useAddStockMovement();
+
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      deductor_name: "",
+      insumos_to_deduct: selectedInsumoNeeds.map(need => ({
+        insumo_id: need.insumo_id,
+        insumo_nombre: need.insumo_nombre,
+        purchase_unit: need.purchase_unit,
+        current_stock_quantity: need.current_stock_quantity,
+        suggested_quantity: need.total_needed_purchase_unit,
+        quantity_to_deduct: need.total_needed_purchase_unit,
+      })),
+    },
+  });
+
+  const { fields } = useFieldArray({
+    control: form.control,
+    name: "insumos_to_deduct",
+  });
+
+  const isDeductingStock = addStockMovementMutation.isPending;
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+    const { deductor_name, insumos_to_deduct } = values;
+
+    const deductToastId = showLoading("Deduciendo insumos para la preparación diaria...");
+    let successfulDeductions = 0;
+    let failedDeductions = 0;
+
+    for (const item of insumos_to_deduct) {
+      if (item.quantity_to_deduct > 0) {
+        try {
+          await addStockMovementMutation.mutateAsync({
+            insumo_id: item.insumo_id,
+            movement_type: 'daily_prep_out',
+            quantity_change: item.quantity_to_deduct,
+            notes: `Salida por preparación diaria para el menú del ${format(selectedDate, "PPP", { locale: es })}. Realizado por: ${deductor_name}`,
+            menu_id: menuId,
+          });
+          successfulDeductions++;
+        } catch (error: any) {
+          failedDeductions++;
+          showError(`Error al deducir ${item.insumo_nombre}: ${error.message}`);
+        }
+      }
+    }
+
+    dismissToast(deductToastId);
+    if (successfulDeductions > 0) {
+      showSuccess(`Se dedujeron ${successfulDeductions} insumos exitosamente para la preparación diaria.`);
+    }
+    if (failedDeductions > 0) {
+      showError(`Fallaron ${failedDeductions} deducciones de insumos.`);
+    }
+
+    queryClient.invalidateQueries({ queryKey: ["stockMovements"] });
+    queryClient.invalidateQueries({ queryKey: ["insumos"] });
+    queryClient.invalidateQueries({ queryKey: ["menus"] });
+    onClose();
+  };
+
+  const hasErrors = Object.keys(form.formState.errors).length > 0;
+
+  return (
+    <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+      <DialogHeader>
+        <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+          Confirmar y Ajustar Cantidades a Deducir
+        </DialogTitle>
+      </DialogHeader>
+      <Form {...form}>
+        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-2">
+          <p className="text-base text-gray-700 dark:text-gray-300">
+            Revisa las cantidades sugeridas para la preparación diaria del {format(selectedDate, "PPP", { locale: es })}.
+            Puedes ajustar las cantidades si es necesario.
+          </p>
+
+          <FormField
+            control={form.control}
+            name="deductor_name"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre de quien realiza la acción</FormLabel>
+                <FormControl>
+                  <Input
+                    placeholder="Ej. Juan Pérez"
+                    {...field}
+                    className="h-10 text-base"
+                    disabled={isDeductingStock}
+                  />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+
+          <div className="space-y-4">
+            {fields.map((item, index) => (
+              <div key={item.id} className="flex flex-col md:flex-row gap-3 items-center border-b pb-3 last:border-b-0 last:pb-0">
+                <div className="flex-grow">
+                  <Label className="text-base font-semibold text-gray-800 dark:text-gray-200 flex items-center">
+                    <Utensils className="mr-2 h-5 w-5" />
+                    {item.insumo_nombre}
+                  </Label>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Stock actual: {item.current_stock_quantity.toFixed(2)} {item.purchase_unit}</p>
+                </div>
+                <FormField
+                  control={form.control}
+                  name={`insumos_to_deduct.${index}.quantity_to_deduct`}
+                  render={({ field: quantityField }) => (
+                    <FormItem className="w-full md:w-1/3">
+                      <FormLabel className="sr-only">Cantidad a Deducir</FormLabel>
+                      <FormControl>
+                        <Input
+                          type="number"
+                          step="0.01"
+                          placeholder={`Cantidad (${item.purchase_unit})`}
+                          {...quantityField}
+                          onChange={(e) => quantityField.onChange(parseFloat(e.target.value))}
+                          className="h-10 text-base"
+                          disabled={isDeductingStock}
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
+              </div>
+            ))}
+          </div>
+
+          {hasErrors && (
+            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg text-red-700 dark:text-red-300 flex items-center">
+              <AlertTriangle className="h-5 w-5 mr-2" />
+              <p className="text-base font-medium">
+                Por favor, corrige los errores en las cantidades antes de confirmar.
+              </p>
+            </div>
+          )}
+
+          <div className="flex justify-end space-x-4 pt-4">
+            <Button
+              type="button"
+              variant="outline"
+              onClick={onClose}
+              className="px-6 py-3 text-lg"
+              disabled={isDeductingStock}
+            >
+              Cancelar
+            </Button>
+            <Button
+              type="submit"
+              className="px-6 py-3 text-lg bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
+              disabled={isDeductingStock || hasErrors}
+            >
+              {isDeductingStock && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+              Confirmar Deducción
+            </Button>
+          </div>
+        </form>
+      </Form>
+    </DialogContent>
+  );
+};
+
+export default DeductQuantitiesDialog;
