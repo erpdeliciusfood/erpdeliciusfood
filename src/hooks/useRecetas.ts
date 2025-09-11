@@ -26,12 +26,12 @@ export const useAddReceta = () => {
       return { toastId: showLoading("Agregando receta...") };
     },
     onSuccess: (_, __, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showSuccess("Receta agregada exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["recetas"] });
     },
     onError: (error, _, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showError(`Error al agregar receta: ${error.message}`);
     },
   });
@@ -45,12 +45,12 @@ export const useUpdateReceta = () => {
       return { toastId: showLoading("Actualizando receta...") };
     },
     onSuccess: (_, __, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showSuccess("Receta actualizada exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["recetas"] });
     },
     onError: (error, _, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showError(`Error al actualizar receta: ${error.message}`);
     },
   });
@@ -64,12 +64,12 @@ export const useDeleteReceta = () => {
       return { toastId: showLoading("Eliminando receta...") };
     },
     onSuccess: (_, __, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showSuccess("Receta eliminada exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["recetas"] });
     },
     onError: (error, _, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showError(`Error al eliminar receta: ${error.message}`);
     },
   });

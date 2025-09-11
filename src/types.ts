@@ -381,12 +381,12 @@ export interface InsumoNeeded {
   current_stock: number;
   purchase_suggestion_raw: number;
   purchase_suggestion_rounded: number;
-  purchase_suggestion_rounded_up: boolean;
+  purchase_suggestion_rounded_up: boolean; // Added
   reasons: string[];
-  reason_for_purchase_suggestion?: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert'; // Added
+  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert'; // Changed to required
   estimated_purchase_cost: number;
-  pending_reception_quantity?: number; // Added
-  pending_delivery_quantity?: number; // Added
+  pending_reception_quantity: number; // Changed to required
+  pending_delivery_quantity: number; // Changed to required
 }
 
 export interface AggregatedInsumoNeed {

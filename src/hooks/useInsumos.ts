@@ -34,12 +34,12 @@ export const useAddInsumo = () => {
       return { toastId: showLoading("Agregando insumo...") };
     },
     onSuccess: (_, __, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showSuccess("Insumo agregado exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["insumos"] });
     },
     onError: (error, _, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showError(`Error al agregar insumo: ${error.message}`);
     },
   });
@@ -47,18 +47,18 @@ export const useAddInsumo = () => {
 
 export const useUpdateInsumo = () => {
   const queryClient = useQueryClient();
-  return useMutation<Insumo, Error, { id: string; insumo: InsumoFormValues }>({
+  return useMutation<Insumo, Error, { id: string; insumo: InsumoFormValues }, { toastId: string }>({
     mutationFn: ({ id, insumo }) => updateInsumo({ ...insumo, id }),
     onMutate: () => {
       return { toastId: showLoading("Actualizando insumo...") };
     },
     onSuccess: (_, __, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showSuccess("Insumo actualizado exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["insumos"] });
     },
     onError: (error, _, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showError(`Error al actualizar insumo: ${error.message}`);
     },
   });
@@ -72,12 +72,12 @@ export const useDeleteInsumo = () => {
       return { toastId: showLoading("Eliminando insumo...") };
     },
     onSuccess: (_, __, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showSuccess("Insumo eliminado exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["insumos"] });
     },
     onError: (error, _, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showError(`Error al eliminar insumo: ${error.message}`);
     },
   });

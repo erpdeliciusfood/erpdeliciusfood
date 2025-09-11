@@ -34,7 +34,7 @@ const formSchema = z.object({
   quantity_requested: z.coerce.number().min(1, { message: "La cantidad solicitada debe ser al menos 1." }).max(999999, { message: "La cantidad no debe exceder 999999." }),
   notes: z.string().max(500, { message: "Las notas no deben exceder los 500 caracteres." }).nullable(),
   priority: z.enum(['urgent', 'high', 'medium', 'low'], { required_error: "La prioridad es requerida." }),
-  status: z.enum(['pending', 'approved', 'rejected', 'fulfilled'], { required_error: "El estado es requerido." }),
+  status: z.enum(['pending', 'approved', 'rejected', 'fulfilled', 'purchased'], { required_error: "El estado es requerido." }),
   rejection_reason: z.string().max(500, { message: "El motivo de rechazo no debe exceder los 500 caracteres." }).nullable().optional(),
   fulfilled_purchase_record_id: z.string().nullable().optional(),
 }).superRefine((data, ctx) => {
@@ -253,6 +253,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
                   <SelectItem value="approved">Aprobado</SelectItem>
                   <SelectItem value="rejected">Rechazado</SelectItem>
                   <SelectItem value="fulfilled">Cumplido</SelectItem>
+                  <SelectItem value="purchased">Comprado</SelectItem>
                 </SelectContent>
               </Select>
               <FormMessage />
@@ -264,7 +265,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
           <div>
             <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Veces Solicitado (Insistencia)</FormLabel>
             <Input
-              value={initialData.insistence_count.toString()}
+              value={initialData.insistence_count?.toString() || '1'}
               readOnly
               className="h-10 text-base mt-1 bg-gray-100 dark:bg-gray-700"
             />

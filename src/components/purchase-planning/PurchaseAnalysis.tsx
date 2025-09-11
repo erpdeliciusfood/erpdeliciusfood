@@ -5,7 +5,7 @@ import { Loader2, ShoppingBag } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Insumo } from "@/types";
+import { Insumo, InsumoNeeded } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import InsumoSupplierDetailsDialog from "@/components/insumos/InsumoSupplierDetailsDialog";
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
@@ -19,18 +19,6 @@ interface PurchaseAnalysisProps {
   startDate: Date;
   endDate: Date;
   selectedReasonFilter: 'all' | InsumoNeeded['reason_for_purchase_suggestion'];
-}
-
-interface InsumoNeeded extends Insumo {
-  quantity_needed_for_period_raw: number;
-  quantity_needed_for_period_rounded: number;
-  quantity_needed_for_period_rounded_up: boolean;
-  current_stock: number;
-  purchase_suggestion_raw: number;
-  purchase_suggestion_rounded: number;
-  purchase_suggestion_rounded_up: boolean;
-  estimated_purchase_cost: number;
-  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert';
 }
 
 const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate, selectedReasonFilter }) => {
@@ -130,6 +118,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
           purchase_suggestion_rounded_up: purchaseSuggestionRoundedUp,
           estimated_purchase_cost: parseFloat(estimatedPurchaseCost.toFixed(2)),
           reason_for_purchase_suggestion: reason,
+          reasons: [], // Add missing 'reasons' property
         });
         overallEstimatedCost += estimatedPurchaseCost;
       }

@@ -11,12 +11,12 @@ export const useCreateMenu = () => {
       return { toastId: showLoading("Agregando menú...") };
     },
     onSuccess: (_, __, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showSuccess("Menú agregado exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["menus"] });
     },
     onError: (error, _, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showError(`Error al agregar menú: ${error.message}`);
     },
   });

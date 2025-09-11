@@ -127,8 +127,7 @@ export const createMultipleInsumos = async (insumos: InsumoFormValues[]): Promis
 
   const { error, count } = await supabase
     .from("insumos")
-    .insert(insumosToInsert)
-    .select('*', { count: 'exact', head: true });
+    .insert(insumosToInsert);
 
   if (error) throw new Error(`Error creating multiple insumos: ${error.message}`);
   return count || 0;

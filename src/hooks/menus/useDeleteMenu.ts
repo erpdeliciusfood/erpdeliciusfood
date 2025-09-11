@@ -10,12 +10,12 @@ export const useDeleteMenu = () => {
       return { toastId: showLoading("Eliminando menú...") };
     },
     onSuccess: (_, __, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showSuccess("Menú eliminado exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["menus"] });
     },
     onError: (error, _, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showError(`Error al eliminar menú: ${error.message}`);
     },
   });

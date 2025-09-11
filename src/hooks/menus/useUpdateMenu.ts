@@ -11,12 +11,12 @@ export const useUpdateMenu = () => {
       return { toastId: showLoading("Actualizando menú...") };
     },
     onSuccess: (_, __, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showSuccess("Menú actualizado exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["menus"] });
     },
     onError: (error, _, context) => {
-      dismissToast(context?.toastId);
+      if (context?.toastId) dismissToast(context.toastId);
       showError(`Error al actualizar menú: ${error.message}`);
     },
   });

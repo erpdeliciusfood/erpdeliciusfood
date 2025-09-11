@@ -1,4 +1,3 @@
-import { useQuery } from "@tanstack/react-query";
 import { useMenusList } from "@/hooks/menus/useMenusList"; // Updated import
 import { Menu } from "@/types";
 

@@ -1,6 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
 import { StockMovement, StockMovementFormValues } from "@/types";
-import { createStockMovement as createStockMovementInDb } from "./stockMovements"; // Import the stock movement function
 
 // Helper to map DB fields to StockMovement interface fields
 const mapDbStockMovementToStockMovement = (dbMovement: any): StockMovement => ({
