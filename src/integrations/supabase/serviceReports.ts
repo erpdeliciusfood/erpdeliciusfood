@@ -39,7 +39,7 @@ export const getServiceReports = async (): Promise<ServiceReport[]> => {
       meal_services (id, name, description),
       service_report_platos (
         *,
-        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id) -- Añadido user_id
+        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id)
       )
     `)
     .order("report_date", { ascending: false });
@@ -129,7 +129,7 @@ export const getServiceReportsById = async (id: string): Promise<ServiceReport> 
       meal_services (id, name, description),
       service_report_platos (
         *,
-        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id) -- Añadido user_id
+        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id)
       )
     `)
     .eq("id", id)
