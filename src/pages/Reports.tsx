@@ -24,7 +24,7 @@ const Reports = () => {
     to: endOfMonth(new Date()),
   });
   const [periodType, setPeriodType] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('monthly');
-  const [selectedReasonFilter, setSelectedReasonFilter] = useState<'all' | InsumoNeeded['reason_for_purchase_suggestion']>('all');
+  const [selectedReasonFilter, setSelectedReasonFilter] = useState<'all' | 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert'>('all');
 
   const { data: insumoData, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos(undefined, undefined, 1, 9999); // Fetch all insumos for counts
 
@@ -145,7 +145,7 @@ const Reports = () => {
             </Popover>
           )}
 
-          <Select onValueChange={(value: 'all' | InsumoNeeded['reason_for_purchase_suggestion']) => setSelectedReasonFilter(value)} value={selectedReasonFilter}>
+          <Select onValueChange={(value: 'all' | 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert') => setSelectedReasonFilter(value)} value={selectedReasonFilter}>
             <SelectTrigger className="w-full md:w-[200px] h-12 text-base">
               <SelectValue placeholder="Filtrar por motivo" />
             </SelectTrigger>

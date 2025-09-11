@@ -45,7 +45,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
         id: request.id,
         request: { status: 'approved' },
       });
-      showSuccess(`Solicitud de compra urgente para ${request.insumos?.nombre || "Insumo Desconocido"} aprobada exitosamente. Se ha notificado al almacén.`);
+      showSuccess(`Solicitud de compra urgente para ${request.insumo?.nombre || "Insumo Desconocido"} aprobada exitosamente. Se ha notificado al almacén.`);
     } catch (error: any) {
       showError(`Error al aprobar la solicitud: ${error.message}`);
     }
@@ -132,10 +132,10 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                 {format(new Date(request.request_date), "PPP", { locale: es })}
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[180px]">
-                {request.insumos?.nombre || "Insumo Desconocido"}
+                {request.insumo?.nombre || "Insumo Desconocido"}
               </TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[120px]">
-                {request.quantity_requested.toFixed(2)} {request.insumos?.purchase_unit || "unidad"}
+                {request.quantity_requested.toFixed(2)} {request.insumo?.purchase_unit || "unidad"}
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[120px]">
                 {getPriorityBadge(request.priority)}
@@ -144,7 +144,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                 {getStatusBadge(request.status)}
               </TableCell>
               <TableCell className="text-center text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[100px]">
-                {request.insistence_count > 1 ? (
+                {request.insistence_count && request.insistence_count > 1 ? (
                   <Badge variant="destructive" className="text-base px-2 py-1 flex items-center justify-center mx-auto w-fit">
                     <Repeat2 className="h-4 w-4 mr-1" /> {request.insistence_count}
                   </Badge>
@@ -181,7 +181,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                         <AlertDialogHeader>
                           <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Aprobar Solicitud de Compra Urgente?</AlertDialogTitle>
                           <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                            ¿Estás seguro de que deseas aprobar la solicitud de compra de <span className="font-semibold">{request.insumos?.nombre || "Insumo Desconocido"}</span>?
+                            ¿Estás seguro de que deseas aprobar la solicitud de compra de <span className="font-semibold">{request.insumo?.nombre || "Insumo Desconocido"}</span>?
                             Esto marcará la solicitud como "Aprobada" y notificará al almacén.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
@@ -255,7 +255,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                       <AlertDialogHeader>
                         <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
                         <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                          Esta acción no se puede deshacer. Esto eliminará permanentemente la solicitud de compra urgente de <span className="font-semibold">{request.insumos?.nombre || "Insumo Desconocido"}</span> de nuestros servidores.
+                          Esta acción no se puede deshacer. Esto eliminará permanentemente la solicitud de compra urgente de <span className="font-semibold">{request.insumo?.nombre || "Insumo Desconocido"}</span> de nuestros servidores.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                         <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">

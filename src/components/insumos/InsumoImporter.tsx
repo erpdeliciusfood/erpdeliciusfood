@@ -97,7 +97,7 @@ const InsumoImporter: React.FC<InsumoImporterProps> = ({ onSuccess, onCancel }) 
               }
 
               const validatedInsumo = csvRowSchema.parse(cleanedRow);
-              validInsumos.push(validatedInsumo);
+              validInsumos.push(validatedInsumo as InsumoFormValues);
             } catch (e: any) {
               if (e instanceof z.ZodError) {
                 e.errors.forEach(err => {

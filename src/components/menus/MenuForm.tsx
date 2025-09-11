@@ -7,7 +7,8 @@ import {
   Form,
 } from "@/components/ui/form";
 import { Menu, MenuFormValues } from "@/types";
-import { useCreateMenu, useUpdateMenu } from "@/hooks/useMenus"; // Updated imports
+import { useCreateMenu } from "@/hooks/menus/useCreateMenu";
+import { useUpdateMenu } from "@/hooks/menus/useUpdateMenu";
 import { useRecetas } from "@/hooks/useRecetas";
 import { useMealServices } from "@/hooks/useMealServices";
 import { useEventTypes } from "@/hooks/useEventTypes";
@@ -135,6 +136,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       platos_por_servicio: values.platos_por_servicio,
       menu_date: values.menu_type === "daily" && values.menu_date ? values.menu_date : null,
       event_type_id: values.menu_type === "event" && values.event_type_id ? values.event_type_id : null,
+      menu_type: values.menu_type,
     };
 
     if (initialData) {

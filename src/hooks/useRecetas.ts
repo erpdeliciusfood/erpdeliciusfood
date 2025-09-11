@@ -20,7 +20,7 @@ export const useRecetaById = (id: string) => {
 
 export const useAddReceta = () => {
   const queryClient = useQueryClient();
-  return useMutation<Receta, Error, RecetaFormValues>({
+  return useMutation<Receta, Error, RecetaFormValues, { toastId: string }>({
     mutationFn: createReceta,
     onMutate: () => {
       return { toastId: showLoading("Agregando receta...") };
@@ -39,13 +39,13 @@ export const useAddReceta = () => {
 
 export const useUpdateReceta = () => {
   const queryClient = useQueryClient();
-  return useMutation<Receta, Error, RecetaFormValues>({
-    mutationFn: updateReceta,
+  return useMutation<Receta, Error, { id: string; plato: RecetaFormValues }, { toastId: string }>({
+    mutationFn: ({ id, plato }) => updateReceta(id, plato),
     onMutate: () => {
       return { toastId: showLoading("Actualizando receta...") };
     },
-    onSuccess: () => {
-      dismissToast();
+    onSuccess: (_, __, context) => {
+      dismissToast(context?.toastId);
       showSuccess("Receta actualizada exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["recetas"] });
     },
@@ -58,13 +58,13 @@ export const useUpdateReceta = () => {
 
 export const useDeleteReceta = () => {
   const queryClient = useQueryClient();
-  return useMutation<void, Error, string>({
+  return useMutation<void, Error, string, { toastId: string }>({
     mutationFn: deleteReceta,
     onMutate: () => {
       return { toastId: showLoading("Eliminando receta...") };
     },
-    onSuccess: () => {
-      dismissToast();
+    onSuccess: (_, __, context) => {
+      dismissToast(context?.toastId);
       showSuccess("Receta eliminada exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["recetas"] });
     },

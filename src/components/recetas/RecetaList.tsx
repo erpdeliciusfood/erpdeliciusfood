@@ -30,7 +30,7 @@ const RecetaList: React.FC<RecetaListProps> = ({ recetas, onEdit }) => {
       return 0;
     }
     return receta.plato_insumos.reduce((totalCost, platoInsumo) => {
-      const insumo = platoInsumo.insumos; // Access the nested insumo object
+      const insumo = platoInsumo.insumo; // Access the nested insumo object
       if (insumo) {
         // Ensure costo_unitario is per base_unit for calculation
         const costPerBaseUnit = insumo.costo_unitario / insumo.conversion_factor;

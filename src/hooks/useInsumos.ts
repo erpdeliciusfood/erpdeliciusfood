@@ -28,7 +28,7 @@ export const useInsumoPriceHistory = (insumoId: string) => {
 
 export const useAddInsumo = () => {
   const queryClient = useQueryClient();
-  return useMutation<Insumo, Error, InsumoFormValues>({
+  return useMutation<Insumo, Error, InsumoFormValues, { toastId: string }>({
     mutationFn: createInsumo,
     onMutate: () => {
       return { toastId: showLoading("Agregando insumo...") };
@@ -47,13 +47,13 @@ export const useAddInsumo = () => {
 
 export const useUpdateInsumo = () => {
   const queryClient = useQueryClient();
-  return useMutation<Insumo, Error, InsumoFormValues>({
-    mutationFn: updateInsumo,
+  return useMutation<Insumo, Error, { id: string; insumo: InsumoFormValues }>({
+    mutationFn: ({ id, insumo }) => updateInsumo({ ...insumo, id }),
     onMutate: () => {
       return { toastId: showLoading("Actualizando insumo...") };
     },
-    onSuccess: () => {
-      dismissToast();
+    onSuccess: (_, __, context) => {
+      dismissToast(context?.toastId);
       showSuccess("Insumo actualizado exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["insumos"] });
     },
@@ -66,13 +66,13 @@ export const useUpdateInsumo = () => {
 
 export const useDeleteInsumo = () => {
   const queryClient = useQueryClient();
-  return useMutation<void, Error, string>({
+  return useMutation<void, Error, string, { toastId: string }>({
     mutationFn: deleteInsumo,
     onMutate: () => {
       return { toastId: showLoading("Eliminando insumo...") };
     },
-    onSuccess: () => {
-      dismissToast();
+    onSuccess: (_, __, context) => {
+      dismissToast(context?.toastId);
       showSuccess("Insumo eliminado exitosamente.");
       queryClient.invalidateQueries({ queryKey: ["insumos"] });
     },

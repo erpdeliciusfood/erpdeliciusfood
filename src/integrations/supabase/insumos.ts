@@ -109,6 +109,31 @@ export const deleteInsumo = async (id: string): Promise<void> => {
   if (error) throw error;
 };
 
+export const createMultipleInsumos = async (insumos: InsumoFormValues[]): Promise<number> => {
+  const { data: { user } } = await supabase.auth.getUser();
+  if (!user) throw new Error("User not authenticated.");
+
+  const insumosToInsert = insumos.map(insumo => ({
+    nombre: insumo.nombre,
+    unidad_medida: insumo.base_unit,
+    costo_unitario: insumo.costo_unitario,
+    stock_actual: insumo.stock_quantity,
+    stock_minimo: insumo.min_stock_level,
+    categoria: insumo.category,
+    conversion_factor: insumo.conversion_factor,
+    user_id: user.id,
+    // Assuming supplier details are not handled in batch import for simplicity
+  }));
+
+  const { error, count } = await supabase
+    .from("insumos")
+    .insert(insumosToInsert)
+    .select('*', { count: 'exact', head: true });
+
+  if (error) throw new Error(`Error creating multiple insumos: ${error.message}`);
+  return count || 0;
+};
+
 export const getInsumoSupplierHistory = async (insumoId: string): Promise<InsumoSupplierHistory[]> => {
   const { data, error } = await supabase
     .from("insumo_supplier_history")

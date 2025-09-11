@@ -115,22 +115,22 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                   {format(new Date(record.purchase_date), "PPP", { locale: es })}
                 </TableCell>
                 <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[180px]">
-                  {record.insumos?.nombre || "Insumo Desconocido"}
+                  {record.insumo?.nombre || "Insumo Desconocido"}
                 </TableCell>
                 <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[120px]">
-                  {record.quantity_purchased.toFixed(2)} {record.insumos?.purchase_unit || "unidad"}
+                  {record.quantity_purchased.toFixed(2)} {record.insumo?.purchase_unit || "unidad"}
                 </TableCell>
                 <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[120px]">
-                  {record.quantity_received.toFixed(2)} {record.insumos?.purchase_unit || "unidad"}
+                  {record.quantity_received.toFixed(2)} {record.insumo?.purchase_unit || "unidad"}
                 </TableCell>
                 <TableCell className="text-right text-base py-3 px-6 min-w-[100px]">
                   {quantityPending > 0 ? (
                     <Badge variant="destructive" className="text-base px-2 py-1">
-                      {quantityPending.toFixed(2)} {record.insumos?.purchase_unit || "unidad"}
+                      {quantityPending.toFixed(2)} {record.insumo?.purchase_unit || "unidad"}
                     </Badge>
                   ) : (
                     <Badge variant="outline" className="text-base px-2 py-1">
-                      0.00 {record.insumos?.purchase_unit || "unidad"}
+                      0.00 {record.insumo?.purchase_unit || "unidad"}
                     </Badge>
                   )}
                 </TableCell>
@@ -217,7 +217,7 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                         <AlertDialogHeader>
                           <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Confirmar Cancelación de Compra?</AlertDialogTitle>
                           <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                            ¿Estás seguro de que deseas cancelar esta compra de <span className="font-semibold">{record.insumos?.nombre || "Insumo Desconocido"}</span>?
+                            ¿Estás seguro de que deseas cancelar esta compra de <span className="font-semibold">{record.insumo?.nombre || "Insumo Desconocido"}</span>?
                             Esto revertirá las cantidades de "Pendiente de Entrega" o "Pendiente de Recepción en Almacén" asociadas.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
@@ -253,7 +253,7 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                         <AlertDialogHeader>
                           <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
                           <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                            Esta acción no se puede deshacer. Esto eliminará permanentemente el registro de compra de <span className="font-semibold">{record.insumos?.nombre || "Insumo Desconocido"}</span> de nuestros servidores.
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente el registro de compra de <span className="font-semibold">{record.insumo?.nombre || "Insumo Desconocido"}</span> de nuestros servidores.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">

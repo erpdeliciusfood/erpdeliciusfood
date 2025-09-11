@@ -47,8 +47,8 @@ const StockMovementList: React.FC<StockMovementListProps> = ({ stockMovements })
   };
 
   const getQuantityDisplay = (movement: StockMovement) => {
-    const quantity = movement.quantity_change;
-    const unit = movement.insumos?.purchase_unit || "unidad";
+    const quantity = movement.quantity;
+    const unit = movement.insumo?.purchase_unit || "unidad";
     const isPositive = movement.movement_type === 'purchase_in' || movement.movement_type === 'adjustment_in' || movement.movement_type === 'reception_in'; // NEW: Include reception_in
 
     return (
@@ -79,7 +79,7 @@ const StockMovementList: React.FC<StockMovementListProps> = ({ stockMovements })
                 {format(new Date(movement.created_at), "PPP HH:mm", { locale: es })}
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[180px]">
-                {movement.insumos?.nombre || "Insumo Desconocido"}
+                {movement.insumo?.nombre || "Insumo Desconocido"}
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[180px]">
                 {getMovementTypeBadge(movement.movement_type)}
@@ -88,7 +88,7 @@ const StockMovementList: React.FC<StockMovementListProps> = ({ stockMovements })
                 {getQuantityDisplay(movement)}
               </TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[120px]">
-                {movement.new_stock_quantity.toFixed(2)} {movement.insumos?.purchase_unit || "unidad"}
+                {movement.new_stock_quantity.toFixed(2)} {movement.insumo?.purchase_unit || "unidad"}
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[200px]">
                 {movement.notes || "N/A"}

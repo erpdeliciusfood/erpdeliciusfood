@@ -88,8 +88,8 @@ export const createReceta = async (receta: RecetaFormValues): Promise<Receta> =>
   return getRecetaById(newReceta.id);
 };
 
-export const updateReceta = async (receta: RecetaFormValues): Promise<Receta> => {
-  const { id, insumos, ...recetaData } = receta;
+export const updateReceta = async (id: string, receta: RecetaFormValues): Promise<Receta> => {
+  const { insumos, ...recetaData } = receta;
   if (!id) throw new Error("Receta ID is required for update.");
 
   const { data: updatedReceta, error: recetaError } = await supabase

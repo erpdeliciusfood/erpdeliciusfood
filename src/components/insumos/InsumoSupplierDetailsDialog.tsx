@@ -185,7 +185,7 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
                     {supplierHistory.map((entry: InsumoSupplierHistory) => (
                       <TableRow key={entry.id}>
                         <TableCell className="text-sm text-gray-700 dark:text-gray-300">
-                          {format(new Date(entry.changed_at), "PPP HH:mm", { locale: es })}
+                          {format(new Date(entry.change_date), "PPP HH:mm", { locale: es })}
                         </TableCell>
                         <TableCell className="text-sm text-gray-700 dark:text-gray-300">{entry.old_supplier_name || "N/A"}</TableCell>
                         <TableCell className="text-sm text-gray-700 dark:text-gray-300">{entry.new_supplier_name || "N/A"}</TableCell>
@@ -223,10 +223,10 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
                     {priceHistory.map((entry: InsumoPriceHistory) => (
                       <TableRow key={entry.id}>
                         <TableCell className="text-sm text-gray-700 dark:text-gray-300">
-                          {format(new Date(entry.changed_at), "PPP HH:mm", { locale: es })}
+                          {format(new Date(entry.change_date), "PPP HH:mm", { locale: es })}
                         </TableCell>
-                        <TableCell className="text-right text-sm text-gray-700 dark:text-gray-300">S/ {entry.old_costo_unitario.toFixed(2)}</TableCell>
-                        <TableCell className="text-right text-sm text-gray-700 dark:text-gray-300">S/ {entry.new_costo_unitario.toFixed(2)}</TableCell>
+                        <TableCell className="text-right text-sm text-gray-700 dark:text-gray-300">S/ {entry.old_costo_unitario?.toFixed(2)}</TableCell>
+                        <TableCell className="text-right text-sm text-gray-700 dark:text-gray-300">S/ {entry.new_costo_unitario?.toFixed(2)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>

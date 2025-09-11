@@ -4,7 +4,7 @@ import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast
 
 export const useDeleteMenu = () => {
   const queryClient = useQueryClient();
-  return useMutation<void, Error, string>({
+  return useMutation<void, Error, string, { toastId: string }>({
     mutationFn: deleteMenu,
     onMutate: () => {
       return { toastId: showLoading("Eliminando menú...") };

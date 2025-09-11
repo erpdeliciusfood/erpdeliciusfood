@@ -4,7 +4,7 @@ import { Button } from "@/components/ui/button";
 import { CalendarDays, PlusCircle, CheckCircle2, Loader2 } from "lucide-react";
 import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { useMenusList } from "@/hooks/useMenus"; // Updated import
+import { useMenusList } from "@/hooks/menus/useMenusList";
 import { Menu } from "@/types";
 
 interface WeeklyMenuOverviewProps {
@@ -19,7 +19,7 @@ const WeeklyMenuOverview: React.FC<WeeklyMenuOverviewProps> = ({ onAddMenu }) =>
   const formattedStartOfWeek = format(startOfCurrentWeek, "yyyy-MM-dd");
   const formattedEndOfWeek = format(endOfCurrentWeek, "yyyy-MM-dd");
 
-  const { data: menusInWeek, isLoading, isError, error } = useMenusList(formattedStartOfWeek, formattedEndOfWeek); // Updated hook
+  const { data: menusInWeek, isLoading, isError, error } = useMenusList(formattedStartOfWeek, formattedEndOfWeek);
 
   const daysOfWeek = eachDayOfInterval({ start: startOfCurrentWeek, end: endOfCurrentWeek });
 
@@ -68,7 +68,7 @@ const WeeklyMenuOverview: React.FC<WeeklyMenuOverviewProps> = ({ onAddMenu }) =>
       <CardContent>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
           {daysOfWeek.map((day) => {
-            const hasMenu = menusInWeek?.some((menu: Menu) => menu.date && isSameDay(parseISO(menu.date), day)); // Corrected property access
+            const hasMenu = menusInWeek?.some((menu: Menu) => menu.date && isSameDay(parseISO(menu.date), day));
             const isToday = isSameDay(day, today);
             return (
               <div

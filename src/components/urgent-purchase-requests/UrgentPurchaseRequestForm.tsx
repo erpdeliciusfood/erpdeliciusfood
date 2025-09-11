@@ -126,8 +126,8 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
   };
 
   const isLoading = addUrgentPurchaseRequestMutation.isPending || updateUrgentPurchaseRequestMutation.isPending || isLoadingInsumos;
-  const insumoName = initialData?.insumos?.nombre || availableInsumosData?.data.find(i => i.id === form.watch("insumo_id"))?.nombre || "Insumo Desconocido";
-  const purchaseUnit = initialData?.insumos?.purchase_unit || availableInsumosData?.data.find(i => i.id === form.watch("insumo_id"))?.purchase_unit || "unidad";
+  const insumoName = initialData?.insumo?.nombre || availableInsumosData?.data.find(i => i.id === form.watch("insumo_id"))?.nombre || "Insumo Desconocido";
+  const purchaseUnit = initialData?.insumo?.purchase_unit || availableInsumosData?.data.find(i => i.id === form.watch("insumo_id"))?.purchase_unit || "unidad";
   const currentStatus = form.watch("status");
 
   return (

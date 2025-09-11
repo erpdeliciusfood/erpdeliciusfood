@@ -5,7 +5,7 @@ import { Calendar as CalendarIcon, PlusCircle, UtensilsCrossed } from "lucide-re
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useMenusList } from "@/hooks/useMenus"; // Updated import
+import { useMenusList } from "@/hooks/menus/useMenusList";
 import { Menu } from "@/types";
 import { DayModifiers } from "react-day-picker";
 import DailyMenuList from "./DailyMenuList";

@@ -10,7 +10,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, UtensilsCrossed, CalendarDays, ChevronDown, CheckCircle2 } from "lucide-react";
 import { Menu, MenuPlato } from "@/types";
-import { useDeleteMenu } from "@/hooks/useMenus";
+import { useDeleteMenu } from "@/hooks/menus/useDeleteMenu";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useMealServices } from "@/hooks/useMealServices";
@@ -60,7 +60,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
             });
 
             menu.menu_platos?.forEach(mp => {
-              const serviceName = mp.meal_services?.name?.toLowerCase();
+              const serviceName = mp.meal_service?.name?.toLowerCase();
               if (serviceName && MEAL_SERVICES_ORDER.includes(serviceName)) {
                 mealServiceStatus[serviceName] = true;
               }
@@ -68,7 +68,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
 
             // Group platos by meal service and then by dish category for detailed display
             const platosGroupedByServiceAndCategory = menu.menu_platos?.reduce((acc, mp) => {
-              const serviceName = mp.meal_services?.name || "Sin Servicio";
+              const serviceName = mp.meal_service?.name || "Sin Servicio";
               const dishCategory = mp.dish_category || "Sin Categoría"; // NEW: Use dish_category
               if (!acc[serviceName]) {
                 acc[serviceName] = {};
@@ -85,15 +85,15 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                 <TableRow className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
                   <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[180px]">{menu.title}</TableCell>
                   <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[150px]">
-                    {menu.menu_date ? (
+                    {menu.date ? (
                       <span className="flex items-center">
                         <CalendarDays className="h-4 w-4 mr-2" />
                         Menú Diario
                       </span>
-                    ) : menu.event_types ? (
+                    ) : menu.event_type ? (
                       <span className="flex items-center">
                         <CalendarDays className="h-4 w-4 mr-2" />
-                        {menu.event_types.name}
+                        {menu.event_type.name}
                       </span>
                     ) : "N/A"}
                   </TableCell>
@@ -181,7 +181,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                                     <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
                                       {platos?.map((mp, idx) => (
                                         <li key={idx} className="text-base">
-                                          <span className="font-medium text-gray-800 dark:text-gray-200">{mp.platos?.nombre || "Receta Desconocida"}</span> {/* Changed text */}
+                                          <span className="font-medium text-gray-800 dark:text-gray-200">{mp.receta?.nombre || "Receta Desconocida"}</span> {/* Changed text */}
                                           {" "} (Cantidad: {mp.quantity_needed})
                                         </li>
                                       ))}

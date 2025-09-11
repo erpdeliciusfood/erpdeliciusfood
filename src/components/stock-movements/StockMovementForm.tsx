@@ -106,9 +106,7 @@ const StockMovementForm: React.FC<StockMovementFormProps> = ({ onSuccess, onCanc
     form.reset({
       insumo_id: "",
       movement_type: movementType, // Keep current movement type
-      quantity_change: 0,
-      total_purchase_amount: 0,
-      total_purchase_quantity: 0,
+      quantity: 0,
       notes: "",
     });
   }, [form, movementType]); // Depend on movementType to reset relevant fields
@@ -117,7 +115,7 @@ const StockMovementForm: React.FC<StockMovementFormProps> = ({ onSuccess, onCanc
     // Ensure quantity_change is correctly set for non-purchase_in movements
     const submitValues: StockMovementFormValues = {
       ...values,
-      quantity_change: values.movement_type === "purchase_in" ? values.total_purchase_quantity! : values.quantity_change!,
+      quantity: values.movement_type === "purchase_in" ? values.total_purchase_quantity! : values.quantity_change!,
     };
 
     await addMutation.mutateAsync(submitValues);

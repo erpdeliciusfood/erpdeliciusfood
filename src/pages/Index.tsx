@@ -3,12 +3,12 @@
 import React from "react";
 import { useSession } from "@/contexts/SessionContext";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Utensils, ChefHat, ShoppingBag, Package, AlertTriangle, ReceiptText, Users, CalendarDays, FileText, BarChart3, Warehouse, AlertCircle, ClipboardList } from "lucide-react";
+import { Utensils, ChefHat, ShoppingBag, Package, Users, CalendarDays, FileText, BarChart3, Warehouse, AlertCircle, ClipboardList } from "lucide-react";
 import { Link } from "react-router-dom";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { useInsumos } from "@/hooks/useInsumos";
 import { useRecetas } from "@/hooks/useRecetas";
-import { useMenusList } from "@/hooks/useMenus"; // Updated import
+import { useMenusList } from "@/hooks/menus/useMenusList"; // Updated import
 import { useServiceReports } from "@/hooks/useServiceReports";
 import { usePurchaseRecords } from "@/hooks/usePurchaseRecords";
 import { useUrgentPurchaseRequests } from "@/hooks/useUrgentPurchaseRequests";
@@ -24,7 +24,7 @@ const Index: React.FC = () => {
 
   const { data: insumoData } = useInsumos(undefined, undefined, 1, 9999);
   const { data: recetas } = useRecetas();
-  const { data: menus } = useMenusList(); // Updated hook
+  const { data: menus } = useMenusList(); // Updated hook name
   const { data: serviceReports } = useServiceReports();
   const { data: purchaseRecords } = usePurchaseRecords();
   const { data: urgentPurchaseRequests } = useUrgentPurchaseRequests();

@@ -72,8 +72,8 @@ export const createServiceReport = async (report: ServiceReportFormValues): Prom
   return getServiceReportsById(newReport.id);
 };
 
-export const updateServiceReport = async (report: ServiceReportFormValues): Promise<ServiceReport> => {
-  const { id, platos_vendidos, ...reportData } = report;
+export const updateServiceReport = async (id: string, report: ServiceReportFormValues): Promise<ServiceReport> => {
+  const { platos_vendidos, ...reportData } = report;
   if (!id) throw new Error("Service Report ID is required for update.");
 
   const { data: updatedReport, error: reportError } = await supabase

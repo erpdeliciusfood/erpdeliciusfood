@@ -7,7 +7,7 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { useMenusList } from "@/hooks/useMenus"; // Updated import
+import { useMenusList } from "@/hooks/menus/useMenusList"; // Updated import
 import DailyPrepOverview from "@/components/warehouse/DailyPrepOverview";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
 import StockDashboard from "@/components/warehouse/StockDashboard";

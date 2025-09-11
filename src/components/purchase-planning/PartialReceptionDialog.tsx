@@ -77,7 +77,7 @@ const PartialReceptionDialog: React.FC<PartialReceptionDialogProps> = ({
         partialReceptionQuantity: quantityToReceive, // Pass the partial quantity to the mutation
         targetStatus: targetStatus, // Pass the target status for logic in the mutation
       });
-      showSuccess(`Se registraron ${quantityToReceive.toFixed(2)} ${purchaseRecord.insumos?.purchase_unit || 'unidades'} de ${purchaseRecord.insumos?.nombre || 'insumo desconocido'}.`);
+      showSuccess(`Se registraron ${quantityToReceive.toFixed(2)} ${purchaseRecord.insumo?.purchase_unit || 'unidades'} de ${purchaseRecord.insumo?.nombre || 'insumo desconocido'}.`);
       onClose();
     } catch (error: any) {
       showError(`Error al registrar la recepción: ${error.message}`);
@@ -89,8 +89,8 @@ const PartialReceptionDialog: React.FC<PartialReceptionDialogProps> = ({
   const Icon = targetStatus === 'received_by_company' ? Truck : Warehouse;
   const title = targetStatus === 'received_by_company' ? "Registrar Recepción por Empresa" : "Registrar Recepción en Almacén";
   const description = targetStatus === 'received_by_company'
-    ? `Ingresa la cantidad de ${purchaseRecord.insumos?.nombre || 'insumo desconocido'} recibida por la empresa. Esto moverá la cantidad de "Pendiente de Entrega" a "Pendiente de Recepción en Almacén".`
-    : `Ingresa la cantidad de ${purchaseRecord.insumos?.nombre || 'insumo desconocido'} recibida en el almacén. Esto moverá la cantidad de "Pendiente de Recepción" a "Stock Actual".`;
+    ? `Ingresa la cantidad de ${purchaseRecord.insumo?.nombre || 'insumo desconocido'} recibida por la empresa. Esto moverá la cantidad de "Pendiente de Entrega" a "Pendiente de Recepción en Almacén".`
+    : `Ingresa la cantidad de ${purchaseRecord.insumo?.nombre || 'insumo desconocido'} recibida en el almacén. Esto moverá la cantidad de "Pendiente de Recepción" a "Stock Actual".`;
 
   return (
     <DialogContent className="sm:max-w-[425px] md:max-w-lg p-6 max-h-[90vh] overflow-y-auto">
@@ -109,7 +109,7 @@ const PartialReceptionDialog: React.FC<PartialReceptionDialogProps> = ({
             <div>
               <Label className="text-base font-semibold text-gray-800 dark:text-gray-200">Insumo</Label>
               <Input
-                value={`${purchaseRecord.insumos?.nombre || 'N/A'} (${purchaseRecord.insumos?.purchase_unit || 'unidad'})`}
+                value={`${purchaseRecord.insumo?.nombre || 'N/A'} (${purchaseRecord.insumo?.purchase_unit || 'unidad'})`}
                 readOnly
                 className="h-10 text-base mt-1 bg-gray-100 dark:bg-gray-700"
               />
@@ -117,7 +117,7 @@ const PartialReceptionDialog: React.FC<PartialReceptionDialogProps> = ({
             <div>
               <Label className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad Ordenada</Label>
               <Input
-                value={`${purchaseRecord.quantity_purchased.toFixed(2)} ${purchaseRecord.insumos?.purchase_unit || 'unidad'}`}
+                value={`${purchaseRecord.quantity_purchased.toFixed(2)} ${purchaseRecord.insumo?.purchase_unit || 'unidad'}`}
                 readOnly
                 className="h-10 text-base mt-1 bg-gray-100 dark:bg-gray-700"
               />
@@ -125,7 +125,7 @@ const PartialReceptionDialog: React.FC<PartialReceptionDialogProps> = ({
             <div>
               <Label className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad Recibida (hasta ahora)</Label>
               <Input
-                value={`${purchaseRecord.quantity_received.toFixed(2)} ${purchaseRecord.insumos?.purchase_unit || 'unidad'}`}
+                value={`${purchaseRecord.quantity_received.toFixed(2)} ${purchaseRecord.insumo?.purchase_unit || 'unidad'}`}
                 readOnly
                 className="h-10 text-base mt-1 bg-gray-100 dark:bg-gray-700"
               />
@@ -133,7 +133,7 @@ const PartialReceptionDialog: React.FC<PartialReceptionDialogProps> = ({
             <div>
               <Label className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad Pendiente</Label>
               <Input
-                value={`${quantityPending.toFixed(2)} ${purchaseRecord.insumos?.purchase_unit || 'unidad'}`}
+                value={`${quantityPending.toFixed(2)} ${purchaseRecord.insumo?.purchase_unit || 'unidad'}`}
                 readOnly
                 className="h-10 text-base mt-1 bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300"
               />
@@ -145,7 +145,7 @@ const PartialReceptionDialog: React.FC<PartialReceptionDialogProps> = ({
             name="quantity_to_receive"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad a Recibir Ahora ({purchaseRecord.insumos?.purchase_unit || 'unidad'})</FormLabel>
+                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad a Recibir Ahora ({purchaseRecord.insumo?.purchase_unit || 'unidad'})</FormLabel>
                 <FormControl>
                   <Input
                     type="number"

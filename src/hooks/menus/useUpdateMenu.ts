@@ -5,7 +5,7 @@ import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast
 
 export const useUpdateMenu = () => {
   const queryClient = useQueryClient();
-  return useMutation<Menu, Error, { id: string; menu: MenuFormValues }>({
+  return useMutation<Menu, Error, { id: string; menu: MenuFormValues }, { toastId: string }>({
     mutationFn: ({ id, menu }) => updateMenu(id, menu),
     onMutate: () => {
       return { toastId: showLoading("Actualizando menú...") };

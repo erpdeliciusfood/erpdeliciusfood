@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ShoppingBag, PlusCircle, Info, Loader2 } from "lucide-react";
-import { Insumo } from "@/types";
+import { Insumo, PurchaseRecordFormValues } from "@/types";
 import PurchaseRecordForm from "./PurchaseRecordForm";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -63,7 +63,6 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
       setSelectedInsumoIds(new Set(initialSelectedInsumoIds));
     }
   }, [initialSelectedInsumoIds]);
-
 
   const handleCheckboxChange = (insumoId: string, checked: boolean) => {
     setSelectedInsumoIds(prev => {
@@ -131,7 +130,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
           notes: `Compra sugerida por análisis para el período.`,
           status: 'received_by_warehouse', // NEW: Set status to received by warehouse for batch
           received_date: new Date().toISOString().split('T')[0], // NEW: Set received date for batch
-        });
+        } as PurchaseRecordFormValues);
         successfulRegistrations++;
       } catch (error: any) {
         failedRegistrations++;

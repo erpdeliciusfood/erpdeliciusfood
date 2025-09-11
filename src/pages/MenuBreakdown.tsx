@@ -12,20 +12,19 @@ import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { DateRange } from "react-day-picker";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
-import { useMenusList } from "@/hooks/useMenus"; // Updated import
-import { DailyMenuBreakdown, DishCategoryBreakdown, DishDetail, MealServiceBreakdown, Menu } from "@/types"; // NEW: Import Menu and new breakdown types
+import { useMenusList } from "@/hooks/menus/useMenusList"; // Updated import
+import { DailyMenuBreakdown, Menu } from "@/types"; // NEW: Import Menu and new breakdown types
 
 const MenuBreakdown: React.FC = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
     from: startOfMonth(new Date()),
-    to: endOfMonth(new Date()),
   });
   const [periodType, setPeriodType] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('monthly');
 
   const formattedStartDate = dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : undefined;
   const formattedEndDate = dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined;
 
-  const { data: menus, isLoading, isError, error } = useMenusList(formattedStartDate, formattedEndDate); // Updated hook
+  const { data: menus, isLoading, isError, error } = useMenusList(formattedStartDate, formattedEndDate); // Updated hook name
 
   const handlePeriodChange = (period: 'daily' | 'weekly' | 'monthly' | 'custom') => {
     setPeriodType(period);

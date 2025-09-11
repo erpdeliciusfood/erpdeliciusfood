@@ -55,8 +55,9 @@ export const createPurchaseRecord = async (
     await createStockMovement({
       insumo_id: newRecord.insumo_id,
       movement_type: 'reception_in',
-      quantity_change: newRecord.quantity_purchased,
+      quantity: newRecord.quantity_purchased,
       notes: `Recepción de compra por empresa (inicial): ${newRecord.notes || 'N/A'}`,
+      movement_date: new Date().toISOString(),
     }, user.id);
   } else if (newRecord.status === 'received_by_warehouse') {
     // For 'received_by_warehouse', update stock_quantity directly
@@ -69,10 +70,9 @@ export const createPurchaseRecord = async (
     await createStockMovement({
       insumo_id: newRecord.insumo_id,
       movement_type: 'purchase_in',
-      quantity_change: newRecord.quantity_purchased,
-      total_purchase_amount: newRecord.total_amount,
-      total_purchase_quantity: newRecord.quantity_purchased,
+      quantity: newRecord.quantity_purchased,
       notes: `Ingreso a almacén de compra (inicial): ${newRecord.notes || 'N/A'}`,
+      movement_date: new Date().toISOString(),
     }, user.id);
   }
 
@@ -140,8 +140,9 @@ export const updatePurchaseRecord = async (
     await createStockMovement({
       insumo_id: updatedRecord.insumo_id,
       movement_type: 'reception_in',
-      quantity_change: quantityToMove!,
+      quantity: quantityToMove!,
       notes: `Recepción de compra por empresa (parcial/total): ${updatedRecord.notes || 'N/A'}`,
+      movement_date: new Date().toISOString(),
     }, user.id);
   }
 
@@ -157,10 +158,9 @@ export const updatePurchaseRecord = async (
     await createStockMovement({
       insumo_id: updatedRecord.insumo_id,
       movement_type: 'purchase_in', // This now means 'received by warehouse'
-      quantity_change: quantityToMove!,
-      total_purchase_amount: updatedRecord.total_amount, // Use total_amount from recordData
-      total_purchase_quantity: quantityToMove!, // Use quantityToMove for total_purchase_quantity
+      quantity: quantityToMove!,
       notes: `Ingreso a almacén de compra (parcial/total): ${updatedRecord.notes || 'N/A'}`,
+      movement_date: new Date().toISOString(),
     }, user.id);
   }
 
@@ -192,8 +192,9 @@ export const updatePurchaseRecord = async (
     await createStockMovement({
       insumo_id: updatedRecord.insumo_id,
       movement_type: 'adjustment_out', // Use adjustment_out for cancellation
-      quantity_change: oldRecord.quantity_received > 0 ? oldRecord.quantity_received : oldRecord.quantity_purchased, // Use received if any, else ordered
+      quantity: oldRecord.quantity_received > 0 ? oldRecord.quantity_received : oldRecord.quantity_purchased, // Use received if any, else ordered
       notes: `Cancelación de compra: ${updatedRecord.notes || 'N/A'}`,
+      movement_date: new Date().toISOString(),
     }, user.id);
   }
 

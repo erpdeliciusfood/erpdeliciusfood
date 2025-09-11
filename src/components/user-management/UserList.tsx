@@ -35,8 +35,8 @@ const UserList: React.FC<UserListProps> = ({ users }) => {
       }
       await updateProfileMutation.mutateAsync({
         profileData: {
-          first_name: userToUpdate.first_name,
-          last_name: userToUpdate.last_name,
+          first_name: userToUpdate.first_name || null,
+          last_name: userToUpdate.last_name || null,
           role: newRole
         },
         targetUserId: userId, // Pass the specific user ID to update

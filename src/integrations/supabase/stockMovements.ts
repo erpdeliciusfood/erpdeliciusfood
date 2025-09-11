@@ -7,7 +7,7 @@ const mapDbStockMovementToStockMovement = (dbMovement: any): StockMovement => ({
   id: dbMovement.id,
   insumo_id: dbMovement.insumo_id,
   movement_type: dbMovement.movement_type,
-  quantity: dbMovement.quantity, // This is the quantity that changed
+  quantity: dbMovement.quantity_change, // This is the quantity that changed
   movement_date: dbMovement.movement_date,
   notes: dbMovement.notes,
   insumo: {
@@ -42,18 +42,19 @@ export const getStockMovements = async (): Promise<StockMovement[]> => {
   return data.map(mapDbStockMovementToStockMovement);
 };
 
-export const createStockMovement = async (movementData: StockMovementFormValues): Promise<StockMovement> => {
-  const { insumo_id, movement_type, quantity, notes, movement_date } = movementData; // Corrected to use 'quantity' from form
+export const createStockMovement = async (movementData: StockMovementFormValues, userId: string): Promise<StockMovement> => {
+  const { insumo_id, movement_type, quantity, notes, movement_date, menu_id } = movementData; // Corrected to use 'quantity' from form
 
   const { data: newMovement, error: movementError } = await supabase
     .from("stock_movements")
     .insert({
       insumo_id,
       movement_type,
-      quantity, // Use 'quantity' from form
+      quantity_change: quantity, // Use 'quantity' from form
       movement_date,
       notes,
-      // user_id will be automatically set by RLS or a trigger
+      user_id: userId,
+      menu_id: menu_id,
     })
     .select(`
       *,

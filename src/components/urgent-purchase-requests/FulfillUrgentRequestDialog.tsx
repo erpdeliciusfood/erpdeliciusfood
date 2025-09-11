@@ -37,7 +37,7 @@ const FulfillUrgentRequestDialog: React.FC<FulfillUrgentRequestDialogProps> = ({
           fulfilled_purchase_record_id: newPurchaseRecord.id, // NEW: Link the new purchase record ID
         },
       });
-      showSuccess(`Solicitud urgente para ${urgentRequest.insumos?.nombre || "Insumo Desconocido"} marcada como cumplida y vinculada a la compra.`);
+      showSuccess(`Solicitud urgente para ${urgentRequest.insumo?.nombre || "Insumo Desconocido"} marcada como cumplida y vinculada a la compra.`);
       queryClient.invalidateQueries({ queryKey: ["urgentPurchaseRequests"] });
       queryClient.invalidateQueries({ queryKey: ["purchaseRecords"] }); // Invalidate purchase records to show the new one
       onClose();
@@ -56,10 +56,10 @@ const FulfillUrgentRequestDialog: React.FC<FulfillUrgentRequestDialogProps> = ({
       <PurchaseRecordForm
         prefilledInsumoId={urgentRequest.insumo_id}
         prefilledQuantity={urgentRequest.quantity_requested}
-        prefilledUnitCost={urgentRequest.insumos?.costo_unitario || 0}
-        prefilledSupplierName={urgentRequest.insumos?.supplier_name || ""}
-        prefilledSupplierPhone={urgentRequest.insumos?.supplier_phone || ""}
-        prefilledSupplierAddress={urgentRequest.insumos?.supplier_address || ""}
+        prefilledUnitCost={urgentRequest.insumo?.costo_unitario || 0}
+        prefilledSupplierName={urgentRequest.insumo?.supplier_name || ""}
+        prefilledSupplierPhone={urgentRequest.insumo?.supplier_phone || ""}
+        prefilledSupplierAddress={urgentRequest.insumo?.supplier_address || ""}
         onSuccess={handlePurchaseRecordSuccess}
         onCancel={onClose}
       />

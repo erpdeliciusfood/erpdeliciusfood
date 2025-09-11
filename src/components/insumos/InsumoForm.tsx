@@ -185,8 +185,8 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
 
   const onSubmit = async (values: InsumoFormValues) => {
     if (initialData && (initialData as Insumo).id) {
-      const updatedInsumo = await updateMutation.mutateAsync({ id: (initialData as Insumo).id, insumo: values });
-      onSuccess(updatedInsumo);
+      await updateMutation.mutateAsync({ id: (initialData as Insumo).id, insumo: values });
+      onSuccess(values as Insumo);
     } else {
       const newInsumo = await addMutation.mutateAsync(values);
       onSuccess(newInsumo);

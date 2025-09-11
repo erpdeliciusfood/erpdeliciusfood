@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { Loader2, BookText } from "lucide-react";
-import { useMenusList } from "@/hooks/useMenus"; // Updated import
+import { useMenusList } from "@/hooks/menus/useMenusList";
 import MenuCalendar from "@/components/menus/MenuCalendar";
 import WeeklyMenuOverview from "@/components/menus/WeeklyMenuOverview";
 import { MadeWithDyad } from "@/components/made-with-dyad";
@@ -12,7 +12,7 @@ const Menus = () => {
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
-  const { isLoading, isError, error } = useMenusList(); // Updated hook
+  const { isLoading, isError, error } = useMenusList();
 
   const handleAddMenu = (date: Date) => {
     setEditingMenu(null);

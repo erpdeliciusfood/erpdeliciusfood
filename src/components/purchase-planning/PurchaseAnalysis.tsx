@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useMenusList } from "@/hooks/useMenus"; // Updated import
+import { useMenusList } from "@/hooks/menus/useMenusList"; // Updated import
 import { useInsumos } from "@/hooks/useInsumos";
 import { Loader2, ShoppingBag } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
@@ -243,7 +243,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
               selectedInsumoIds={selectedInsumoIds}
               handleCheckboxChange={handleCheckboxChange}
               handleOpenSupplierDetails={handleOpenSupplierDetails}
-              handleOpenIndividualPurchaseForm={handleOpenIndividualPurchaseForm}
+              handleOpenIndividualPurchaseForm={handleOpenIndividualPurchaseForm as (insumo: import("/Users/growdesarrollo/dyad-apps/erpdeliciusfood/src/types").InsumoNeeded) => void}
             />
           ) : (
             <div className="text-center py-6 text-gray-600 dark:text-gray-400">

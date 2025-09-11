@@ -41,7 +41,7 @@ const formSchema = z.object({
   notes: z.string().max(500, { message: "Las notas no deben exceder los 500 caracteres." }).nullable(),
   platos_vendidos: z.array(
     z.object({
-      plato_id: z.string().min(1, { message: "Debe seleccionar una receta." }), // Changed text
+      receta_id: z.string().min(1, { message: "Debe seleccionar una receta." }), // Changed text
       quantity_sold: z.coerce.number().min(1, { message: "La cantidad vendida debe ser al menos 1." }).int({ message: "La cantidad vendida debe ser un número entero." }),
     })
   ).min(1, { message: "Debe añadir al menos una receta vendida al reporte." }), // Changed text
@@ -68,7 +68,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
       meals_sold: 0,
       additional_services_revenue: 0,
       notes: "",
-      platos_vendidos: [{ plato_id: "", quantity_sold: 1 }], // Default for new reports
+      platos_vendidos: [{ receta_id: "", quantity_sold: 1 }], // Default for new reports
     },
   });
 
@@ -87,9 +87,9 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
         additional_services_revenue: initialData.additional_services_revenue,
         notes: initialData.notes || "",
         platos_vendidos: initialData.service_report_platos?.map(srp => ({
-          plato_id: srp.plato_id,
+          receta_id: srp.receta_id,
           quantity_sold: srp.quantity_sold,
-        })) || [{ plato_id: "", quantity_sold: 1 }],
+        })) || [{ receta_id: "", quantity_sold: 1 }],
       });
     } else {
       form.reset({
@@ -99,7 +99,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
         meals_sold: 0,
         additional_services_revenue: 0,
         notes: "",
-        platos_vendidos: [{ plato_id: "", quantity_sold: 1 }],
+        platos_vendidos: [{ receta_id: "", quantity_sold: 1 }],
       });
     }
   }, [initialData, form]);
@@ -286,7 +286,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
               <div key={field.id} className="flex flex-col md:flex-row gap-4 items-end border-b pb-4 last:border-b-0 last:pb-0">
                 <FormField
                   control={form.control}
-                  name={`platos_vendidos.${index}.plato_id`}
+                  name={`platos_vendidos.${index}.receta_id`}
                   render={({ field: platoField }) => (
                     <FormItem className="flex-grow w-full md:w-2/3">
                       <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Receta</FormLabel> {/* Changed text */}
@@ -348,7 +348,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
             <Button
               type="button"
               variant="outline"
-              onClick={() => append({ plato_id: "", quantity_sold: 1 })}
+              onClick={() => append({ receta_id: "", quantity_sold: 1 })}
               className="w-full mt-4 px-6 py-3 text-lg"
               disabled={isLoading}
             >

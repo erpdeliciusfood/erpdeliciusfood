@@ -112,7 +112,7 @@ const PhysicalCountDialog: React.FC<PhysicalCountDialogProps> = ({ insumo, onClo
           <div>
             <Label className="text-base font-semibold text-gray-800 dark:text-gray-200">Último Conteo Físico</Label>
             <Input
-              value={insumo.last_physical_count_quantity !== null ? `${insumo.last_physical_count_quantity.toFixed(2)} ${insumo.purchase_unit}` : "N/A"}
+              value={insumo.last_physical_count_quantity !== null && insumo.last_physical_count_quantity !== undefined ? `${insumo.last_physical_count_quantity.toFixed(2)} ${insumo.purchase_unit}` : "N/A"}
               readOnly
               className="h-10 text-base mt-1 bg-gray-100 dark:bg-gray-700"
             />
