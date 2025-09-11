@@ -9,7 +9,8 @@ import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { useMenus } from "@/hooks/useMenus";
 import DailyPrepOverview from "@/components/warehouse/DailyPrepOverview";
-import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
+import StockDashboard from "@/components/warehouse/StockDashboard"; // NEW: Import StockDashboard
 
 const WarehousePage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
@@ -48,7 +49,12 @@ const WarehousePage: React.FC = () => {
         description="Selecciona una fecha para ver los menús planificados y gestionar la salida de insumos para la preparación diaria."
         icon={Warehouse}
       />
-      <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4"> {/* Adjusted layout for buttons */}
+
+      <div className="mb-8">
+        <StockDashboard /> {/* NEW: Render the StockDashboard here */}
+      </div>
+
+      <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4">
         <div className="flex items-center space-x-2">
           <Popover>
             <PopoverTrigger asChild>
