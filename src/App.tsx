@@ -18,9 +18,9 @@ import PurchasePlanning from "./pages/PurchasePlanning";
 import StockMovements from "./pages/StockMovements";
 import PurchaseRecords from "./pages/PurchaseRecords";
 import WarehousePage from "./pages/Warehouse";
-import UrgentPurchaseRequests from "./pages/UrgentPurchaseRequests"; // NEW: Import UrgentPurchaseRequests
+import UrgentPurchaseRequests from "./pages/UrgentPurchaseRequests";
 import { SessionContextProvider, useSession } from "./contexts/SessionContext";
-import Header from "./components/layout/Header";
+import MainLayout from "./components/layout/MainLayout";
 import { ThemeProvider } from "./contexts/ThemeProvider";
 
 const queryClient = new QueryClient();
@@ -38,10 +38,9 @@ const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) =
   }
 
   return (
-    <>
-      <Header />
+    <MainLayout>
       {children}
-    </>
+    </MainLayout>
   );
 };
 
@@ -60,7 +59,7 @@ const AppRoutes = () => (
     <Route path="/stock-movements" element={<ProtectedRoute><StockMovements /></ProtectedRoute>} />
     <Route path="/purchase-records" element={<ProtectedRoute><PurchaseRecords /></ProtectedRoute>} />
     <Route path="/warehouse" element={<ProtectedRoute><WarehousePage /></ProtectedRoute>} />
-    <Route path="/urgent-purchase-requests" element={<ProtectedRoute><UrgentPurchaseRequests /></ProtectedRoute>} /> {/* NEW: Urgent Purchase Requests Route */}
+    <Route path="/urgent-purchase-requests" element={<ProtectedRoute><UrgentPurchaseRequests /></ProtectedRoute>} />
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
     <Route path="*" element={<NotFound />} />
