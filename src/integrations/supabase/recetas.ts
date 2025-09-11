@@ -4,7 +4,7 @@ import { Receta, RecetaFormValues, Insumo } from "@/types"; // Changed type impo
 // Helper to map DB fields to Receta interface fields
 const mapDbRecetaToReceta = (dbReceta: any): Receta => ({
   id: dbReceta.id,
-  user_id: dbReceta.user_id, // Añadido user_id
+  user_id: dbReceta.user_id,
   nombre: dbReceta.nombre,
   descripcion: dbReceta.descripcion,
   category: dbReceta.categoria, // Map DB field 'categoria' to 'category'
@@ -35,7 +35,7 @@ export const getRecetas = async (): Promise<Receta[]> => {
   const { data, error } = await supabase
     .from("platos") // Changed from "recetas" to "platos"
     .select(`
-      *,
+      id, user_id, nombre, descripcion, categoria, tiempo_preparacion, costo_total,
       plato_insumos (
         id, plato_id, insumo_id, cantidad_necesaria,
         insumos (id, nombre, base_unit, costo_unitario, stock_quantity, min_stock_level, category, conversion_factor, pending_reception_quantity, pending_delivery_quantity)
@@ -50,7 +50,7 @@ export const getRecetaById = async (id: string): Promise<Receta> => {
   const { data, error } = await supabase
     .from("platos") // Changed from "recetas" to "platos"
     .select(`
-      *,
+      id, user_id, nombre, descripcion, categoria, tiempo_preparacion, costo_total,
       plato_insumos (
         id, plato_id, insumo_id, cantidad_necesaria,
         insumos (id, nombre, base_unit, costo_unitario, stock_quantity, min_stock_level, category, conversion_factor, pending_reception_quantity, pending_delivery_quantity)

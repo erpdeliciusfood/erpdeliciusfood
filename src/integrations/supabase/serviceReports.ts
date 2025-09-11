@@ -17,7 +17,7 @@ const mapDbServiceReportToServiceReport = (dbReport: any): ServiceReport => ({
     quantity_sold: srp.quantity_sold,
     receta: {
       id: srp.platos.id,
-      user_id: srp.platos.user_id, // Añadido user_id
+      user_id: srp.platos.user_id,
       nombre: srp.platos.nombre,
       descripcion: srp.platos.descripcion,
       category: srp.platos.categoria,
@@ -35,10 +35,10 @@ export const getServiceReports = async (): Promise<ServiceReport[]> => {
   const { data, error } = await supabase
     .from("service_reports")
     .select(`
-      *,
+      id, user_id, report_date, meal_service_id, total_servings, total_revenue, notes, tickets_issued, meals_sold, additional_services_revenue,
       meal_services (id, name, description),
       service_report_platos (
-        *,
+        id, service_report_id, receta_id, quantity_sold,
         platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id)
       )
     `)
@@ -125,10 +125,10 @@ export const getServiceReportsById = async (id: string): Promise<ServiceReport> 
   const { data, error } = await supabase
     .from("service_reports")
     .select(`
-      *,
+      id, user_id, report_date, meal_service_id, total_servings, total_revenue, notes, tickets_issued, meals_sold, additional_services_revenue,
       meal_services (id, name, description),
       service_report_platos (
-        *,
+        id, service_report_id, receta_id, quantity_sold,
         platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total, user_id)
       )
     `)
