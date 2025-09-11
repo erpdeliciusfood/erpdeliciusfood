@@ -60,7 +60,9 @@ export const createPurchaseRecord = async (
 
 export const updatePurchaseRecord = async (
   id: string,
-  recordData: PurchaseRecordFormValues
+  recordData: PurchaseRecordFormValues,
+  partialReceptionQuantity?: number, // NEW: Added parameter
+  targetStatus?: 'received_by_company' | 'received_by_warehouse' // NEW: Added parameter
 ): Promise<PurchaseRecord> => {
   const { data: { user }, error: userError } = await supabase.auth.getUser();
   if (userError || !user) throw new Error("User not authenticated.");
@@ -75,6 +77,10 @@ export const updatePurchaseRecord = async (
   if (fetchOldRecordError) throw new Error(`Error fetching old purchase record: ${fetchOldRecordError.message}`);
   if (!oldRecord) throw new Error("Old purchase record not found.");
 
+  // Determine the quantity to use for stock movements.
+  // If partialReceptionQuantity is provided, use it. Otherwise, use the full quantity_purchased.
+  const quantityToMove = partialReceptionQuantity ?? recordData.quantity_purchased;
+
   // Update the purchase record
   const { data: updatedRecord, error: recordError } = await supabase
     .from("purchase_records")
@@ -88,39 +94,39 @@ export const updatePurchaseRecord = async (
 
   // --- Handle stock quantity adjustments based on status changes ---
 
-  // Scenario 1: Item is marked as 'received_by_company' for the first time
-  if (oldRecord.status === 'ordered' && updatedRecord.status === 'received_by_company') {
+  // Scenario 1: Item is marked as 'received_by_company' for the first time or partially
+  if (targetStatus === 'received_by_company' && oldRecord.status !== 'received_by_company') {
     // Deduct from pending_delivery_quantity and add to pending_reception_quantity
     await supabase.rpc('update_insumo_quantities', {
       insumo_id_param: updatedRecord.insumo_id,
-      pending_delivery_change: -updatedRecord.quantity_purchased,
-      pending_reception_change: updatedRecord.quantity_purchased,
+      pending_delivery_change: -quantityToMove,
+      pending_reception_change: quantityToMove,
       stock_change: 0,
     });
     await createStockMovement({
       insumo_id: updatedRecord.insumo_id,
       movement_type: 'reception_in',
-      quantity_change: updatedRecord.quantity_purchased,
-      notes: `Recepción de compra por empresa: ${updatedRecord.notes || 'N/A'}`,
+      quantity_change: quantityToMove,
+      notes: `Recepción de compra por empresa (parcial/total): ${updatedRecord.notes || 'N/A'}`,
     }, user.id);
   }
 
-  // Scenario 2: Item is marked as 'received_by_warehouse' for the first time
-  if (oldRecord.status === 'received_by_company' && updatedRecord.status === 'received_by_warehouse') {
+  // Scenario 2: Item is marked as 'received_by_warehouse' for the first time or partially
+  if (targetStatus === 'received_by_warehouse' && oldRecord.status !== 'received_by_warehouse') {
     // Deduct from pending_reception_quantity and add to stock_quantity
     await supabase.rpc('update_insumo_quantities', {
       insumo_id_param: updatedRecord.insumo_id,
       pending_delivery_change: 0,
-      pending_reception_change: -updatedRecord.quantity_purchased,
-      stock_change: updatedRecord.quantity_purchased,
+      pending_reception_change: -quantityToMove,
+      stock_change: quantityToMove,
     });
     await createStockMovement({
       insumo_id: updatedRecord.insumo_id,
       movement_type: 'purchase_in', // This now means 'received by warehouse'
-      quantity_change: updatedRecord.quantity_purchased,
-      total_purchase_amount: updatedRecord.total_amount,
-      total_purchase_quantity: updatedRecord.quantity_purchased,
-      notes: `Ingreso a almacén de compra: ${updatedRecord.notes || 'N/A'}`,
+      quantity_change: quantityToMove,
+      total_purchase_amount: updatedRecord.total_amount, // Use total_amount from recordData
+      total_purchase_quantity: quantityToMove, // Use quantityToMove for total_purchase_quantity
+      notes: `Ingreso a almacén de compra (parcial/total): ${updatedRecord.notes || 'N/A'}`,
     }, user.id);
   }
 
@@ -130,7 +136,7 @@ export const updatePurchaseRecord = async (
     if (oldRecord.status === 'ordered') {
       await supabase.rpc('update_insumo_quantities', {
         insumo_id_param: updatedRecord.insumo_id,
-        pending_delivery_change: -updatedRecord.quantity_purchased,
+        pending_delivery_change: -oldRecord.quantity_purchased, // Revert full ordered quantity
         pending_reception_change: 0,
         stock_change: 0,
       });
@@ -138,7 +144,7 @@ export const updatePurchaseRecord = async (
       await supabase.rpc('update_insumo_quantities', {
         insumo_id_param: updatedRecord.insumo_id,
         pending_delivery_change: 0,
-        pending_reception_change: -updatedRecord.quantity_purchased,
+        pending_reception_change: -oldRecord.quantity_received, // Revert only what was received by company
         stock_change: 0,
       });
     } else if (oldRecord.status === 'received_by_warehouse') {
@@ -146,13 +152,13 @@ export const updatePurchaseRecord = async (
         insumo_id_param: updatedRecord.insumo_id,
         pending_delivery_change: 0,
         pending_reception_change: 0,
-        stock_change: -updatedRecord.quantity_purchased,
+        stock_change: -oldRecord.quantity_received, // Revert only what was received by warehouse
       });
     }
     await createStockMovement({
       insumo_id: updatedRecord.insumo_id,
       movement_type: 'adjustment_out', // Use adjustment_out for cancellation
-      quantity_change: updatedRecord.quantity_purchased,
+      quantity_change: oldRecord.quantity_received > 0 ? oldRecord.quantity_received : oldRecord.quantity_purchased, // Use received if any, else ordered
       notes: `Cancelación de compra: ${updatedRecord.notes || 'N/A'}`,
     }, user.id);
   }

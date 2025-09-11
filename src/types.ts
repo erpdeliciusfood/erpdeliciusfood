@@ -279,6 +279,7 @@ export interface UrgentPurchaseRequest {
   fulfilled_purchase_record_id: string | null; // NEW: Link to the purchase record that fulfilled this request
   created_at: string;
   insistence_count: number; // NEW: Add insistence_count
+  rejection_reason: string | null; // NEW: Add rejection_reason
   insumos?: Insumo; // Optional: to fetch related insumo data
 }
 
@@ -291,4 +292,5 @@ export interface UrgentPurchaseRequestFormValues {
   priority?: 'urgent' | 'high' | 'medium' | 'low'; // Default to 'urgent'
   fulfilled_purchase_record_id?: string | null; // NEW: Allow updating this field
   insistence_count?: number; // NEW: Allow updating this field
+  rejection_reason?: string | null; // NEW: Allow updating this field
 }

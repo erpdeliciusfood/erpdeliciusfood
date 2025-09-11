@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, ShoppingBag, CheckCircle2, XCircle, Truck, Warehouse, Loader2 } from "lucide-react";
+import { Edit, ShoppingBag, CheckCircle2, XCircle, Truck, Warehouse, Loader2, Trash2 } from "lucide-react"; // NEW: Trash2 icon
 import { PurchaseRecord } from "@/types";
 import { useDeletePurchaseRecord, useUpdatePurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -233,6 +233,41 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                           >
                             {updateMutation.isPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
                             Confirmar Cancelación
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
+                      </AlertDialogContent>
+                    </AlertDialog>
+                  )}
+
+                  {record.status === 'cancelled' && ( // Only show delete for cancelled records
+                    <AlertDialog>
+                      <AlertDialogTrigger asChild>
+                        <Button
+                          variant="outline"
+                          size="icon"
+                          className="h-10 w-10 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition-colors duration-150 ease-in-out"
+                          title="Eliminar Registro de Compra"
+                          disabled={deleteMutation.isPending}
+                        >
+                          <Trash2 className="h-5 w-5 text-red-600" />
+                        </Button>
+                      </AlertDialogTrigger>
+                      <AlertDialogContent className="p-6">
+                        <AlertDialogHeader>
+                          <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
+                          <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente el registro de compra de <span className="font-semibold">{record.insumos?.nombre || "Insumo Desconocido"}</span> de nuestros servidores.
+                          </AlertDialogDescription>
+                        </AlertDialogHeader>
+                        <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
+                          <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(record.id)}
+                            className="w-full sm:w-auto px-6 py-3 text-lg bg-destructive hover:bg-destructive-foreground text-destructive-foreground hover:text-destructive transition-colors duration-200 ease-in-out"
+                            disabled={deleteMutation.isPending}
+                          >
+                            {deleteMutation.isPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                            Eliminar
                           </AlertDialogAction>
                         </AlertDialogFooter>
                       </AlertDialogContent>

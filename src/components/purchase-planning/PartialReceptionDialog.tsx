@@ -72,7 +72,7 @@ const PartialReceptionDialog: React.FC<PartialReceptionDialogProps> = ({
           ...purchaseRecord,
           quantity_received: purchaseRecord.quantity_received + quantityToReceive,
           status: quantityToReceive === quantityPending ? targetStatus : purchaseRecord.status, // Only change status if fully received
-          received_date: purchaseRecord.received_date || format(new Date(), "yyyy-MM-dd"), // Set received date if not already set
+          received_date: purchaseRecord.received_date || format(new Date(), "yyyy-MM-dd", { locale: es }), // Set received date if not already set
         },
         partialReceptionQuantity: quantityToReceive, // Pass the partial quantity to the mutation
         targetStatus: targetStatus, // Pass the target status for logic in the mutation
