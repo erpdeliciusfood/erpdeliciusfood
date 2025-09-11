@@ -1,20 +1,18 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useMenus } from "@/hooks/useMenus";
 import { useInsumos } from "@/hooks/useInsumos";
-import { Loader2, ShoppingBag, DollarSign, Info, Building2, PlusCircle } from "lucide-react"; // NEW: PlusCircle icon
+import { Loader2, ShoppingBag } from "lucide-react"; // Removed Info, Building2
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Insumo } from "@/types";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
-import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog"; // Removed Tooltip and related components
 import InsumoSupplierDetailsDialog from "@/components/insumos/InsumoSupplierDetailsDialog";
-import SuggestedPurchaseListContent from "@/components/purchase-planning/SuggestedPurchaseListContent"; // Updated import
-import { Checkbox } from "@/components/ui/checkbox"; // NEW: Import Checkbox
-import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm"; // NEW: Import PurchaseRecordForm
+import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
+import PurchaseCostSummary from "./PurchaseCostSummary"; // NEW: Import new component
+import PurchaseTableActions from "./PurchaseTableActions"; // NEW: Import new component
+import InsumoPurchaseTable from "./InsumoPurchaseTable"; // NEW: Import new component
 
 interface PurchaseAnalysisProps {
   startDate: Date;
@@ -45,11 +43,9 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
   const [selectedInsumoForDetails, setSelectedInsumoForDetails] = useState<Insumo | null>(null);
   const [isSuggestedPurchaseListOpen, setIsSuggestedPurchaseListOpen] = useState(false);
 
-  // NEW: State for individual purchase registration dialog
   const [isIndividualPurchaseFormOpen, setIsIndividualPurchaseFormOpen] = useState(false);
   const [selectedInsumoForIndividualPurchase, setSelectedInsumoForIndividualPurchase] = useState<InsumoNeeded | null>(null);
 
-  // NEW: State for selected insumos in the main table
   const [selectedInsumoIds, setSelectedInsumoIds] = useState<Set<string>>(new Set());
   const [isSelectAllChecked, setIsSelectAllChecked] = useState(false);
 
@@ -148,13 +144,11 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
     };
   }, [menus, allInsumosData?.data, startDate, endDate, isLoading, isError, selectedReasonFilter]);
 
-  // NEW: Effect to update "Select All" checkbox state
   useEffect(() => {
     const allPurchasableIds = insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0).map(i => i.id);
     setIsSelectAllChecked(allPurchasableIds.length > 0 && selectedInsumoIds.size === allPurchasableIds.length);
   }, [insumosForPurchase, selectedInsumoIds]);
 
-  // NEW: Handle individual checkbox change
   const handleCheckboxChange = (insumoId: string, checked: boolean) => {
     setSelectedInsumoIds(prev => {
       const newSet = new Set(prev);
@@ -167,7 +161,6 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
     });
   };
 
-  // NEW: Handle "Select All" checkbox change
   const handleSelectAllChange = (checked: boolean) => {
     if (checked) {
       const allPurchasableIds = insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0).map(i => i.id);
@@ -190,12 +183,8 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
 
   const handleCloseSuggestedPurchaseList = () => {
     setIsSuggestedPurchaseListOpen(false);
-    // Optionally, refetch data for PurchaseAnalysis if needed after purchases are made
-    // queryClient.invalidateQueries({ queryKey: ["menus"] });
-    // queryClient.invalidateQueries({ queryKey: ["insumos"] });
   };
 
-  // NEW: Handlers for individual purchase registration
   const handleOpenIndividualPurchaseForm = (insumo: InsumoNeeded) => {
     setSelectedInsumoForIndividualPurchase(insumo);
     setIsIndividualPurchaseFormOpen(true);
@@ -204,11 +193,6 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
   const handleCloseIndividualPurchaseForm = () => {
     setIsIndividualPurchaseFormOpen(false);
     setSelectedInsumoForIndividualPurchase(null);
-    // Invalidate queries to refresh data after a purchase is made
-    // This will cause PurchaseAnalysis to re-calculate needs and stock
-    // queryClient.invalidateQueries({ queryKey: ["purchaseRecords"] }); // Already handled by form's onSuccess
-    // queryClient.invalidateQueries({ queryKey: ["stockMovements"] }); // Already handled by form's onSuccess
-    // queryClient.invalidateQueries({ queryKey: ["insumos"] }); // Already handled by form's onSuccess
   };
 
   const getReasonBadge = (reason: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert') => {
@@ -247,206 +231,35 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
   const formattedStartDate = format(startDate, "PPP", { locale: es });
   const formattedEndDate = format(endDate, "PPP", { locale: es });
 
-  const selectedInsumosForBatchPurchase = insumosForPurchase.filter(insumo => selectedInsumoIds.has(insumo.id));
-
   return (
     <div className="space-y-8">
-      <Card className="w-full shadow-lg dark:bg-gray-800">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-            Costo Total Estimado de Compras
-          </CardTitle>
-          <DollarSign className="h-8 w-8 text-green-600" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-5xl font-extrabold text-green-700 dark:text-green-400">
-            S/ {totalEstimatedPurchaseCost.toFixed(2)}
-          </div>
-          <p className="text-lg text-gray-700 dark:text-gray-300 mt-2">
-            Costo estimado para cubrir las necesidades de insumos en el período seleccionado.
-          </p>
-        </CardContent>
-      </Card>
+      <PurchaseCostSummary totalEstimatedPurchaseCost={totalEstimatedPurchaseCost} />
 
       <Card className="w-full shadow-lg dark:bg-gray-800">
-        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-2"> {/* Adjusted for better button alignment */}
+        <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-2">
           <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
             Análisis de Compras ({formattedStartDate} - {formattedEndDate})
           </CardTitle>
-          <div className="flex flex-col sm:flex-row gap-2"> {/* Group buttons */}
-            {selectedInsumoIds.size > 0 && (
-              <Dialog open={isSuggestedPurchaseListOpen} onOpenChange={setIsSuggestedPurchaseListOpen}>
-                <DialogTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="px-4 py-2 text-base bg-green-500 hover:bg-green-600 text-white transition-colors duration-200 ease-in-out"
-                    disabled={selectedInsumoIds.size === 0}
-                  >
-                    <ShoppingBag className="mr-2 h-4 w-4" />
-                    Registrar {selectedInsumoIds.size} Seleccionados
-                  </Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-3xl p-6 max-h-[90vh] overflow-y-auto">
-                  <DialogHeader>
-                    <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                      Registrar Compras Seleccionadas
-                    </DialogTitle>
-                  </DialogHeader>
-                  <SuggestedPurchaseListContent
-                    suggestedPurchases={selectedInsumosForBatchPurchase} // Pass only selected items
-                    onClose={handleCloseSuggestedPurchaseList}
-                    initialSelectedInsumoIds={selectedInsumoIds} // Pass initial selection
-                  />
-                </DialogContent>
-              </Dialog>
-            )}
-            <Dialog open={isSuggestedPurchaseListOpen && selectedInsumoIds.size === 0} onOpenChange={setIsSuggestedPurchaseListOpen}> {/* Original "Ver Sugerencias" button */}
-              <DialogTrigger asChild>
-                <Button
-                  variant="outline"
-                  className="px-4 py-2 text-base bg-blue-500 hover:bg-blue-600 text-white transition-colors duration-200 ease-in-out"
-                  disabled={insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0).length === 0}
-                >
-                  <ShoppingBag className="mr-2 h-4 w-4" />
-                  Ver Todas Sugerencias ({insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0).length})
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-3xl p-6 max-h-[90vh] overflow-y-auto">
-                <DialogHeader>
-                  <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-                    Lista de Compras Sugeridas
-                  </DialogTitle>
-                </DialogHeader>
-                <SuggestedPurchaseListContent
-                  suggestedPurchases={insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0)}
-                  onClose={handleCloseSuggestedPurchaseList}
-                  initialSelectedInsumoIds={selectedInsumoIds} // Pass initial selection
-                />
-              </DialogContent>
-            </Dialog>
-          </div>
+          <PurchaseTableActions
+            insumosForPurchase={insumosForPurchase}
+            selectedInsumoIds={selectedInsumoIds}
+            isSelectAllChecked={isSelectAllChecked}
+            handleSelectAllChange={handleSelectAllChange}
+            setIsSuggestedPurchaseListOpen={setIsSuggestedPurchaseListOpen}
+            isSuggestedPurchaseListOpen={isSuggestedPurchaseListOpen}
+            handleCloseSuggestedPurchaseList={handleCloseSuggestedPurchaseList}
+          />
         </CardHeader>
         <CardContent>
           {insumosForPurchase.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    {/* NEW: Checkbox for Select All */}
-                    <TableHead className="w-[50px] text-center">
-                      <Checkbox
-                        checked={isSelectAllChecked}
-                        onCheckedChange={(checked: boolean) => handleSelectAllChange(checked)}
-                        disabled={insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0).length === 0}
-                      />
-                    </TableHead>
-                    <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Insumo</TableHead>
-                    <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200">Unidad Compra</TableHead>
-                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Costo Unitario (S/)</TableHead>
-                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Stock Actual</TableHead>
-                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Necesidad Periodo</TableHead>
-                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Sugerencia Compra</TableHead>
-                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Costo Estimado (S/)</TableHead>
-                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Motivo</TableHead>
-                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Proveedor</TableHead>
-                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Acciones</TableHead> {/* NEW: Actions column */}
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {insumosForPurchase.map((insumo) => (
-                    <TableRow key={insumo.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                      {/* NEW: Individual Checkbox */}
-                      <TableCell className="text-center">
-                        <Checkbox
-                          checked={selectedInsumoIds.has(insumo.id)}
-                          onCheckedChange={(checked: boolean) => handleCheckboxChange(insumo.id, checked)}
-                          disabled={insumo.purchase_suggestion_rounded === 0}
-                        />
-                      </TableCell>
-                      <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{insumo.nombre}</TableCell>
-                      <TableCell className="text-base text-gray-700 dark:text-gray-300">{insumo.purchase_unit}</TableCell>
-                      <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">S/ {insumo.costo_unitario.toFixed(2)}</TableCell>
-                      <TableCell className="text-right text-base">
-                        <Badge variant={insumo.current_stock <= (insumo.min_stock_level ?? 0) ? "destructive" : "outline"}>
-                          {insumo.current_stock}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">
-                        <TooltipProvider>
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <span className="inline-flex items-center">
-                                {insumo.quantity_needed_for_period_rounded} {insumo.purchase_unit}
-                                {insumo.quantity_needed_for_period_rounded_up && (
-                                  <Info className="ml-1 h-4 w-4 text-blue-500 cursor-help" />
-                                )}
-                              </span>
-                            </TooltipTrigger>
-                            {insumo.quantity_needed_for_period_rounded_up && (
-                              <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                                <p>Valor real: {insumo.quantity_needed_for_period_raw.toFixed(2)} {insumo.purchase_unit}</p>
-                              </TooltipContent>
-                            )}
-                          </Tooltip>
-                        </TooltipProvider>
-                      </TableCell>
-                      <TableCell className="text-right text-base">
-                        {insumo.purchase_suggestion_rounded > 0 ? (
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white text-lg px-3 py-1 inline-flex items-center">
-                                  {insumo.purchase_suggestion_rounded} {insumo.purchase_unit}
-                                  {insumo.purchase_suggestion_rounded_up && (
-                                    <Info className="ml-1 h-4 w-4 text-white cursor-help" />
-                                  )}
-                                </Badge>
-                              </TooltipTrigger>
-                              {insumo.purchase_suggestion_rounded_up && (
-                                <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                                  <p>Valor real: {insumo.purchase_suggestion_raw.toFixed(2)} {insumo.purchase_unit}</p>
-                                </TooltipContent>
-                              )}
-                            </Tooltip>
-                          </TooltipProvider>
-                        ) : (
-                          <span className="text-gray-500 dark:text-gray-400">0 {insumo.purchase_unit}</span>
-                        )}
-                      </TableCell>
-                      <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">
-                        S/ {insumo.estimated_purchase_cost.toFixed(2)}
-                      </TableCell>
-                      <TableCell className="text-center text-base py-3 px-6">
-                        {getReasonBadge(insumo.reason_for_purchase_suggestion)}
-                      </TableCell>
-                      <TableCell className="text-center py-3 px-6">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => handleOpenSupplierDetails(insumo)}
-                          className="h-10 w-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out"
-                        >
-                          <Building2 className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                        </Button>
-                      </TableCell>
-                      <TableCell className="text-center py-3 px-6"> {/* NEW: Actions column content */}
-                        {insumo.purchase_suggestion_rounded > 0 && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleOpenIndividualPurchaseForm(insumo)}
-                            className="px-3 py-1 text-sm bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
-                          >
-                            <PlusCircle className="mr-1 h-4 w-4" />
-                            Registrar Compra
-                          </Button>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
+            <InsumoPurchaseTable
+              insumosForPurchase={insumosForPurchase}
+              selectedInsumoIds={selectedInsumoIds}
+              handleCheckboxChange={handleCheckboxChange}
+              handleOpenSupplierDetails={handleOpenSupplierDetails}
+              handleOpenIndividualPurchaseForm={handleOpenIndividualPurchaseForm}
+              getReasonBadge={getReasonBadge}
+            />
           ) : (
             <div className="text-center py-6 text-gray-600 dark:text-gray-400">
               <ShoppingBag className="mx-auto h-12 w-12 mb-3 text-gray-400 dark:text-gray-600" />
@@ -476,7 +289,6 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
         )}
       </Dialog>
 
-      {/* NEW: Dialog for individual purchase registration */}
       <Dialog open={isIndividualPurchaseFormOpen} onOpenChange={setIsIndividualPurchaseFormOpen}>
         {selectedInsumoForIndividualPurchase && (
           <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
