@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, UtensilsCrossed, Building2, DollarSign, Package, Scale } from "lucide-react"; // REMOVED: Truck, Warehouse, AlertCircle. KEPT: Scale
+import { Edit, Trash2, UtensilsCrossed, Building2, DollarSign, Package, Scale } from "lucide-react";
 import { Insumo } from "@/types";
 import { useDeleteInsumo } from "@/hooks/useInsumos";
 import {
@@ -25,9 +25,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Dialog } from "@/components/ui/dialog";
 import InsumoSupplierDetailsDialog from "./InsumoSupplierDetailsDialog";
-import PhysicalCountDialog from "./PhysicalCountDialog"; // NEW: Import PhysicalCountDialog
-// REMOVED: import { format } from "date-fns";
-// REMOVED: import { es } from "date-fns/locale";
+import PhysicalCountDialog from "./PhysicalCountDialog";
 
 interface InsumoTableListProps {
   insumos: Insumo[];
@@ -38,8 +36,8 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
   const deleteMutation = useDeleteInsumo();
   const [isSupplierDetailsDialogOpen, setIsSupplierDetailsDialogOpen] = useState(false);
   const [selectedInsumoForDetails, setSelectedInsumoForDetails] = useState<Insumo | null>(null);
-  const [isPhysicalCountDialogOpen, setIsPhysicalCountDialogOpen] = useState(false); // NEW: State for physical count dialog
-  const [selectedInsumoForPhysicalCount, setSelectedInsumoForPhysicalCount] = useState<Insumo | null>(null); // NEW: State for physical count insumo
+  const [isPhysicalCountDialogOpen, setIsPhysicalCountDialogOpen] = useState(false);
+  const [selectedInsumoForPhysicalCount, setSelectedInsumoForPhysicalCount] = useState<Insumo | null>(null);
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
@@ -55,7 +53,6 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
     setSelectedInsumoForDetails(null);
   };
 
-  // NEW: Handlers for Physical Count Dialog
   const handleOpenPhysicalCount = (insumo: Insumo) => {
     setSelectedInsumoForPhysicalCount(insumo);
     setIsPhysicalCountDialogOpen(true);
@@ -83,8 +80,8 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Nombre</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Categoría</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Stock Actual</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Pendiente Entrega</TableHead> {/* NEW */}
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Pendiente Recepción</TableHead> {/* NEW */}
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Pendiente Entrega</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Pendiente Recepción</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[100px]">Mínimo</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Costo Unitario (S/)</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Proveedor</TableHead>
@@ -117,7 +114,12 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
               </TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 flex items-center justify-end min-w-[150px]">
                 <DollarSign className="mr-1 h-5 w-5 text-green-600" />
-                S/ {insumo.costo_unitario.toFixed(2)}
+                {new Intl.NumberFormat('es-PE', {
+                  style: 'currency',
+                  currency: 'PEN',
+                  minimumFractionDigits: 2,
+                  maximumFractionDigits: 2,
+                }).format(insumo.costo_unitario)}
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[150px]">
                 {insumo.supplier_name || "N/A"}
@@ -142,7 +144,7 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => handleOpenPhysicalCount(insumo)} // NEW: Button to open physical count dialog
+                  onClick={() => handleOpenPhysicalCount(insumo)}
                   className="h-10 w-10 rounded-full hover:bg-yellow-100 dark:hover:bg-yellow-900 transition-colors duration-150 ease-in-out"
                 >
                   <Scale className="h-5 w-5 text-yellow-600" />
@@ -190,7 +192,6 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
         )}
       </Dialog>
 
-      {/* NEW: Dialog for Physical Count */}
       <Dialog open={isPhysicalCountDialogOpen} onOpenChange={setIsPhysicalCountDialogOpen}>
         {selectedInsumoForPhysicalCount && (
           <PhysicalCountDialog
