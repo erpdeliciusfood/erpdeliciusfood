@@ -37,6 +37,21 @@ const formSchema = z.object({
   status: z.enum(['pending', 'approved', 'rejected', 'fulfilled'], { required_error: "El estado es requerido." }),
   rejection_reason: z.string().max(500, { message: "El motivo de rechazo no debe exceder los 500 caracteres." }).nullable().optional(),
   fulfilled_purchase_record_id: z.string().nullable().optional(),
+}).superRefine((data, ctx) => {
+  if (data.status === 'rejected' && (!data.rejection_reason || data.rejection_reason.trim() === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "El motivo de rechazo es requerido cuando el estado es 'Rechazado'.",
+      path: ["rejection_reason"],
+    });
+  }
+  if (data.status === 'fulfilled' && (!data.fulfilled_purchase_record_id || data.fulfilled_purchase_record_id.trim() === '')) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "El ID de registro de compra cumplida es requerido cuando el estado es 'Cumplido'.",
+      path: ["fulfilled_purchase_record_id"],
+    });
+  }
 });
 
 interface UrgentPurchaseRequestFormProps {
