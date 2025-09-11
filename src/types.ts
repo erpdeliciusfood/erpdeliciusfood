@@ -262,3 +262,28 @@ export interface InsumoNeeded extends Insumo {
   estimated_purchase_cost: number;
   reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert';
 }
+
+// NEW: Interface for UrgentPurchaseRequest
+export interface UrgentPurchaseRequest {
+  id: string;
+  insumo_id: string;
+  quantity_requested: number;
+  request_date: string;
+  priority: 'urgent' | 'high' | 'medium' | 'low';
+  status: 'pending' | 'approved' | 'rejected' | 'fulfilled';
+  requested_by_user_id: string;
+  notes: string | null;
+  source_module: string;
+  fulfilled_purchase_record_id: string | null;
+  created_at: string;
+  insumos?: Insumo; // Optional: to fetch related insumo data
+}
+
+// NEW: Interface for UrgentPurchaseRequest form values
+export interface UrgentPurchaseRequestFormValues {
+  insumo_id: string;
+  quantity_requested: number;
+  notes: string | null;
+  source_module?: string; // Default to 'warehouse'
+  priority?: 'urgent' | 'high' | 'medium' | 'low'; // Default to 'urgent'
+}

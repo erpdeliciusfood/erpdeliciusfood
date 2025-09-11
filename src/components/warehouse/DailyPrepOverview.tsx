@@ -4,21 +4,20 @@ import React, { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Package, CheckCircle2, AlertTriangle, MinusCircle, Utensils, PackageX, Info } from "lucide-react";
+import { Package, CheckCircle2, AlertTriangle, MinusCircle, Utensils, PackageX, Info, ShoppingBag } from "lucide-react"; // NEW: ShoppingBag icon
 import { Menu, AggregatedInsumoNeed } from "@/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { showError } from "@/utils/toast";
-// Removed useQueryClient as it's no longer used here
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ColoredProgress } from "@/components/ui/colored-progress";
 import { cn } from "@/lib/utils";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
-// Removed Input and Label as they are no longer used directly in this component
-import DeductQuantitiesDialog from "./DeductQuantitiesDialog"; // NEW: Import the new dialog
-import { Dialog } from "@/components/ui/dialog"; // NEW: Import Dialog for the DeductQuantitiesDialog
+import DeductQuantitiesDialog from "./DeductQuantitiesDialog";
+import { Dialog } from "@/components/ui/dialog";
+import UrgentPurchaseRequestDialog from "./UrgentPurchaseRequestDialog"; // NEW: Import UrgentPurchaseRequestDialog
 
 interface DailyPrepOverviewProps {
   selectedDate: Date;
@@ -26,13 +25,12 @@ interface DailyPrepOverviewProps {
 }
 
 const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, menus }) => {
-  // Removed useQueryClient as it's no longer used in this component
-  // Removed useAddStockMovement as it's now used inside DeductQuantitiesDialog
   const [stockFilter, setStockFilter] = useState<'all' | 'sufficient' | 'insufficient'>('all');
   const [selectedInsumoIds, setSelectedInsumoIds] = useState<Set<string>>(new Set());
   const [isSelectAllChecked, setIsSelectAllChecked] = useState(false);
-  // Removed deductorName state as it's moved to DeductQuantitiesDialog
-  const [isDeductQuantitiesDialogOpen, setIsDeductQuantitiesDialogOpen] = useState(false); // NEW: State for the new dialog
+  const [isDeductQuantitiesDialogOpen, setIsDeductQuantitiesDialogOpen] = useState(false);
+  const [isUrgentPurchaseRequestDialogOpen, setIsUrgentPurchaseRequestDialogOpen] = useState(false); // NEW: State for urgent purchase dialog
+  const [selectedInsumoForUrgentRequest, setSelectedInsumoForUrgentRequest] = useState<AggregatedInsumoNeed | null>(null); // NEW: State for selected insumo for urgent request
 
   const aggregatedInsumoNeeds: AggregatedInsumoNeed[] = useMemo(() => {
     const needsMap = new Map<string, AggregatedInsumoNeed>();
@@ -117,7 +115,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     setIsSelectAllChecked(checked);
   };
 
-  // NEW: Function to open the DeductQuantitiesDialog
+  // Function to open the DeductQuantitiesDialog
   const handleOpenDeductQuantitiesDialog = () => {
     const selectedInsumosWithSufficientStock = aggregatedInsumoNeeds.filter(
       (need) => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity >= need.total_needed_purchase_unit
@@ -130,12 +128,23 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     setIsDeductQuantitiesDialogOpen(true);
   };
 
-  // NEW: Function to close the DeductQuantitiesDialog
+  // Function to close the DeductQuantitiesDialog
   const handleCloseDeductQuantitiesDialog = () => {
     setIsDeductQuantitiesDialogOpen(false);
     setSelectedInsumoIds(new Set()); // Clear selection after deduction
     setIsSelectAllChecked(false);
-    // No need to invalidate queries here, as it's done in the dialog's onSubmit
+  };
+
+  // NEW: Function to open the UrgentPurchaseRequestDialog
+  const handleOpenUrgentPurchaseRequestDialog = (insumoNeed: AggregatedInsumoNeed) => {
+    setSelectedInsumoForUrgentRequest(insumoNeed);
+    setIsUrgentPurchaseRequestDialogOpen(true);
+  };
+
+  // NEW: Function to close the UrgentPurchaseRequestDialog
+  const handleCloseUrgentPurchaseRequestDialog = () => {
+    setIsUrgentPurchaseRequestDialogOpen(false);
+    setSelectedInsumoForUrgentRequest(null);
   };
 
   const insufficientStockCount = aggregatedInsumoNeeds.filter(
@@ -210,7 +219,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Button
-                    onClick={handleOpenDeductQuantitiesDialog} // NEW: Open the new dialog
+                    onClick={handleOpenDeductQuantitiesDialog}
                     disabled={isDeductButtonDisabled}
                     className="px-6 py-3 text-lg bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
                   >
@@ -250,6 +259,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Necesidad</TableHead>
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200">Faltante</TableHead>
                     <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Estado</TableHead>
+                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200">Acciones</TableHead> {/* NEW: Actions column */}
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -330,6 +340,19 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                             </Badge>
                           )}
                         </TableCell>
+                        <TableCell className="text-center">
+                          {!isSufficient && need.missing_quantity > 0 && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => handleOpenUrgentPurchaseRequestDialog(need)}
+                              className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white transition-colors duration-200 ease-in-out"
+                            >
+                              <ShoppingBag className="mr-1 h-4 w-4" />
+                              Solicitar Urgente
+                            </Button>
+                          )}
+                        </TableCell>
                       </TableRow>
                     );
                   })}
@@ -354,14 +377,23 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
         </CardContent>
       </Card>
 
-      {/* NEW: Deduct Quantities Dialog */}
       <Dialog open={isDeductQuantitiesDialogOpen} onOpenChange={setIsDeductQuantitiesDialogOpen}>
         <DeductQuantitiesDialog
           selectedInsumoNeeds={selectedInsumosForDialog}
           selectedDate={selectedDate}
-          menuId={menus[0]?.id || null} // Assuming all menus for a day share the same menuId or we take the first one
+          menuId={menus[0]?.id || null}
           onClose={handleCloseDeductQuantitiesDialog}
         />
+      </Dialog>
+
+      {/* NEW: Urgent Purchase Request Dialog */}
+      <Dialog open={isUrgentPurchaseRequestDialogOpen} onOpenChange={setIsUrgentPurchaseRequestDialogOpen}>
+        {selectedInsumoForUrgentRequest && (
+          <UrgentPurchaseRequestDialog
+            insumoNeed={selectedInsumoForUrgentRequest}
+            onClose={handleCloseUrgentPurchaseRequestDialog}
+          />
+        )}
       </Dialog>
     </div>
   );
