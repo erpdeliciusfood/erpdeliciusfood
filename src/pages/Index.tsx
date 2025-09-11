@@ -61,7 +61,7 @@ const Index = () => {
                 <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalInsumos}</div>
               )}
               <CardDescription className="text-lg text-left mt-2">
-                Insumos registrados en tu inventario.
+                Número total de tipos de insumos únicos registrados en tu inventario.
               </CardDescription>
             </CardContent>
           </Card>
@@ -79,7 +79,7 @@ const Index = () => {
                 <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalRecetas}</div>
               )}
               <CardDescription className="text-lg text-left mt-2">
-                Recetas disponibles en tu menú.
+                Cantidad de recetas únicas disponibles para tus menús.
               </CardDescription>
             </CardContent>
           </Card>
@@ -97,7 +97,7 @@ const Index = () => {
                 <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalMenus}</div>
               )}
               <CardDescription className="text-lg text-left mt-2">
-                Menús planificados y registrados.
+                Número de menús diarios o de evento que has planificado.
               </CardDescription>
             </CardContent>
           </Card>
@@ -115,7 +115,7 @@ const Index = () => {
                 <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalEventTypes}</div>
               )}
               <CardDescription className="text-lg text-left mt-2">
-                Tipos de eventos personalizados.
+                Cantidad de categorías de eventos que has definido.
               </CardDescription>
             </CardContent>
           </Card>
@@ -133,7 +133,7 @@ const Index = () => {
                 <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalServiceReports}</div>
               )}
               <CardDescription className="text-lg text-left mt-2">
-                Registros de servicios diarios y eventos.
+                Número de reportes de servicio que has creado.
               </CardDescription>
             </CardContent>
           </Card>
@@ -151,7 +151,7 @@ const Index = () => {
                 <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalStockMovements}</div>
               )}
               <CardDescription className="text-lg text-left mt-2">
-                Registros de entradas y salidas de inventario.
+                Cantidad total de movimientos de stock registrados.
               </CardDescription>
             </CardContent>
           </Card>
