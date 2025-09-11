@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Table,
   TableBody,
@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, ShoppingBag, CheckCircle2, XCircle, Loader2 } from "lucide-react";
+import { Edit, Trash2, ShoppingBag, CheckCircle2, XCircle, Loader2, Repeat2 } from "lucide-react"; // NEW: Repeat2 icon
 import { UrgentPurchaseRequest } from "@/types";
 import { useDeleteUrgentPurchaseRequest, useUpdateUrgentPurchaseRequest } from "@/hooks/useUrgentPurchaseRequests";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -16,6 +16,8 @@ import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { showSuccess, showError } from "@/utils/toast";
+import { Dialog } from "@/components/ui/dialog"; // NEW: Import Dialog
+import FulfillUrgentRequestDialog from "./FulfillUrgentRequestDialog"; // NEW: Import FulfillUrgentRequestDialog
 
 interface UrgentPurchaseRequestListProps {
   requests: UrgentPurchaseRequest[];
@@ -25,6 +27,9 @@ interface UrgentPurchaseRequestListProps {
 const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ requests, onEdit }) => {
   const deleteMutation = useDeleteUrgentPurchaseRequest();
   const updateMutation = useUpdateUrgentPurchaseRequest();
+
+  const [isFulfillDialogOpen, setIsFulfillDialogOpen] = useState(false); // NEW: State for fulfill dialog
+  const [requestToFulfill, setRequestToFulfill] = useState<UrgentPurchaseRequest | null>(null); // NEW: State for request to fulfill
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
@@ -40,6 +45,18 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
     } catch (error: any) {
       showError(`Error al actualizar el estado de la solicitud: ${error.message}`);
     }
+  };
+
+  // NEW: Handler for opening the fulfill dialog
+  const handleOpenFulfillDialog = (request: UrgentPurchaseRequest) => {
+    setRequestToFulfill(request);
+    setIsFulfillDialogOpen(true);
+  };
+
+  // NEW: Handler for closing the fulfill dialog
+  const handleCloseFulfillDialog = () => {
+    setIsFulfillDialogOpen(false);
+    setRequestToFulfill(null);
   };
 
   const getStatusBadge = (status: UrgentPurchaseRequest['status']) => {
@@ -91,6 +108,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Cantidad</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Prioridad</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Estado</TableHead>
+            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Insistencia</TableHead> {/* NEW: Insistence column */}
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Notas</TableHead>
             <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
           </TableRow>
@@ -112,6 +130,17 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
                 {getStatusBadge(request.status)}
+              </TableCell>
+              <TableCell className="text-center text-base text-gray-700 dark:text-gray-300 py-3 px-6"> {/* NEW: Display insistence_count */}
+                {request.insistence_count > 1 ? (
+                  <Badge variant="destructive" className="text-base px-2 py-1 flex items-center justify-center mx-auto w-fit">
+                    <Repeat2 className="h-4 w-4 mr-1" /> {request.insistence_count}
+                  </Badge>
+                ) : (
+                  <Badge variant="secondary" className="text-base px-2 py-1 flex items-center justify-center mx-auto w-fit">
+                    1
+                  </Badge>
+                )}
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
                 {request.notes || "N/A"}
@@ -189,13 +218,26 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                   </>
                 )}
 
+                {(request.status === 'pending' || request.status === 'approved') && ( // Only show "Mark as Purchased" for pending/approved
+                  <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => handleOpenFulfillDialog(request)}
+                    className="h-10 w-10 rounded-full hover:bg-purple-100 dark:hover:bg-purple-900 transition-colors duration-150 ease-in-out"
+                    title="Marcar como Comprado"
+                    disabled={updateMutation.isPending}
+                  >
+                    <ShoppingBag className="h-5 w-5 text-purple-600" />
+                  </Button>
+                )}
+
                 {request.status === 'approved' && (
                   <Button
                     variant="outline"
                     size="icon"
                     onClick={() => onEdit(request)} // This could open a form to link to a purchase record
                     className="h-10 w-10 rounded-full hover:bg-blue-100 dark:hover:bg-blue-900 transition-colors duration-150 ease-in-out"
-                    title="Editar Solicitud / Marcar como Cumplida"
+                    title="Editar Solicitud"
                     disabled={updateMutation.isPending}
                   >
                     <Edit className="h-5 w-5 text-blue-600" />
@@ -241,6 +283,16 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
           ))}
         </TableBody>
       </Table>
+
+      {/* NEW: Fulfill Urgent Request Dialog */}
+      <Dialog open={isFulfillDialogOpen} onOpenChange={setIsFulfillDialogOpen}>
+        {requestToFulfill && (
+          <FulfillUrgentRequestDialog
+            urgentRequest={requestToFulfill}
+            onClose={handleCloseFulfillDialog}
+          />
+        )}
+      </Dialog>
     </div>
   );
 };
