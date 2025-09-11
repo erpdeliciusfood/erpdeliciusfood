@@ -21,26 +21,30 @@ interface InsumoNeeded extends Insumo {
   purchase_suggestion_rounded: number;
   purchase_suggestion_rounded_up: boolean;
   estimated_purchase_cost: number;
-  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert'; // NEW: Reason for suggestion
+  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert';
 }
 
 interface SuggestedPurchaseListContentProps {
   suggestedPurchases: InsumoNeeded[];
-  onClose: () => void; // To signal parent to close dialog and potentially re-fetch
+  onClose: () => void;
+  initialSelectedInsumoIds?: Set<string>; // NEW: Prop for initial selection
 }
 
 const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> = ({
   suggestedPurchases,
   onClose,
+  initialSelectedInsumoIds, // NEW
 }) => {
   const queryClient = useQueryClient();
   const addPurchaseRecordMutation = useAddPurchaseRecord();
 
-  const [selectedInsumoIds, setSelectedInsumoIds] = useState<Set<string>>(new Set());
+  // NEW: Initialize selectedInsumoIds with initialSelectedInsumoIds if provided
+  const [selectedInsumoIds, setSelectedInsumoIds] = useState<Set<string>>(
+    initialSelectedInsumoIds ? new Set(initialSelectedInsumoIds) : new Set()
+  );
   const [isSelectAllChecked, setIsSelectAllChecked] = useState(false);
   const [isRegisteringBatch, setIsRegisteringBatch] = useState(false);
 
-  // State for individual purchase form (if user clicks "Registrar Compra" on a single item)
   const [isIndividualRegisterFormOpen, setIsIndividualRegisterFormOpen] = useState(false);
   const [selectedInsumoForIndividualRegistration, setSelectedInsumoForIndividualRegistration] = useState<InsumoNeeded | null>(null);
 
@@ -49,6 +53,14 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
     const allPurchasableIds = suggestedPurchases.filter(i => i.purchase_suggestion_rounded > 0).map(i => i.id);
     setIsSelectAllChecked(allPurchasableIds.length > 0 && selectedInsumoIds.size === allPurchasableIds.length);
   }, [suggestedPurchases, selectedInsumoIds]);
+
+  // NEW: Effect to update internal selectedInsumoIds if initialSelectedInsumoIds changes
+  useEffect(() => {
+    if (initialSelectedInsumoIds) {
+      setSelectedInsumoIds(new Set(initialSelectedInsumoIds));
+    }
+  }, [initialSelectedInsumoIds]);
+
 
   const handleCheckboxChange = (insumoId: string, checked: boolean) => {
     setSelectedInsumoIds(prev => {
@@ -80,11 +92,9 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
   const handleIndividualRegisterFormClose = () => {
     setIsIndividualRegisterFormOpen(false);
     setSelectedInsumoForIndividualRegistration(null);
-    // After individual registration, invalidate queries to refresh the list
     queryClient.invalidateQueries({ queryKey: ["purchaseRecords"] });
     queryClient.invalidateQueries({ queryKey: ["stockMovements"] });
     queryClient.invalidateQueries({ queryKey: ["insumos"] });
-    // Also remove the item from selected if it was part of a batch selection
     setSelectedInsumoIds(prev => {
       const newSet = new Set(prev);
       if (selectedInsumoForIndividualRegistration) {
@@ -106,7 +116,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
       try {
         await addPurchaseRecordMutation.mutateAsync({
           insumo_id: insumo.id,
-          purchase_date: new Date().toISOString().split('T')[0], // Current date
+          purchase_date: new Date().toISOString().split('T')[0],
           quantity_purchased: insumo.purchase_suggestion_rounded,
           unit_cost_at_purchase: insumo.costo_unitario,
           total_amount: insumo.estimated_purchase_cost,
@@ -132,9 +142,9 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
     }
 
     setIsRegisteringBatch(false);
-    setSelectedInsumoIds(new Set()); // Clear selections
+    setSelectedInsumoIds(new Set());
     setIsSelectAllChecked(false);
-    onClose(); // Close the dialog, which will trigger parent re-fetch
+    onClose();
   };
 
   const getReasonBadge = (reason: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert') => {
@@ -145,7 +155,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
         return <Badge variant="outline" className="bg-orange-100 text-orange-700 dark:bg-orange-900 dark:text-orange-300">Stock Mínimo</Badge>;
       case 'both':
         return <Badge variant="outline" className="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">Ambos</Badge>;
-      case 'zero_stock_alert': // NEW: Badge for zero_stock_alert
+      case 'zero_stock_alert':
         return <Badge variant="destructive" className="bg-red-100 text-red-700 dark:bg-red-900 dark:text-red-300">Stock Cero</Badge>;
       default:
         return <Badge variant="secondary">Desconocido</Badge>;
@@ -247,7 +257,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
             </CardHeader>
             <CardContent className="text-gray-700 dark:text-gray-300">
               <p className="mb-1">
-                <span className="font-semibold">Motivo de Sugerencia:</span> {getReasonBadge(insumo.reason_for_purchase_suggestion)} {/* NEW: Display reason */}
+                <span className="font-semibold">Motivo de Sugerencia:</span> {getReasonBadge(insumo.reason_for_purchase_suggestion)}
               </p>
               <p className="mb-1">
                 <span className="font-semibold">Unidad de Compra:</span> {insumo.purchase_unit}
