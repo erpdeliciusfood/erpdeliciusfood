@@ -68,8 +68,11 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
       return;
     }
 
+    // Format the selected date to a YYYY-MM-DD string for consistent comparison
+    const formattedSelectedDate = format(date, "yyyy-MM-dd");
+
     const existingDailyMenuForDate = menusInMonth.find(menu =>
-      menu.menu_date && isSameDay(parseISO(menu.menu_date), date) && !menu.event_type_id // Check for daily menu (no event_type_id)
+      menu.menu_date && menu.menu_date === formattedSelectedDate && !menu.event_type_id // Compare strings directly
     );
 
     if (existingDailyMenuForDate) {
