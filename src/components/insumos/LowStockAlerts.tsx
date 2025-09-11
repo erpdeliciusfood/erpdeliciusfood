@@ -8,6 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Insumo } from "@/types"; // Import Insumo type
+import { cn } from "@/lib/utils"; // NEW: Import cn for conditional classnames
 
 const LowStockAlerts: React.FC = () => {
   // Fetch all insumos to correctly calculate low stock without pagination interference
@@ -16,6 +17,8 @@ const LowStockAlerts: React.FC = () => {
   const lowStockInsumos = insumoData?.data.filter( // Access .data here
     (insumo: Insumo) => insumo.stock_quantity <= (insumo.min_stock_level ?? 0) && (insumo.min_stock_level ?? 0) > 0 // Only show if min_stock_level is set and stock is below it
   ).sort((a: Insumo, b: Insumo) => a.stock_quantity - b.stock_quantity);
+
+  const hasLowStock = lowStockInsumos && lowStockInsumos.length > 0;
 
   if (isLoading) {
     return (
@@ -52,7 +55,10 @@ const LowStockAlerts: React.FC = () => {
   }
 
   return (
-    <Card className="w-full shadow-lg dark:bg-gray-800">
+    <Card className={cn(
+      "w-full shadow-lg dark:bg-gray-800",
+      hasLowStock && "border-l-4 border-orange-500 animate-strong-pulse" // Apply pulse animation and border when there's low stock
+    )}>
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
         <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
           Alertas de Stock Bajo
@@ -60,7 +66,7 @@ const LowStockAlerts: React.FC = () => {
         <AlertTriangle className="h-8 w-8 text-orange-500" />
       </CardHeader>
       <CardContent>
-        {lowStockInsumos && lowStockInsumos.length > 0 ? (
+        {hasLowStock ? (
           <div className="overflow-x-auto">
             <Table>
               <TableHeader>
