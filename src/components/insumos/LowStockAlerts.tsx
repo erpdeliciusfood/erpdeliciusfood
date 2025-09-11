@@ -12,7 +12,7 @@ const LowStockAlerts: React.FC = () => {
   // Fetch all insumos to correctly calculate low stock without pagination interference
   const { data: insumoData, isLoading, isError, error } = useInsumos(undefined, undefined, 1, 9999); // Fetch all items
 
-  const lowStockInsumos = insumoData?.data.filter( // Access .data here
+  const lowStockInsumos = insumoData?.data.filter(
     (insumo: Insumo) => insumo.stock_quantity <= (insumo.min_stock_level ?? 0) && (insumo.min_stock_level ?? 0) > 0 // Only show if min_stock_level is set and stock is below it
   ).sort((a: Insumo, b: Insumo) => a.stock_quantity - b.stock_quantity);
 

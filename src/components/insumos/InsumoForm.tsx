@@ -5,7 +5,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Insumo, InsumoFormValues } from "@/types";
-import { useAddInsumo, useUpdateInsumo } from "@/hooks/useInsumos";
+import { useCreateInsumo, useUpdateInsumo } from "@/hooks/useInsumos";
 import { Loader2 } from "lucide-react";
 import InsumoBasicDetailsFormSection from "./InsumoBasicDetailsFormSection";
 import InsumoStockAndCostFormSection from "./InsumoStockAndCostFormSection";
@@ -90,7 +90,7 @@ const predefinedConversions: { [purchaseUnit: string]: { [baseUnit: string]: num
 };
 
 const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCancel }) => {
-  const addMutation = useAddInsumo();
+  const addMutation = useCreateInsumo();
   const updateMutation = useUpdateInsumo();
   const [isConversionFactorEditable, setIsConversionFactorEditable] = useState(true);
 
@@ -185,7 +185,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
 
   const onSubmit = async (values: InsumoFormValues) => {
     if (initialData && (initialData as Insumo).id) {
-      await updateMutation.mutateAsync({ id: (initialData as Insumo).id, insumo: values });
+      await updateMutation.mutateAsync({ id: (initialData as Insumo).id, updates: values });
       onSuccess(values as Insumo);
     } else {
       const newInsumo = await addMutation.mutateAsync(values);

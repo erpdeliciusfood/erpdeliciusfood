@@ -109,7 +109,7 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
   };
 
   const handleEditInsumo = (insumoId: string, index: number) => { // NEW: Handler for editing insumo
-    const foundInsumo = availableInsumosData?.data.find(i => i.id === insumoId);
+    const foundInsumo = availableInsumosData?.data.find((i: Insumo) => i.id === insumoId);
     if (foundInsumo) {
       setInsumoToEdit(foundInsumo);
       setCurrentInsumoFieldIndex(index);

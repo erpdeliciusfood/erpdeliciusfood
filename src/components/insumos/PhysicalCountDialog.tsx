@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Insumo, InsumoFormValues } from "@/types";
+import { Insumo } from "@/types";
 import { useUpdateInsumo } from "@/hooks/useInsumos";
 import { Loader2, CalendarIcon, AlertCircle } from "lucide-react";
 import { format, formatISO } from "date-fns";
@@ -71,9 +71,13 @@ const PhysicalCountDialog: React.FC<PhysicalCountDialogProps> = ({ insumo, onClo
       });
       showSuccess("Conteo físico registrado exitosamente.");
       onClose();
-    } catch (error) {
+    } catch (error: unknown) { // Añadido 'unknown'
       console.error("Error updating physical count:", error);
-      showError(`Error al registrar conteo físico: ${error.message}`);
+      let errorMessage = "Error desconocido al registrar conteo físico.";
+      if (error instanceof Error) { // Type guard
+        errorMessage = error.message;
+      }
+      showError(errorMessage);
     }
   };
 

@@ -4,11 +4,11 @@ import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast
 import { Insumo, InsumoFormValues, InsumoSupplierHistory, InsumoPriceHistory } from "@/types";
 
 export const useInsumos = (searchTerm?: string, category?: string, page?: number, limit?: number) => {
-  return useQuery<Insumo[], Error>({
+  return useQuery<{ data: Insumo[], count: number }, Error>({
     queryKey: ["insumos", searchTerm, category, page, limit],
     queryFn: async () => {
-      const { data } = await getInsumos(searchTerm, category, page, limit);
-      return data;
+      const { data, count } = await getInsumos(searchTerm, category, page, limit);
+      return { data, count };
     },
   });
 };
