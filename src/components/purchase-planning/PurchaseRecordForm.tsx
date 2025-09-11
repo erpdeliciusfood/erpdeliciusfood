@@ -20,11 +20,13 @@ import PurchaseDetailsFormSection from "./PurchaseDetailsFormSection";
 import SupplierDetailsFormSection from "./SupplierDetailsFormSection";
 import StatusAndReceivedDateFormSection from "./StatusAndReceivedDateFormSection";
 import { format } from "date-fns";
+import { Input } from "@/components/ui/input"; // Import Input for the new field
 
 const formSchema = z.object({
   insumo_id: z.string().min(1, { message: "Debe seleccionar un insumo." }),
   purchase_date: z.string().min(1, { message: "La fecha de compra es requerida." }),
   quantity_purchased: z.coerce.number().min(0.01, { message: "La cantidad comprada debe ser mayor a 0." }).max(999999.99, { message: "La cantidad comprada no debe exceder 999,999.99." }),
+  quantity_received: z.coerce.number().min(0, { message: "La cantidad recibida no puede ser negativa." }).max(999999.99, { message: "La cantidad recibida no debe exceder 999,999.99." }), // NEW: Added validation for quantity_received
   unit_cost_at_purchase: z.coerce.number().min(0.01, { message: "El costo unitario debe ser mayor a 0." }).max(99999.99, { message: "El costo unitario no debe exceder 99,999.99." }),
   total_amount: z.coerce.number().min(0.01, { message: "El monto total debe ser mayor a 0." }).max(9999999.99, { message: "El monto total no debe exceder 9,999,999.99." }),
   supplier_name_at_purchase: z.string().max(100, { message: "El nombre del proveedor no debe exceder los 100 caracteres." }).nullable(),
@@ -37,6 +39,22 @@ const formSchema = z.object({
   notes: z.string().max(500, { message: "Las notas no deben exceder los 500 caracteres." }).nullable(),
   status: z.enum(['ordered', 'received_by_company', 'received_by_warehouse', 'cancelled']),
   received_date: z.string().nullable(),
+}).superRefine((data, ctx) => {
+  // NEW: Conditional validation for quantity_received
+  if ((data.status === 'received_by_company' || data.status === 'received_by_warehouse') && data.quantity_received === undefined) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "La cantidad recibida es requerida cuando el estado es 'Recibido por Empresa' o 'Recibido en Almacén'.",
+      path: ["quantity_received"],
+    });
+  }
+  if (data.quantity_received !== undefined && data.quantity_received > data.quantity_purchased) {
+    ctx.addIssue({
+      code: z.ZodIssueCode.custom,
+      message: "La cantidad recibida no puede ser mayor que la cantidad comprada.",
+      path: ["quantity_received"],
+    });
+  }
 });
 
 interface PurchaseRecordFormProps {
@@ -72,6 +90,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
       insumo_id: prefilledInsumoId || "",
       purchase_date: format(new Date(), "yyyy-MM-dd"),
       quantity_purchased: prefilledQuantity || 0,
+      quantity_received: prefilledInsumoId ? prefilledQuantity : 0, // Set quantity_received if prefilled
       unit_cost_at_purchase: prefilledUnitCost || 0,
       total_amount: (prefilledQuantity && prefilledUnitCost) ? prefilledQuantity * prefilledUnitCost : 0,
       supplier_name_at_purchase: prefilledSupplierName || "",
@@ -79,9 +98,8 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
       supplier_address_at_purchase: prefilledSupplierAddress || "",
       from_registered_supplier: true,
       notes: "",
-      status: prefilledInsumoId ? 'received_by_warehouse' : 'ordered', // NEW: Default to received_by_warehouse if prefilled
-      received_date: prefilledInsumoId ? format(new Date(), "yyyy-MM-dd") : null, // NEW: Set received date if prefilled
-      quantity_received: prefilledInsumoId ? prefilledQuantity : 0, // NEW: Set quantity_received if prefilled
+      status: prefilledInsumoId ? 'received_by_warehouse' : 'ordered', // Default to received_by_warehouse if prefilled
+      received_date: prefilledInsumoId ? format(new Date(), "yyyy-MM-dd") : null, // Set received date if prefilled
     },
   });
 
@@ -99,6 +117,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         insumo_id: initialData.insumo_id,
         purchase_date: format(new Date(initialData.purchase_date), "yyyy-MM-dd"),
         quantity_purchased: initialData.quantity_purchased,
+        quantity_received: initialData.quantity_received, // Use initialData's quantity_received
         unit_cost_at_purchase: initialData.unit_cost_at_purchase,
         total_amount: initialData.total_amount,
         supplier_name_at_purchase: initialData.supplier_name_at_purchase || "",
@@ -108,13 +127,13 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         notes: initialData.notes || "",
         status: initialData.status,
         received_date: initialData.received_date || null,
-        quantity_received: initialData.quantity_received,
       });
     } else {
       form.reset({
         insumo_id: prefilledInsumoId || "",
         purchase_date: format(new Date(), "yyyy-MM-dd"),
         quantity_purchased: prefilledQuantity || 0,
+        quantity_received: prefilledInsumoId ? prefilledQuantity : 0, // Set quantity_received if prefilled
         unit_cost_at_purchase: prefilledUnitCost || 0,
         total_amount: (prefilledQuantity && prefilledUnitCost) ? prefilledQuantity * prefilledUnitCost : 0,
         supplier_name_at_purchase: prefilledSupplierName || "",
@@ -122,9 +141,8 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         supplier_address_at_purchase: prefilledSupplierAddress || "",
         from_registered_supplier: true,
         notes: "",
-        status: prefilledInsumoId ? 'received_by_warehouse' : 'ordered', // NEW: Default to received_by_warehouse if prefilled
-        received_date: prefilledInsumoId ? format(new Date(), "yyyy-MM-dd") : null, // NEW: Set received date if prefilled
-        quantity_received: prefilledInsumoId ? prefilledQuantity : 0, // NEW: Set quantity_received if prefilled
+        status: prefilledInsumoId ? 'received_by_warehouse' : 'ordered', // Default to received_by_warehouse if prefilled
+        received_date: prefilledInsumoId ? format(new Date(), "yyyy-MM-dd") : null, // Set received date if prefilled
       });
     }
   }, [initialData, form, prefilledInsumoId, prefilledQuantity, prefilledUnitCost, prefilledSupplierName, prefilledSupplierPhone, prefilledSupplierAddress]);
@@ -181,6 +199,33 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
             initialDataPresent={!!initialData}
             prefilledInsumoId={prefilledInsumoId}
           />
+
+          {/* NEW: Quantity Received Field */}
+          {(currentStatus === 'received_by_company' || currentStatus === 'received_by_warehouse') && (
+            <FormField
+              control={form.control}
+              name="quantity_received"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                    Cantidad Recibida {form.watch("insumo_id") && `(en ${purchaseUnit})`}
+                  </FormLabel>
+                  <FormControl>
+                    <Input
+                      type="number"
+                      step="0.01"
+                      placeholder="Ej. 10.5"
+                      {...field}
+                      onChange={(e) => field.onChange(parseFloat(e.target.value))}
+                      className="h-12 text-base"
+                      disabled={isLoading}
+                    />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+          )}
 
           <SupplierDetailsFormSection
             isLoading={isLoading}
