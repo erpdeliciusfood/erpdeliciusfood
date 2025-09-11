@@ -1,45 +1,19 @@
 "use client";
 
 import React, { useState, useMemo } from "react";
-import { Loader2, ClipboardList, CalendarDays, ChevronDown, UtensilsCrossed, Utensils, Soup, Cake, Coffee, Milk, Salad, Fish, Beef, Wheat, Apple } from "lucide-react"; // Removed Wine, PlusCircle
+import { Loader2, ClipboardList, CalendarDays, ChevronDown, UtensilsCrossed } from "lucide-react";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, parseISO } from "date-fns"; // Removed isSameDay
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { DateRange } from "react-day-picker";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
 import { useMenus } from "@/hooks/useMenus";
-import { DailyMenuBreakdown, MealServiceBreakdown, DishCategoryBreakdown, DishDetail, Menu } from "@/types"; // Import new types
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
-import { Badge } from "@/components/ui/badge";
-
-// Define the order of meal services for consistent display
-const MEAL_SERVICES_ORDER = ["desayuno", "almuerzo", "cena", "merienda", "otro"];
-
-// Define icons for dish categories (can be expanded)
-const DISH_CATEGORY_ICONS: { [key: string]: React.ElementType } = {
-  "Desayuno / Merienda": Coffee,
-  "Entrada": Salad,
-  "Sopa / Crema": Soup,
-  "Ensalada Fría": Salad,
-  "Ensalada Caliente": Salad,
-  "Plato de Fondo - Carnes": Beef,
-  "Plato de Fondo - Aves": Utensils, // Generic for poultry
-  "Plato de Fondo - Pescados y Mariscos": Fish,
-  "Plato de Fondo - Pastas y Arroces": Wheat,
-  "Plato de Fondo - Vegetariano / Vegano": Apple, // Generic for vegetarian
-  "Acompañamiento / Guarnición": Utensils,
-  "Postre": Cake,
-  "Bebida": Milk,
-  "Dieta Blanda": Utensils,
-  "Otra Opción": Utensils,
-  "Sin Categoría": UtensilsCrossed,
-};
+import { DailyMenuBreakdown, DishCategoryBreakdown, DishDetail, MealServiceBreakdown, Menu } from "@/types"; // NEW: Import Menu and new breakdown types
 
 const MenuBreakdown: React.FC = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -82,93 +56,76 @@ const MenuBreakdown: React.FC = () => {
     setDateRange({ from: fromDate, to: toDate });
   };
 
-  const aggregatedBreakdown: DailyMenuBreakdown[] = useMemo(() => {
-    if (!menus || !dateRange.from || !dateRange.to) return [];
+  // NEW: Data aggregation logic
+  const aggregatedMenuBreakdown = useMemo(() => {
+    if (!menus || menus.length === 0) return [];
 
-    const dailyBreakdownMap = new Map<string, DailyMenuBreakdown>();
-    const daysInPeriod = eachDayOfInterval({ start: dateRange.from, end: dateRange.to });
+    const breakdownMap = new Map<string, DailyMenuBreakdown>(); // Key: date string "YYYY-MM-DD"
 
-    // Initialize map with all days in the period
-    daysInPeriod.forEach(day => {
-      const formattedDay = format(day, "yyyy-MM-dd");
-      dailyBreakdownMap.set(formattedDay, {
-        date: formattedDay,
-        menusForDay: [],
-        mealServicesBreakdown: [],
+    menus.forEach((menu: Menu) => {
+      const dateKey = menu.date;
+
+      if (!breakdownMap.has(dateKey)) {
+        breakdownMap.set(dateKey, {
+          date: dateKey,
+          mealServicesBreakdown: [],
+        });
+      }
+      const dailyBreakdown = breakdownMap.get(dateKey)!;
+
+      let mealServiceEntry = dailyBreakdown.mealServicesBreakdown.find(
+        (ms) => ms.serviceId === menu.meal_service.id
+      );
+
+      if (!mealServiceEntry) {
+        mealServiceEntry = {
+          serviceId: menu.meal_service.id,
+          serviceName: menu.meal_service.name,
+          serviceOrderIndex: menu.meal_service.order_index,
+          categories: [],
+        };
+        dailyBreakdown.mealServicesBreakdown.push(mealServiceEntry);
+      }
+
+      menu.menu_platos.forEach(menuPlato => {
+        let dishCategoryEntry = mealServiceEntry!.categories.find(
+          (dc) => dc.categoryName === menuPlato.dish_category
+        );
+
+        if (!dishCategoryEntry) {
+          dishCategoryEntry = {
+            categoryName: menuPlato.dish_category,
+            dishes: [],
+          };
+          mealServiceEntry!.categories.push(dishCategoryEntry);
+        }
+
+        dishCategoryEntry!.dishes.push({
+          platoId: menuPlato.plato.id,
+          platoNombre: menuPlato.plato.nombre,
+          quantityNeeded: menuPlato.quantity_needed,
+        });
       });
     });
 
-    menus.forEach(menu => {
-      // Only consider menus with a specific date for daily breakdown
-      if (menu.menu_date) {
-        const menuDate = parseISO(menu.menu_date);
-        const formattedMenuDate = format(menuDate, "yyyy-MM-dd");
+    // Convert map to array and sort by date
+    const sortedBreakdown: DailyMenuBreakdown[] = Array.from(breakdownMap.values()).sort((a, b) =>
+      a.date.localeCompare(b.date)
+    );
 
-        if (dailyBreakdownMap.has(formattedMenuDate)) {
-          const currentDailyBreakdown = dailyBreakdownMap.get(formattedMenuDate)!;
-          currentDailyBreakdown.menusForDay.push(menu);
-
-          const mealServiceMap = new Map<string, MealServiceBreakdown>();
-
-          menu.menu_platos?.forEach(menuPlato => {
-            const serviceName = menuPlato.meal_services?.name || "Otro";
-            const serviceId = menuPlato.meal_service_id;
-            const dishCategory = menuPlato.dish_category || "Sin Categoría";
-            const platoNombre = menuPlato.platos?.nombre || "Plato Desconocido";
-            const quantityNeeded = menuPlato.quantity_needed;
-
-            if (!mealServiceMap.has(serviceId)) {
-              mealServiceMap.set(serviceId, {
-                serviceId,
-                serviceName,
-                categories: [],
-              });
-            }
-            const currentMealService = mealServiceMap.get(serviceId)!;
-
-            let categoryBreakdown = currentMealService.categories.find(
-              cat => cat.categoryName === dishCategory
-            );
-
-            if (!categoryBreakdown) {
-              categoryBreakdown = {
-                categoryName: dishCategory,
-                dishes: [],
-              };
-              currentMealService.categories.push(categoryBreakdown);
-            }
-
-            categoryBreakdown.dishes.push({
-              platoId: menuPlato.plato_id,
-              platoNombre,
-              quantityNeeded,
-            });
-          });
-
-          // Sort meal services and categories
-          const sortedMealServices = Array.from(mealServiceMap.values()).sort((a, b) => {
-            const indexA = MEAL_SERVICES_ORDER.indexOf(a.serviceName.toLowerCase());
-            const indexB = MEAL_SERVICES_ORDER.indexOf(b.serviceName.toLowerCase());
-            if (indexA === -1) return 1;
-            if (indexB === -1) return -1;
-            return indexA - indexB;
-          });
-
-          sortedMealServices.forEach(ms => {
-            ms.categories.sort((a, b) => a.categoryName.localeCompare(b.categoryName));
-            ms.categories.forEach(cat => {
-              cat.dishes.sort((a, b) => a.platoNombre.localeCompare(b.platoNombre));
-            });
-          });
-
-          currentDailyBreakdown.mealServicesBreakdown = sortedMealServices;
-          dailyBreakdownMap.set(formattedMenuDate, currentDailyBreakdown);
-        }
-      }
+    // Sort meal services and dish categories within each day
+    sortedBreakdown.forEach(daily => {
+      daily.mealServicesBreakdown.sort((a, b) => a.serviceOrderIndex - b.serviceOrderIndex);
+      daily.mealServicesBreakdown.forEach(service => {
+        service.categories.sort((a, b) => a.categoryName.localeCompare(b.categoryName));
+        service.categories.forEach(category => {
+          category.dishes.sort((a, b) => a.platoNombre.localeCompare(b.platoNombre));
+        });
+      });
     });
 
-    return Array.from(dailyBreakdownMap.values()).sort((a, b) => a.date.localeCompare(b.date));
-  }, [menus, dateRange.from, dateRange.to]);
+    return sortedBreakdown;
+  }, [menus]);
 
   if (isLoading) {
     return (
@@ -260,71 +217,18 @@ const MenuBreakdown: React.FC = () => {
       </div>
 
       <div className="flex-grow">
-        {dateRange.from && dateRange.to && aggregatedBreakdown.length > 0 ? (
-          <div className="space-y-8">
-            <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-4">
-              Desglose de Menús para el período: {displayStartDate} - {displayEndDate}
-            </h2>
-            {aggregatedBreakdown.map((dailyData) => (
-              <Card key={dailyData.date} className="shadow-lg dark:bg-gray-800">
-                <CardHeader className="bg-gray-50 dark:bg-gray-700 rounded-t-lg">
-                  <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
-                    <CalendarDays className="mr-2 h-6 w-6" />
-                    {format(parseISO(dailyData.date), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: es })}
-                    {dailyData.menusForDay.length > 0 && (
-                      <Badge variant="secondary" className="ml-3 text-base px-3 py-1">
-                        {dailyData.menusForDay.length} Menú(s)
-                      </Badge>
-                    )}
-                  </CardTitle>
-                </CardHeader>
-                <CardContent className="p-6">
-                  {dailyData.mealServicesBreakdown.length > 0 ? (
-                    <Accordion type="multiple" className="w-full">
-                      {dailyData.mealServicesBreakdown.map((serviceBreakdown) => (
-                        <AccordionItem key={serviceBreakdown.serviceId} value={serviceBreakdown.serviceId}>
-                          <AccordionTrigger className="text-lg font-semibold text-gray-800 dark:text-gray-200 hover:no-underline">
-                            {serviceBreakdown.serviceName}
-                          </AccordionTrigger>
-                          <AccordionContent className="pl-4">
-                            {serviceBreakdown.categories.length > 0 ? (
-                              <div className="space-y-3">
-                                {serviceBreakdown.categories.map((categoryBreakdown) => {
-                                  const IconComponent = DISH_CATEGORY_ICONS[categoryBreakdown.categoryName] || Utensils;
-                                  return (
-                                    <div key={categoryBreakdown.categoryName} className="border-l-2 border-gray-200 dark:border-gray-700 pl-3">
-                                      <h4 className="text-md font-bold text-gray-700 dark:text-gray-300 flex items-center">
-                                        <IconComponent className="mr-2 h-5 w-5 text-blue-600 dark:text-blue-400" />
-                                        {categoryBreakdown.categoryName}
-                                      </h4>
-                                      <ul className="list-disc pl-6 mt-1 space-y-1 text-gray-600 dark:text-gray-400">
-                                        {categoryBreakdown.dishes.map((dish, idx) => (
-                                          <li key={idx} className="text-base">
-                                            {dish.platoNombre} (Cantidad: {dish.quantityNeeded})
-                                          </li>
-                                        ))}
-                                      </ul>
-                                    </div>
-                                  );
-                                })}
-                              </div>
-                            ) : (
-                              <p className="text-gray-600 dark:text-gray-400">No hay platos definidos para este servicio.</p>
-                            )}
-                          </AccordionContent>
-                        </AccordionItem>
-                      ))}
-                    </Accordion>
-                  ) : (
-                    <p className="text-center py-4 text-gray-600 dark:text-gray-400">No hay servicios de comida planificados para este día.</p>
-                  )}
-                </CardContent>
-              </Card>
-            ))}
+        {dateRange.from && dateRange.to && aggregatedMenuBreakdown.length > 0 ? ( // NEW: Check aggregatedMenuBreakdown
+          <div className="text-center py-10 text-gray-600 dark:text-gray-400">
+            <h2 className="text-2xl font-bold mb-4">Menús para el período: {displayStartDate} - {displayEndDate}</h2>
+            {/* Placeholder for Menu Breakdown List - will be implemented in Phase 3 */}
+            <p className="text-xl">Aquí se mostrará el desglose de menús.</p>
+            <pre className="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-md text-left overflow-auto max-h-96">
+              <code>{JSON.stringify(aggregatedMenuBreakdown, null, 2)}</code> {/* NEW: Display aggregated data */}
+            </pre>
           </div>
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">
-            <ClipboardList className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
+            <UtensilsCrossed className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" /> {/* NEW: Icon for no menus */}
             <p className="text-xl mb-4">No hay menús planificados para el período seleccionado.</p>
             <p className="text-md">Ajusta el rango de fechas o planifica nuevos menús.</p>
           </div>

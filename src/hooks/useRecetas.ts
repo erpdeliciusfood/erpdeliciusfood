@@ -3,84 +3,74 @@ import { getRecetas, getRecetaById, createReceta, updateReceta, deleteReceta } f
 import { Receta, RecetaFormValues } from "@/types"; // Changed type imports
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
-export const useRecetas = () => { // Changed hook name
-  return useQuery<Receta[], Error>({ // Changed type
-    queryKey: ["recetas"], // Changed query key
-    queryFn: getRecetas, // Changed function name
+export const useRecetas = () => {
+  return useQuery<Receta[], Error>({
+    queryKey: ["recetas"],
+    queryFn: getRecetas,
   });
 };
 
-export const useReceta = (id: string) => { // Changed hook name and type
-  return useQuery<Receta | null, Error>({ // Changed type
-    queryKey: ["recetas", id], // Changed query key
-    queryFn: () => getRecetaById(id), // Changed function name
+export const useRecetaById = (id: string) => {
+  return useQuery<Receta, Error>({
+    queryKey: ["recetas", id],
+    queryFn: () => getRecetaById(id),
     enabled: !!id,
   });
 };
 
-export const useAddReceta = () => { // Changed hook name
+export const useAddReceta = () => {
   const queryClient = useQueryClient();
-  return useMutation<Receta, Error, RecetaFormValues, { toastId: string }>({ // Changed type
-    mutationFn: createReceta, // Changed function name
+  return useMutation<Receta, Error, RecetaFormValues>({
+    mutationFn: createReceta,
     onMutate: () => {
-      const toastId: string = showLoading("Añadiendo receta..."); // Changed text
-      return { toastId };
+      return { toastId: showLoading("Agregando receta...") };
     },
     onSuccess: (_, __, context) => {
-      dismissToast(context.toastId);
-      queryClient.invalidateQueries({ queryKey: ["recetas"] }); // Changed query key
-      showSuccess("Receta añadida exitosamente."); // Changed text
+      dismissToast(context?.toastId);
+      showSuccess("Receta agregada exitosamente.");
+      queryClient.invalidateQueries({ queryKey: ["recetas"] });
     },
-    onError: (error, __, context) => {
-      if (context?.toastId) {
-        dismissToast(context.toastId);
-      }
-      showError(`Error al añadir receta: ${error.message}`); // Changed text
+    onError: (error, _, context) => {
+      dismissToast(context?.toastId);
+      showError(`Error al agregar receta: ${error.message}`);
     },
   });
 };
 
-export const useUpdateReceta = () => { // Changed hook name
+export const useUpdateReceta = () => {
   const queryClient = useQueryClient();
-  return useMutation<Receta, Error, { id: string; plato: RecetaFormValues }, { toastId: string }>({ // Changed type
-    mutationFn: ({ id, plato }) => updateReceta(id, plato), // Changed function name and variable name
+  return useMutation<Receta, Error, RecetaFormValues>({
+    mutationFn: updateReceta,
     onMutate: () => {
-      const toastId: string = showLoading("Actualizando receta..."); // Changed text
-      return { toastId };
+      return { toastId: showLoading("Actualizando receta...") };
     },
-    onSuccess: (_, { id }, context) => {
-      dismissToast(context.toastId);
-      queryClient.invalidateQueries({ queryKey: ["recetas"] }); // Changed query key
-      queryClient.invalidateQueries({ queryKey: ["recetas", id] }); // Changed query key
-      showSuccess("Receta actualizada exitosamente."); // Changed text
+    onSuccess: () => {
+      dismissToast();
+      showSuccess("Receta actualizada exitosamente.");
+      queryClient.invalidateQueries({ queryKey: ["recetas"] });
     },
-    onError: (error, __, context) => {
-      if (context?.toastId) {
-        dismissToast(context.toastId);
-      }
-      showError(`Error al actualizar receta: ${error.message}`); // Changed text
+    onError: (error, _, context) => {
+      dismissToast(context?.toastId);
+      showError(`Error al actualizar receta: ${error.message}`);
     },
   });
 };
 
-export const useDeleteReceta = () => { // Changed hook name
+export const useDeleteReceta = () => {
   const queryClient = useQueryClient();
-  return useMutation<void, Error, string, { toastId: string }>({
-    mutationFn: deleteReceta, // Changed function name
+  return useMutation<void, Error, string>({
+    mutationFn: deleteReceta,
     onMutate: () => {
-      const toastId: string = showLoading("Eliminando receta..."); // Changed text
-      return { toastId };
+      return { toastId: showLoading("Eliminando receta...") };
     },
-    onSuccess: (_, __, context) => {
-      dismissToast(context.toastId);
-      queryClient.invalidateQueries({ queryKey: ["recetas"] }); // Changed query key
-      showSuccess("Receta eliminada exitosamente."); // Changed text
+    onSuccess: () => {
+      dismissToast();
+      showSuccess("Receta eliminada exitosamente.");
+      queryClient.invalidateQueries({ queryKey: ["recetas"] });
     },
-    onError: (error, __, context) => {
-      if (context?.toastId) {
-        dismissToast(context.toastId);
-      }
-      showError(`Error al eliminar receta: ${error.message}`); // Changed text
+    onError: (error, _, context) => {
+      dismissToast(context?.toastId);
+      showError(`Error al eliminar receta: ${error.message}`);
     },
   });
 };
