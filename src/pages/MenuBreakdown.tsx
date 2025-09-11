@@ -12,7 +12,7 @@ import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { DateRange } from "react-day-picker";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
-import { useMenus } from "@/hooks/useMenus";
+import { useMenusList } from "@/hooks/useMenus"; // Updated import
 import { DailyMenuBreakdown, DishCategoryBreakdown, DishDetail, MealServiceBreakdown, Menu } from "@/types"; // NEW: Import Menu and new breakdown types
 
 const MenuBreakdown: React.FC = () => {
@@ -25,7 +25,7 @@ const MenuBreakdown: React.FC = () => {
   const formattedStartDate = dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : undefined;
   const formattedEndDate = dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined;
 
-  const { data: menus, isLoading, isError, error } = useMenus(formattedStartDate, formattedEndDate);
+  const { data: menus, isLoading, isError, error } = useMenusList(formattedStartDate, formattedEndDate); // Updated hook
 
   const handlePeriodChange = (period: 'daily' | 'weekly' | 'monthly' | 'custom') => {
     setPeriodType(period);
@@ -65,6 +65,8 @@ const MenuBreakdown: React.FC = () => {
     menus.forEach((menu: Menu) => {
       const dateKey = menu.date;
 
+      if (!dateKey) return; // Skip menus without a date
+
       if (!breakdownMap.has(dateKey)) {
         breakdownMap.set(dateKey, {
           date: dateKey,
@@ -101,8 +103,8 @@ const MenuBreakdown: React.FC = () => {
         }
 
         dishCategoryEntry!.dishes.push({
-          platoId: menuPlato.plato.id,
-          platoNombre: menuPlato.plato.nombre,
+          recetaId: menuPlato.receta.id, // Corrected property access
+          recetaNombre: menuPlato.receta.nombre, // Corrected property access
           quantityNeeded: menuPlato.quantity_needed,
         });
       });
@@ -119,7 +121,7 @@ const MenuBreakdown: React.FC = () => {
       daily.mealServicesBreakdown.forEach(service => {
         service.categories.sort((a, b) => a.categoryName.localeCompare(b.categoryName));
         service.categories.forEach(category => {
-          category.dishes.sort((a, b) => a.platoNombre.localeCompare(b.platoNombre));
+          category.dishes.sort((a, b) => a.recetaNombre.localeCompare(b.recetaNombre)); // Corrected property access
         });
       });
     });
@@ -217,18 +219,18 @@ const MenuBreakdown: React.FC = () => {
       </div>
 
       <div className="flex-grow">
-        {dateRange.from && dateRange.to && aggregatedMenuBreakdown.length > 0 ? ( // NEW: Check aggregatedMenuBreakdown
+        {dateRange.from && dateRange.to && aggregatedMenuBreakdown.length > 0 ? (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">
             <h2 className="text-2xl font-bold mb-4">Menús para el período: {displayStartDate} - {displayEndDate}</h2>
             {/* Placeholder for Menu Breakdown List - will be implemented in Phase 3 */}
             <p className="text-xl">Aquí se mostrará el desglose de menús.</p>
             <pre className="mt-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-md text-left overflow-auto max-h-96">
-              <code>{JSON.stringify(aggregatedMenuBreakdown, null, 2)}</code> {/* NEW: Display aggregated data */}
+              <code>{JSON.stringify(aggregatedMenuBreakdown, null, 2)}</code>
             </pre>
           </div>
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">
-            <UtensilsCrossed className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" /> {/* NEW: Icon for no menus */}
+            <UtensilsCrossed className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
             <p className="text-xl mb-4">No hay menús planificados para el período seleccionado.</p>
             <p className="text-md">Ajusta el rango de fechas o planifica nuevos menús.</p>
           </div>

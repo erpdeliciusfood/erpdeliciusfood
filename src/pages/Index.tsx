@@ -8,12 +8,12 @@ import { Link } from "react-router-dom";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { useInsumos } from "@/hooks/useInsumos";
 import { useRecetas } from "@/hooks/useRecetas";
-import { useMenus } from "@/hooks/useMenus";
+import { useMenusList } from "@/hooks/useMenus"; // Updated import
 import { useServiceReports } from "@/hooks/useServiceReports";
 import { usePurchaseRecords } from "@/hooks/usePurchaseRecords";
 import { useUrgentPurchaseRequests } from "@/hooks/useUrgentPurchaseRequests";
-import LowStockAlerts from "@/components/insumos/LowStockAlerts"; // NEW: Import LowStockAlerts
-import UrgentPurchaseAlert from "@/components/purchase-planning/UrgentPurchaseAlert"; // NEW: Import UrgentPurchaseAlert
+import LowStockAlerts from "@/components/insumos/LowStockAlerts";
+import UrgentPurchaseAlert from "@/components/purchase-planning/UrgentPurchaseAlert";
 
 const Index: React.FC = () => {
   const { session, profile } = useSession();
@@ -22,9 +22,9 @@ const Index: React.FC = () => {
   const userName = profile?.first_name || user?.email || "Usuario";
   const userRole = session?.user?.user_metadata?.role;
 
-  const { data: insumoData } = useInsumos(undefined, undefined, 1, 9999); // Fetch all insumos for counts
+  const { data: insumoData } = useInsumos(undefined, undefined, 1, 9999);
   const { data: recetas } = useRecetas();
-  const { data: menus } = useMenus();
+  const { data: menus } = useMenusList(); // Updated hook
   const { data: serviceReports } = useServiceReports();
   const { data: purchaseRecords } = usePurchaseRecords();
   const { data: urgentPurchaseRequests } = useUrgentPurchaseRequests();
