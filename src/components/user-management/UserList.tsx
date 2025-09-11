@@ -1,5 +1,17 @@
 import React from "react";
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { Button } from "@/components/ui/button";
+import {
   Table,
   TableBody,
   TableCell,
@@ -7,7 +19,7 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Users } from "lucide-react";
+import { Users, Trash2 } from "lucide-react";
 import { Profile } from "@/types";
 import {
   Select,
@@ -16,15 +28,18 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useUpdateProfile } from "@/hooks/useProfile";
+import { useUpdateProfile, useDeleteUser } from "@/hooks/useProfile";
 import { showSuccess, showError } from "@/utils/toast";
+import { useSession } from "@/contexts/SessionContext";
 
 interface UserListProps {
   users: Profile[];
 }
 
 const UserList: React.FC<UserListProps> = ({ users }) => {
+  const { user: currentUser } = useSession();
   const updateProfileMutation = useUpdateProfile();
+  const deleteUserMutation = useDeleteUser();
 
   const handleRoleChange = async (userId: string, newRole: 'user' | 'admin') => {
     try {
@@ -45,6 +60,10 @@ const UserList: React.FC<UserListProps> = ({ users }) => {
     } catch (error: any) {
       showError(`Error al actualizar el rol: ${error.message}`);
     }
+  };
+
+  const handleDeleteUser = (userId: string) => {
+    deleteUserMutation.mutate(userId);
   };
 
   if (users.length === 0) {
@@ -92,7 +111,32 @@ const UserList: React.FC<UserListProps> = ({ users }) => {
                 </Select>
               </TableCell>
               <TableCell className="flex justify-center space-x-2 py-3 px-6 min-w-[100px]">
-                {/* Add any other user management actions here */}
+                {currentUser?.id !== userProfile.id && (
+                  <AlertDialog>
+                    <AlertDialogTrigger asChild>
+                      <Button variant="destructive" size="icon" disabled={deleteUserMutation.isPending}>
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent>
+                      <AlertDialogHeader>
+                        <AlertDialogTitle>¿Estás absolutamente seguro?</AlertDialogTitle>
+                        <AlertDialogDescription>
+                          Esta acción no se puede deshacer. Esto eliminará permanentemente al usuario y sus datos de nuestros servidores.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter>
+                        <AlertDialogCancel>Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeleteUser(userProfile.id)}
+                          className="bg-destructive hover:bg-destructive/90"
+                        >
+                          Sí, eliminar usuario
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
+                )}
               </TableCell>
             </TableRow>
           ))}
