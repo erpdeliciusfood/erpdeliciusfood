@@ -15,7 +15,7 @@ import {
   Package,
   Warehouse,
   AlertCircle,
-  Menu as MenuIcon, // Renamed to avoid conflict with Menu component
+  Menu as MenuIcon,
   Home,
   ArrowLeft,
   ReceiptText,
@@ -31,6 +31,9 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
+import NavLinkButton from "./NavLinkButton";
+import MobileNavLinkButton from "./MobileNavLinkButton";
+// import { cn } from '@/lib/utils'; // Eliminada la importación no utilizada
 
 const Header: React.FC = () => {
   const { session } = useSession();
@@ -71,12 +74,11 @@ const Header: React.FC = () => {
   }
 
   return (
-    <header className="bg-primary dark:bg-primary-foreground text-primary-foreground dark:text-primary p-4 shadow-md">
+    <header className="bg-primary dark:bg-primary-foreground text-primary-foreground dark:text-primary p-4 shadow-md border-b border-primary-foreground/10 dark:border-primary/10">
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo and Home Button */}
         <Link to="/" className="flex items-center group">
           <img src="/logo-erp.png" alt="App Logo" className="h-12 w-auto mr-3 transition-transform duration-200 group-hover:scale-105" />
-          {/* <span className="text-2xl font-bold">ERP App</span> */}
         </Link>
 
         {/* Desktop Navigation */}
@@ -92,30 +94,12 @@ const Header: React.FC = () => {
             </Button>
           )}
           {navLinks.map((link) => (
-            <Link key={link.to} to={link.to}>
-              <Button
-                variant="ghost"
-                className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20 px-4 py-2 text-base h-10"
-              >
-                <link.icon className="mr-2 h-5 w-5" />
-                {link.label}
-              </Button>
-            </Link>
+            <NavLinkButton key={link.to} to={link.to} icon={link.icon} label={link.label} />
           ))}
           {userRole === 'admin' && (
-            <Link to="/user-management">
-              <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20 px-4 py-2 text-base h-10">
-                <Users className="mr-2 h-5 w-5" />
-                Usuarios
-              </Button>
-            </Link>
+            <NavLinkButton to="/user-management" icon={Users} label="Usuarios" />
           )}
-          <Link to="/profile">
-            <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20 px-4 py-2 text-base h-10">
-              <UserCircle2 className="mr-2 h-5 w-5" />
-              Perfil
-            </Button>
-          </Link>
+          <NavLinkButton to="/profile" icon={UserCircle2} label="Perfil" />
           <Button
             variant="ghost"
             onClick={handleSignOut}
@@ -149,53 +133,24 @@ const Header: React.FC = () => {
                   <Button
                     variant="ghost"
                     onClick={() => { handleGoBack(); setIsSheetOpen(false); }}
-                    className="justify-start text-lg px-4 py-3 h-auto text-sidebar-foreground dark:text-sidebar-primary-foreground hover:bg-sidebar-accent dark:hover:bg-sidebar-accent-foreground"
+                    className="justify-start text-lg px-4 py-3 h-auto w-full text-sidebar-foreground dark:text-sidebar-primary-foreground hover:bg-sidebar-accent dark:hover:bg-sidebar-accent-foreground"
                   >
                     <ArrowLeft className="mr-3 h-6 w-6" />
                     Volver
                   </Button>
                 )}
-                <Link to="/" onClick={() => setIsSheetOpen(false)}>
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-lg px-4 py-3 h-auto text-sidebar-foreground dark:text-sidebar-primary-foreground hover:bg-sidebar-accent dark:hover:bg-sidebar-accent-foreground"
-                  >
-                    <Home className="mr-3 h-6 w-6" />
-                    Inicio
-                  </Button>
-                </Link>
+                <MobileNavLinkButton to="/" icon={Home} label="Inicio" onClick={() => setIsSheetOpen(false)} />
                 {navLinks.map((link) => (
-                  <Link key={link.to} to={link.to} onClick={() => setIsSheetOpen(false)}>
-                    <Button
-                      variant="ghost"
-                      className="justify-start text-lg px-4 py-3 h-auto text-sidebar-foreground dark:text-sidebar-primary-foreground hover:bg-sidebar-accent dark:hover:bg-sidebar-accent-foreground"
-                    >
-                      <link.icon className="mr-3 h-6 w-6" />
-                      {link.label}
-                    </Button>
-                  </Link>
+                  <MobileNavLinkButton key={link.to} to={link.to} icon={link.icon} label={link.label} onClick={() => setIsSheetOpen(false)} />
                 ))}
                 {userRole === 'admin' && (
-                  <Link to="/user-management" onClick={() => setIsSheetOpen(false)}>
-                    <Button variant="ghost" className="justify-start text-lg px-4 py-3 h-auto text-sidebar-foreground dark:text-sidebar-primary-foreground hover:bg-sidebar-accent dark:hover:bg-sidebar-accent-foreground">
-                      <Users className="mr-3 h-6 w-6" />
-                      Usuarios
-                    </Button>
-                  </Link>
+                  <MobileNavLinkButton to="/user-management" icon={Users} label="Usuarios" onClick={() => setIsSheetOpen(false)} />
                 )}
-                <Link to="/profile" onClick={() => setIsSheetOpen(false)}>
-                  <Button
-                    variant="ghost"
-                    className="justify-start text-lg px-4 py-3 h-auto text-sidebar-foreground dark:text-sidebar-primary-foreground hover:bg-sidebar-accent dark:hover:bg-sidebar-accent-foreground"
-                  >
-                    <UserCircle2 className="mr-3 h-6 w-6" />
-                    Perfil
-                  </Button>
-                </Link>
+                <MobileNavLinkButton to="/profile" icon={UserCircle2} label="Perfil" onClick={() => setIsSheetOpen(false)} />
                 <Button
                   variant="ghost"
                   onClick={() => { handleSignOut(); setIsSheetOpen(false); }}
-                  className="justify-start text-lg px-4 py-3 h-auto text-red-500 dark:text-red-400 hover:bg-red-500/20 dark:hover:bg-red-500/20"
+                  className="justify-start text-lg px-4 py-3 h-auto w-full text-red-500 dark:text-red-400 hover:bg-red-500/20 dark:hover:bg-red-500/20"
                 >
                   <LogOut className="mr-3 h-6 w-6" />
                   Cerrar Sesión
