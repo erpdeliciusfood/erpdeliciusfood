@@ -28,11 +28,7 @@ const queryClient = new QueryClient();
 
 // Componente para proteger rutas
 const ProtectedRoute: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const { session, isLoading } = useSession();
-
-  if (isLoading) {
-    return null; 
-  }
+  const { session } = useSession();
 
   if (!session) {
     return <Navigate to="/login" replace />;
