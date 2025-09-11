@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, AlertTriangle, Utensils, RotateCcw } from "lucide-react"; // NEW: Import RotateCcw icon
+import { Loader2, AlertTriangle, Utensils, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { AggregatedInsumoNeed } from "@/types";
@@ -21,6 +21,7 @@ import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast
 import { useQueryClient } from "@tanstack/react-query";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
+import { cn } from "@/lib/utils"; // Import cn for conditional classnames
 
 const formSchema = z.object({
   deductor_name: z.string().min(1, { message: "El nombre de quien realiza la acción es requerido." }).max(100, { message: "El nombre no debe exceder los 100 caracteres." }),
@@ -94,6 +95,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
   });
 
   const isDeductingStock = addStockMovementMutation.isPending;
+  const insumos_to_deduct = form.watch("insumos_to_deduct"); // Watch for changes in the array
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const { deductor_name, insumos_to_deduct } = values;
@@ -183,45 +185,69 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
                 <FormField
                   control={form.control}
                   name={`insumos_to_deduct.${index}.quantity_to_deduct`}
-                  render={({ field: quantityField }) => (
-                    <FormItem className="w-full md:w-1/3">
-                      <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
-                        Cantidad a Deducir ({item.purchase_unit})
-                      </FormLabel>
-                      <div className="flex items-center gap-2"> {/* NEW: Wrapper for input and reset button */}
-                        <FormControl>
-                          <Input
-                            type="number"
-                            step="0.01"
-                            placeholder={`Sugerido: ${item.suggested_quantity.toFixed(2)} ${item.purchase_unit}`}
-                            {...quantityField}
-                            onChange={(e) => quantityField.onChange(parseFloat(e.target.value))}
-                            className="h-10 text-base"
+                  render={({ field: quantityField }) => {
+                    const isAdjusted = quantityField.value !== item.suggested_quantity;
+                    return (
+                      <FormItem className="w-full md:w-1/3">
+                        <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
+                          Cantidad a Deducir ({item.purchase_unit})
+                        </FormLabel>
+                        <div className="flex items-center gap-2">
+                          <FormControl>
+                            <Input
+                              type="number"
+                              step="0.01"
+                              placeholder={`Sugerido: ${item.suggested_quantity.toFixed(2)} ${item.purchase_unit}`}
+                              {...quantityField}
+                              onChange={(e) => quantityField.onChange(parseFloat(e.target.value))}
+                              className={cn(
+                                "h-10 text-base",
+                                isAdjusted && "border-blue-500 dark:border-blue-400 ring-blue-500 dark:ring-blue-400"
+                              )}
+                              disabled={isDeductingStock}
+                            />
+                          </FormControl>
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="icon"
+                            onClick={() => form.setValue(`insumos_to_deduct.${index}.quantity_to_deduct`, item.suggested_quantity, { shouldValidate: true })}
+                            className="h-10 w-10 flex-shrink-0"
                             disabled={isDeductingStock}
-                          />
-                        </FormControl>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          onClick={() => form.setValue(`insumos_to_deduct.${index}.quantity_to_deduct`, item.suggested_quantity, { shouldValidate: true })}
-                          className="h-10 w-10 flex-shrink-0"
-                          disabled={isDeductingStock}
-                          title="Restablecer a cantidad sugerida"
-                        >
-                          <RotateCcw className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                        </Button>
-                      </div>
-                      <FormDescription className="text-sm text-gray-600 dark:text-gray-400">
-                        Cantidad sugerida: {item.suggested_quantity.toFixed(2)} {item.purchase_unit}. Puedes ajustar este valor.
-                      </FormDescription>
-                      <FormMessage />
-                    </FormItem>
-                  )}
+                            title="Restablecer a cantidad sugerida"
+                          >
+                            <RotateCcw className="h-5 w-5 text-gray-600 dark:text-gray-300" />
+                          </Button>
+                        </div>
+                        <FormDescription className="text-sm text-gray-600 dark:text-gray-400">
+                          Cantidad sugerida: {item.suggested_quantity.toFixed(2)} {item.purchase_unit}. Puedes ajustar este valor.
+                        </FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    );
+                  }}
                 />
               </div>
             ))}
           </div>
+
+          {insumos_to_deduct.filter(item => item.quantity_to_deduct > 0).length > 0 && (
+            <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
+              <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Resumen de Deducción:</h4>
+              <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
+                {insumos_to_deduct.filter(item => item.quantity_to_deduct > 0).map(item => (
+                  <li key={item.insumo_id}>
+                    {item.insumo_nombre}: {item.quantity_to_deduct.toFixed(2)} {item.purchase_unit}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
+          {insumos_to_deduct.filter(item => item.quantity_to_deduct > 0).length === 0 && (
+            <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400">
+              <p>No hay insumos con cantidad a deducir mayor a cero.</p>
+            </div>
+          )}
 
           {hasErrors && (
             <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg text-red-700 dark:text-red-300 flex items-center">
