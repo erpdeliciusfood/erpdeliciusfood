@@ -68,24 +68,28 @@ const StockDashboard: React.FC = () => {
             <Package className="h-8 w-8 text-primary dark:text-primary-foreground mb-2" />
             <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Total Insumos</p>
             <p className="text-3xl font-bold text-gray-900 dark:text-gray-100">{totalInsumos}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Número total de insumos únicos registrados en tu inventario.</p>
           </div>
 
           <div className="flex flex-col items-center justify-center p-4 bg-orange-50 dark:bg-orange-900/20 rounded-lg shadow-sm">
             <AlertTriangle className="h-8 w-8 text-orange-600 mb-2" />
             <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Stock Bajo</p>
             <p className="text-3xl font-bold text-orange-700 dark:text-orange-400">{lowStockInsumos}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Cantidad de insumos cuyo stock actual está por debajo de su nivel mínimo establecido.</p>
           </div>
 
           <div className="flex flex-col items-center justify-center p-4 bg-purple-50 dark:bg-purple-900/20 rounded-lg shadow-sm">
             <Warehouse className="h-8 w-8 text-purple-600 mb-2" />
             <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Pendiente Recepción</p>
             <p className="text-3xl font-bold text-purple-700 dark:text-purple-400">{pendingReceptionInsumos}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Número de insumos que han sido recibidos por la empresa, pero aún no han ingresado físicamente al almacén.</p>
           </div>
 
           <div className="flex flex-col items-center justify-center p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg shadow-sm">
             <Truck className="h-8 w-8 text-blue-600 mb-2" />
             <p className="text-lg font-medium text-gray-700 dark:text-gray-300">Pendiente Entrega</p>
             <p className="text-3xl font-bold text-blue-700 dark:text-blue-400">{pendingDeliveryInsumos}</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 text-center mt-1">Número de insumos que han sido ordenados a proveedores, pero aún no han sido recibidos por la empresa.</p>
           </div>
         </div>
         {totalInsumos === 0 && (
