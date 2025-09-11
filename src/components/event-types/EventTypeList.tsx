@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, CalendarDays } from "lucide-react";
+import { Edit, Trash2, CalendarDays, PlusCircle } from "lucide-react"; // Added PlusCircle icon
 import { EventType } from "@/types";
 import { useDeleteEventType } from "@/hooks/useEventTypes";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
@@ -16,9 +16,10 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 interface EventTypeListProps {
   eventTypes: EventType[];
   onEdit: (eventType: EventType) => void;
+  onAddClick: () => void; // NEW: Prop to handle adding a new event type
 }
 
-const EventTypeList: React.FC<EventTypeListProps> = ({ eventTypes, onEdit }) => {
+const EventTypeList: React.FC<EventTypeListProps> = ({ eventTypes, onEdit, onAddClick }) => { // NEW: Destructure onAddClick
   const deleteMutation = useDeleteEventType();
 
   const handleDelete = (id: string) => {
@@ -29,7 +30,14 @@ const EventTypeList: React.FC<EventTypeListProps> = ({ eventTypes, onEdit }) => 
     return (
       <div className="text-center py-10 text-gray-600 dark:text-gray-400">
         <CalendarDays className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
-        <p className="text-xl">No hay tipos de evento registrados.</p>
+        <p className="text-xl mb-4">No hay tipos de evento registrados. ¡Añade el primero!</p> {/* Adjusted text */}
+        <Button
+          onClick={onAddClick} // NEW: Button to add event type
+          className="px-6 py-3 text-lg bg-secondary hover:bg-secondary-foreground text-secondary-foreground hover:text-secondary transition-colors duration-200 ease-in-out"
+        >
+          <PlusCircle className="mr-2 h-5 w-5" />
+          Añadir Tipo de Evento Ahora
+        </Button>
       </div>
     );
   }
