@@ -123,9 +123,9 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
           quantity_received: insumo.purchase_suggestion_rounded, // NEW: Set quantity_received to full amount for batch
           unit_cost_at_purchase: insumo.costo_unitario,
           total_amount: insumo.estimated_purchase_cost,
-          supplier_name_at_purchase: insumo.supplier_name || null,
-          supplier_phone_at_purchase: insumo.supplier_phone || null,
-          supplier_address_at_purchase: insumo.supplier_address || null,
+          supplier_name_at_purchase: insumo.proveedor_preferido?.name || null,
+          supplier_phone_at_purchase: insumo.proveedor_preferido?.phone || null,
+          supplier_address_at_purchase: insumo.proveedor_preferido?.address || null,
           from_registered_supplier: true,
           notes: `Compra sugerida por análisis para el período.`,
           status: 'received_by_warehouse', // NEW: Set status to received by warehouse for batch
@@ -233,9 +233,9 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
                       prefilledInsumoId={selectedInsumoForIndividualRegistration.id}
                       prefilledQuantity={selectedInsumoForIndividualRegistration.purchase_suggestion_rounded}
                       prefilledUnitCost={selectedInsumoForIndividualRegistration.costo_unitario}
-                      prefilledSupplierName={selectedInsumoForIndividualRegistration.supplier_name || ""}
-                      prefilledSupplierPhone={selectedInsumoForIndividualRegistration.supplier_phone || ""}
-                      prefilledSupplierAddress={selectedInsumoForIndividualRegistration.supplier_address || ""}
+                      prefilledSupplierName={selectedInsumoForIndividualRegistration.proveedor_preferido?.name || ""}
+                      prefilledSupplierPhone={selectedInsumoForIndividualRegistration.proveedor_preferido?.phone || ""}
+                      prefilledSupplierAddress={selectedInsumoForIndividualRegistration.proveedor_preferido?.address || ""}
                       onSuccess={handleIndividualRegisterFormClose}
                       onCancel={handleIndividualRegisterFormClose}
                     />
@@ -305,13 +305,13 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
                 <span className="font-semibold">Costo Estimado:</span> S/ {insumo.estimated_purchase_cost.toFixed(2)}
               </p>
               <p className="mb-1">
-                <span className="font-semibold">Proveedor Registrado:</span> {insumo.supplier_name || "N/A"}
+                <span className="font-semibold">Proveedor Registrado:</span> {insumo.proveedor_preferido?.name || "N/A"}
               </p>
               <p className="mb-1">
-                <span className="font-semibold">Teléfono Proveedor:</span> {insumo.supplier_phone || "N/A"}
+                <span className="font-semibold">Teléfono Proveedor:</span> {insumo.proveedor_preferido?.phone || "N/A"}
               </p>
               <p className="mb-1">
-                <span className="font-semibold">Dirección Proveedor:</span> {insumo.supplier_address || "N/A"}
+                <span className="font-semibold">Dirección Proveedor:</span> {insumo.proveedor_preferido?.address || "N/A"}
               </p>
             </CardContent>
           </Card>

@@ -5,18 +5,16 @@ import { Insumo, InsumoFormValues, InsumoSupplierHistory, InsumoPriceHistory } f
 const mapDbInsumoToInsumo = (dbInsumo: any): Insumo => ({
   id: dbInsumo.id,
   nombre: dbInsumo.nombre,
-  base_unit: dbInsumo.unidad_medida, // Map DB field
+  base_unit: dbInsumo.base_unit, // Map DB field
   costo_unitario: dbInsumo.costo_unitario,
-  stock_quantity: dbInsumo.stock_actual, // Map DB field
-  min_stock_level: dbInsumo.stock_minimo, // Map DB field
-  category: dbInsumo.categoria, // Map DB field
+  stock_quantity: dbInsumo.stock_quantity, // Map DB field
+  min_stock_level: dbInsumo.min_stock_level, // Map DB field
+  category: dbInsumo.category, // Map DB field
   proveedor_preferido_id: dbInsumo.proveedor_preferido_id,
   proveedor_preferido: dbInsumo.proveedores, // Assuming 'proveedores' is the joined table
-  purchase_unit: dbInsumo.unidad_medida, // Assuming purchase_unit is same as base_unit for now
+  purchase_unit: dbInsumo.purchase_unit, // Assuming purchase_unit is same as base_unit for now
   conversion_factor: dbInsumo.conversion_factor || 1, // Default to 1 if not set
-  supplier_name: dbInsumo.proveedores?.name || null,
-  supplier_phone: dbInsumo.proveedores?.phone || null,
-  supplier_address: dbInsumo.proveedores?.address || null,
+  // supplier_name, supplier_phone, supplier_address are now derived from proveedor_preferido
   pending_reception_quantity: dbInsumo.pending_reception_quantity || 0,
   pending_delivery_quantity: dbInsumo.pending_delivery_quantity || 0,
   last_physical_count_quantity: dbInsumo.last_physical_count_quantity || null,
@@ -27,13 +25,13 @@ const mapDbInsumoToInsumo = (dbInsumo: any): Insumo => ({
 export const getInsumos = async (searchTerm?: string, category?: string, page: number = 1, limit: number = 10): Promise<{ data: Insumo[], count: number }> => {
   let query = supabase
     .from("insumos")
-    .select("*, proveedores(*)", { count: 'exact' });
+    .select("*, proveedores(*)", { count: 'exact' }); // Now 'proveedores' is a real relationship
 
   if (searchTerm) {
     query = query.ilike("nombre", `%${searchTerm}%`);
   }
   if (category) {
-    query = query.eq("categoria", category);
+    query = query.eq("category", category); // Use 'category' as per new schema
   }
 
   const startIndex = (page - 1) * limit;
@@ -47,7 +45,7 @@ export const getInsumos = async (searchTerm?: string, category?: string, page: n
 export const getInsumoById = async (id: string): Promise<Insumo> => {
   const { data, error } = await supabase
     .from("insumos")
-    .select("*, proveedores(*)")
+    .select("*, proveedores(*)") // Now 'proveedores' is a real relationship
     .eq("id", id)
     .single();
   if (error) throw error;
@@ -59,18 +57,18 @@ export const createInsumo = async (insumo: InsumoFormValues): Promise<Insumo> =>
     .from("insumos")
     .insert({
       nombre: insumo.nombre,
-      unidad_medida: insumo.base_unit, // Map to DB field
+      base_unit: insumo.base_unit, // Map to DB field
       costo_unitario: insumo.costo_unitario,
-      stock_actual: insumo.stock_quantity, // Map to DB field
-      stock_minimo: insumo.min_stock_level, // Map to DB field
-      categoria: insumo.category, // Map to DB field
+      stock_quantity: insumo.stock_quantity, // Map to DB field
+      min_stock_level: insumo.min_stock_level, // Map to DB field
+      category: insumo.category, // Map to DB field
       conversion_factor: insumo.conversion_factor,
+      proveedor_preferido_id: insumo.proveedor_preferido_id, // Use the new foreign key
       pending_reception_quantity: insumo.pending_reception_quantity || 0,
       pending_delivery_quantity: insumo.pending_delivery_quantity || 0,
       last_physical_count_quantity: insumo.last_physical_count_quantity,
       last_physical_count_date: insumo.last_physical_count_date,
       discrepancy_quantity: insumo.discrepancy_quantity,
-      // proveedor_preferido_id will be handled separately if needed
     })
     .select("*, proveedores(*)")
     .single();
@@ -84,18 +82,18 @@ export const updateInsumo = async (insumo: InsumoFormValues): Promise<Insumo> =>
     .from("insumos")
     .update({
       nombre: insumo.nombre,
-      unidad_medida: insumo.base_unit, // Map to DB field
+      base_unit: insumo.base_unit, // Map to DB field
       costo_unitario: insumo.costo_unitario,
-      stock_actual: insumo.stock_quantity, // Map to DB field
-      stock_minimo: insumo.min_stock_level, // Map to DB field
-      categoria: insumo.category, // Map to DB field
+      stock_quantity: insumo.stock_quantity, // Map to DB field
+      min_stock_level: insumo.min_stock_level, // Map to DB field
+      category: insumo.category, // Map to DB field
       conversion_factor: insumo.conversion_factor,
+      proveedor_preferido_id: insumo.proveedor_preferido_id, // Use the new foreign key
       pending_reception_quantity: insumo.pending_reception_quantity,
       pending_delivery_quantity: insumo.pending_delivery_quantity,
       last_physical_count_quantity: insumo.last_physical_count_quantity,
       last_physical_count_date: insumo.last_physical_count_date,
       discrepancy_quantity: insumo.discrepancy_quantity,
-      // proveedor_preferido_id will be handled separately if needed
     })
     .eq("id", insumo.id)
     .select("*, proveedores(*)")
@@ -115,14 +113,14 @@ export const createMultipleInsumos = async (insumos: InsumoFormValues[]): Promis
 
   const insumosToInsert = insumos.map(insumo => ({
     nombre: insumo.nombre,
-    unidad_medida: insumo.base_unit,
+    base_unit: insumo.base_unit,
     costo_unitario: insumo.costo_unitario,
-    stock_actual: insumo.stock_quantity,
-    stock_minimo: insumo.min_stock_level,
-    categoria: insumo.category,
+    stock_quantity: insumo.stock_quantity,
+    min_stock_level: insumo.min_stock_level,
+    category: insumo.category,
     conversion_factor: insumo.conversion_factor,
+    proveedor_preferido_id: insumo.proveedor_preferido_id, // Use the new foreign key
     user_id: user.id,
-    // Assuming supplier details are not handled in batch import for simplicity
   }));
 
   const { error, count } = await supabase

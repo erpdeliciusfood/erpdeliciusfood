@@ -57,9 +57,9 @@ const FulfillUrgentRequestDialog: React.FC<FulfillUrgentRequestDialogProps> = ({
         prefilledInsumoId={urgentRequest.insumo_id}
         prefilledQuantity={urgentRequest.quantity_requested}
         prefilledUnitCost={urgentRequest.insumo?.costo_unitario || 0}
-        prefilledSupplierName={urgentRequest.insumo?.supplier_name || ""}
-        prefilledSupplierPhone={urgentRequest.insumo?.supplier_phone || ""}
-        prefilledSupplierAddress={urgentRequest.insumo?.supplier_address || ""}
+        prefilledSupplierName={urgentRequest.insumo?.proveedor_preferido?.name || ""}
+        prefilledSupplierPhone={urgentRequest.insumo?.proveedor_preferido?.phone || ""}
+        prefilledSupplierAddress={urgentRequest.insumo?.proveedor_preferido?.address || ""}
         onSuccess={handlePurchaseRecordSuccess}
         onCancel={onClose}
       />

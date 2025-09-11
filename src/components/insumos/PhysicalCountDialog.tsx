@@ -69,9 +69,10 @@ const PhysicalCountDialog: React.FC<PhysicalCountDialogProps> = ({ insumo, onClo
         conversion_factor: insumo.conversion_factor,
         min_stock_level: insumo.min_stock_level ?? 0,
         category: insumo.category,
-        supplier_name: insumo.supplier_name,
-        supplier_phone: insumo.supplier_phone,
-        supplier_address: insumo.supplier_address,
+        // Las propiedades de proveedor ya no se actualizan directamente en Insumo
+        // supplier_name: insumo.supplier_name,
+        // supplier_phone: insumo.supplier_phone,
+        // supplier_address: insumo.supplier_address,
         pending_reception_quantity: insumo.pending_reception_quantity,
         pending_delivery_quantity: insumo.pending_delivery_quantity,
         last_physical_count_quantity: values.last_physical_count_quantity,

@@ -29,16 +29,14 @@ export interface Insumo {
   stock_quantity: number; // Standardized from stock_actual
   min_stock_level: number; // Standardized from stock_minimo
   category: string; // Standardized from categoria
-  proveedor_preferido_id?: string;
-  proveedor_preferido?: Supplier;
+  proveedor_preferido_id?: string | null; // Now a foreign key
+  proveedor_preferido?: Supplier | null; // Joined supplier object
 
   // Additional fields used in UI components, assuming they are either direct DB fields
   // or derived/joined fields that are part of the Insumo object for UI convenience.
   purchase_unit: string; // Often same as base_unit, but sometimes different for purchase
   conversion_factor: number;
-  supplier_name?: string | null; // Derived from proveedor_preferido.name
-  supplier_phone?: string | null; // Derived from proveedor_preferido.phone
-  supplier_address?: string | null; // Derived from proveedor_preferido.address
+  // supplier_name, supplier_phone, supplier_address are now derived from proveedor_preferido
   pending_reception_quantity: number;
   pending_delivery_quantity: number;
   last_physical_count_quantity?: number | null;
@@ -57,9 +55,7 @@ export interface InsumoFormValues {
   category: string;
   purchase_unit: string;
   conversion_factor: number;
-  supplier_name?: string | null;
-  supplier_phone?: string | null;
-  supplier_address?: string | null;
+  proveedor_preferido_id?: string | null; // Now a foreign key
   pending_reception_quantity?: number;
   pending_delivery_quantity?: number;
   last_physical_count_quantity?: number | null;
@@ -310,7 +306,6 @@ export interface UrgentPurchaseRequestFormValues {
   priority: 'high' | 'low' | 'urgent' | 'medium';
   status: 'pending' | 'approved' | 'rejected' | 'fulfilled' | 'purchased'; // 'purchased' is an internal status, 'fulfilled' is for UI
   rejection_reason?: string | null;
-  fulfilled_purchase_record_id?: string | null;
   source_module?: string; // Added
 }
 
@@ -342,7 +337,7 @@ export interface DailyMenuBreakdown {
 export interface InsumoSupplierHistory {
   id: string;
   insumo_id: string;
-  supplier_id: string;
+  supplier_id: string; // This field might become redundant if we only track changes to proveedor_preferido_id
   supplier_name: string;
   change_date: string; // Corrected from changed_at
   notes?: string;
@@ -372,9 +367,7 @@ export interface InsumoNeeded {
   category: string;
   purchase_unit: string;
   conversion_factor: number;
-  supplier_name?: string | null;
-  supplier_phone?: string | null;
-  supplier_address?: string | null;
+  proveedor_preferido?: Supplier | null; // ADDED
   quantity_needed_for_period_raw: number;
   quantity_needed_for_period_rounded: number;
   quantity_needed_for_period_rounded_up: boolean; // Added

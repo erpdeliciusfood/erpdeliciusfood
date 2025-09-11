@@ -122,7 +122,7 @@ const InsumoCardGrid: React.FC<InsumoCardGridProps> = ({ insumos, onEdit }) => {
               </p>
             )}
             <p className="text-lg">
-              <span className="font-semibold">Proveedor:</span> {insumo.supplier_name || "N/A"}
+              <span className="font-semibold">Proveedor:</span> {insumo.proveedor_preferido?.name || "N/A"}
             </p>
           </CardContent>
           <CardFooter className="flex justify-end space-x-2 pt-4">

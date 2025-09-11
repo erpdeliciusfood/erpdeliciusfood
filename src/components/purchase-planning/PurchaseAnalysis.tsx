@@ -267,9 +267,9 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
               prefilledInsumoId={selectedInsumoForIndividualPurchase.id}
               prefilledQuantity={selectedInsumoForIndividualPurchase.purchase_suggestion_rounded}
               prefilledUnitCost={selectedInsumoForIndividualPurchase.costo_unitario}
-              prefilledSupplierName={selectedInsumoForIndividualPurchase.supplier_name || ""}
-              prefilledSupplierPhone={selectedInsumoForIndividualPurchase.supplier_phone || ""}
-              prefilledSupplierAddress={selectedInsumoForIndividualPurchase.supplier_address || ""}
+              prefilledSupplierName={selectedInsumoForIndividualPurchase.proveedor_preferido?.name || ""}
+              prefilledSupplierPhone={selectedInsumoForIndividualPurchase.proveedor_preferido?.phone || ""}
+              prefilledSupplierAddress={selectedInsumoForIndividualPurchase.proveedor_preferido?.address || ""}
               onSuccess={handleCloseIndividualPurchaseForm}
               onCancel={handleCloseIndividualPurchaseForm}
             />
