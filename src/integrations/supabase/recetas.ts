@@ -6,12 +6,12 @@ const mapDbRecetaToReceta = (dbReceta: any): Receta => ({
   id: dbReceta.id,
   nombre: dbReceta.nombre,
   descripcion: dbReceta.descripcion,
-  category: dbReceta.categoria, // Map DB field
-  tiempo_preparacion: dbReceta.tiempo_preparacion,
-  costo_total: dbReceta.costo_total,
+  category: dbReceta.categoria, // Map DB field 'categoria' to 'category'
+  tiempo_preparacion: dbReceta.tiempo_preparacion || 0, // Map DB field, default to 0 if null
+  costo_total: dbReceta.costo_total || 0, // Map DB field 'costo_total' (was costo_produccion)
   plato_insumos: dbReceta.plato_insumos?.map((pi: any) => ({
     id: pi.id,
-    receta_id: pi.receta_id,
+    plato_id: pi.plato_id, // Map DB field 'plato_id' to 'plato_id' in interface
     insumo_id: pi.insumo_id,
     cantidad_necesaria: pi.cantidad_necesaria,
     insumo: {
@@ -32,11 +32,11 @@ const mapDbRecetaToReceta = (dbReceta: any): Receta => ({
 
 export const getRecetas = async (): Promise<Receta[]> => {
   const { data, error } = await supabase
-    .from("recetas") // Changed from platos
+    .from("platos") // Changed from "recetas" to "platos"
     .select(`
       *,
       plato_insumos (
-        *,
+        id, plato_id, insumo_id, cantidad_necesaria,
         insumos (id, nombre, base_unit, costo_unitario, stock_quantity, min_stock_level, category, conversion_factor, pending_reception_quantity, pending_delivery_quantity)
       )
     `)
@@ -47,11 +47,11 @@ export const getRecetas = async (): Promise<Receta[]> => {
 
 export const getRecetaById = async (id: string): Promise<Receta> => {
   const { data, error } = await supabase
-    .from("recetas") // Changed from platos
+    .from("platos") // Changed from "recetas" to "platos"
     .select(`
       *,
       plato_insumos (
-        *,
+        id, plato_id, insumo_id, cantidad_necesaria,
         insumos (id, nombre, base_unit, costo_unitario, stock_quantity, min_stock_level, category, conversion_factor, pending_reception_quantity, pending_delivery_quantity)
       )
     `)
@@ -64,20 +64,22 @@ export const getRecetaById = async (id: string): Promise<Receta> => {
 export const createReceta = async (receta: RecetaFormValues): Promise<Receta> => {
   const { insumos, ...recetaData } = receta;
   const { data: newReceta, error: recetaError } = await supabase
-    .from("recetas") // Changed from platos
+    .from("platos") // Changed from "recetas" to "platos"
     .insert({
       nombre: recetaData.nombre,
       descripcion: recetaData.descripcion,
-      categoria: recetaData.category, // Map to DB field
-      // tiempo_preparacion and costo_total are not passed from form
+      categoria: recetaData.category, // Map 'category' from form to DB 'categoria'
+      tiempo_preparacion: 0, // Default value, as it's not in RecetaFormValues
+      costo_total: 0, // Default value, as it's calculated, not from form
+      // user_id will be automatically set by RLS or trigger if configured
     })
     .select()
     .single();
   if (recetaError) throw recetaError;
 
   if (insumos && insumos.length > 0) {
-    const platoInsumosToInsert = insumos.map((item: { insumo_id: string; cantidad_necesaria: number; }) => ({ // Typed item
-      receta_id: newReceta.id, // Reference newReceta.id
+    const platoInsumosToInsert = insumos.map((item: { insumo_id: string; cantidad_necesaria: number; }) => ({
+      plato_id: newReceta.id, // Map 'receta_id' from interface to DB 'plato_id'
       insumo_id: item.insumo_id,
       cantidad_necesaria: item.cantidad_necesaria,
     }));
@@ -95,12 +97,12 @@ export const updateReceta = async (id: string, receta: RecetaFormValues): Promis
   if (!id) throw new Error("Receta ID is required for update.");
 
   const { data: updatedReceta, error: recetaError } = await supabase
-    .from("recetas") // Changed from platos
+    .from("platos") // Changed from "recetas" to "platos"
     .update({
       nombre: recetaData.nombre,
       descripcion: recetaData.descripcion,
-      categoria: recetaData.category, // Map to DB field
-      // tiempo_preparacion and costo_total are not passed from form
+      categoria: recetaData.category, // Map 'category' from form to DB 'categoria'
+      // tiempo_preparacion and costo_total are not updated from form, they are calculated or default
     })
     .eq("id", id)
     .select()
@@ -108,11 +110,11 @@ export const updateReceta = async (id: string, receta: RecetaFormValues): Promis
   if (recetaError) throw recetaError;
 
   // Delete existing plato_insumos and insert new ones
-  await supabase.from("plato_insumos").delete().eq("receta_id", id);
+  await supabase.from("plato_insumos").delete().eq("plato_id", id); // Changed 'receta_id' to 'plato_id'
 
   if (insumos && insumos.length > 0) {
-    const platoInsumosToInsert = insumos.map((item: { insumo_id: string; cantidad_necesaria: number; }) => ({ // Typed item
-      receta_id: updatedReceta.id, // Reference updatedReceta.id
+    const platoInsumosToInsert = insumos.map((item: { insumo_id: string; cantidad_necesaria: number; }) => ({
+      plato_id: updatedReceta.id, // Map 'receta_id' from interface to DB 'plato_id'
       insumo_id: item.insumo_id,
       cantidad_necesaria: item.cantidad_necesaria,
     }));
@@ -127,7 +129,7 @@ export const updateReceta = async (id: string, receta: RecetaFormValues): Promis
 
 export const deleteReceta = async (id: string): Promise<void> => {
   // Delete associated plato_insumos first
-  await supabase.from("plato_insumos").delete().eq("receta_id", id);
-  const { error } = await supabase.from("recetas").delete().eq("id", id); // Changed from platos
+  await supabase.from("plato_insumos").delete().eq("plato_id", id); // Changed 'receta_id' to 'plato_id'
+  const { error } = await supabase.from("platos").delete().eq("id", id); // Changed from "recetas" to "platos"
   if (error) throw error;
 };

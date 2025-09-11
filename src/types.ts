@@ -65,7 +65,7 @@ export interface InsumoFormValues {
 
 export interface PlatoInsumo {
   id: string;
-  receta_id: string; // Changed from plato_id
+  plato_id: string; // Changed from receta_id to plato_id to match DB
   insumo_id: string;
   cantidad_necesaria: number;
   insumo: Insumo; // Corrected from insumos
@@ -76,8 +76,8 @@ export interface Receta { // Renamed from Plato
   nombre: string;
   descripcion: string;
   category: string; // Standardized from categoria
-  tiempo_preparacion: number;
-  costo_total: number;
+  tiempo_preparacion: number; // This column will be added to DB
+  costo_total: number; // This column will be renamed from costo_produccion in DB
   plato_insumos: PlatoInsumo[];
 }
 
