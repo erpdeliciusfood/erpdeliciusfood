@@ -1,12 +1,18 @@
 import { supabase } from "@/integrations/supabase/client";
 import { UrgentPurchaseRequest, UrgentPurchaseRequestFormValues } from "@/types";
 
-export const getUrgentPurchaseRequests = async (): Promise<UrgentPurchaseRequest[]> => {
-  const { data, error } = await supabase
+export const getUrgentPurchaseRequests = async (status?: UrgentPurchaseRequest['status']): Promise<UrgentPurchaseRequest[]> => {
+  let query = supabase
     .from("urgent_purchase_requests")
     .select("*, insumos(id, nombre, purchase_unit)") // Fetch related insumo data
     .order("request_date", { ascending: false })
     .order("created_at", { ascending: false });
+
+  if (status) {
+    query = query.eq("status", status);
+  }
+
+  const { data, error } = await query;
 
   if (error) throw new Error(error.message);
   return data;

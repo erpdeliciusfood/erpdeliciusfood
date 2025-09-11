@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, ShoppingBag, AlertCircle, PlusCircle } from "lucide-react"; // NEW: Import PlusCircle
+import { Loader2, ShoppingBag, AlertCircle, PlusCircle } from "lucide-react";
 import { useUrgentPurchaseRequests } from "@/hooks/useUrgentPurchaseRequests";
 import UrgentPurchaseRequestList from "@/components/urgent-purchase-requests/UrgentPurchaseRequestList";
 import { MadeWithDyad } from "@/components/made-with-dyad";
@@ -7,15 +7,19 @@ import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
 import { UrgentPurchaseRequest } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import UrgentPurchaseRequestForm from "@/components/urgent-purchase-requests/UrgentPurchaseRequestForm";
-import { Button } from "@/components/ui/button"; // NEW: Import Button
+import { Button } from "@/components/ui/button";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // NEW: Import Select components
 
 const UrgentPurchaseRequests = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingRequest, setEditingRequest] = useState<UrgentPurchaseRequest | null>(null);
+  const [selectedStatusFilter, setSelectedStatusFilter] = useState<UrgentPurchaseRequest['status'] | 'all'>('all'); // NEW: State for status filter
 
-  const { data: requests, isLoading, isError, error } = useUrgentPurchaseRequests();
+  const { data: requests, isLoading, isError, error } = useUrgentPurchaseRequests(
+    selectedStatusFilter === 'all' ? undefined : selectedStatusFilter // Pass status filter to the hook
+  );
 
-  const handleAddClick = () => { // NEW: Handler for adding a new request
+  const handleAddClick = () => {
     setEditingRequest(null);
     setIsFormOpen(true);
   };
@@ -56,12 +60,25 @@ const UrgentPurchaseRequests = () => {
         icon={AlertCircle}
       />
 
-      <div className="flex justify-end items-center mb-6"> {/* Adjusted layout for buttons */}
+      <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4"> {/* Adjusted layout for buttons and filter */}
+        <Select onValueChange={(value: UrgentPurchaseRequest['status'] | 'all') => setSelectedStatusFilter(value)} value={selectedStatusFilter}>
+          <SelectTrigger className="w-full md:w-[200px] h-12 text-base">
+            <SelectValue placeholder="Filtrar por estado" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="all">Todos los Estados</SelectItem>
+            <SelectItem value="pending">Pendiente</SelectItem>
+            <SelectItem value="approved">Aprobado</SelectItem>
+            <SelectItem value="rejected">Rechazado</SelectItem>
+            <SelectItem value="fulfilled">Cumplido</SelectItem>
+          </SelectContent>
+        </Select>
+
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
             <Button
               onClick={handleAddClick}
-              className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
+              className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
             >
               <PlusCircle className="mr-3 h-6 w-6" />
               Crear Solicitud Urgente

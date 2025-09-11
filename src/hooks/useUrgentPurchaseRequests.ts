@@ -4,10 +4,10 @@ import { UrgentPurchaseRequest, UrgentPurchaseRequestFormValues } from "@/types"
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
 
-export const useUrgentPurchaseRequests = () => {
+export const useUrgentPurchaseRequests = (status?: UrgentPurchaseRequest['status']) => {
   return useQuery<UrgentPurchaseRequest[], Error>({
-    queryKey: ["urgentPurchaseRequests"],
-    queryFn: getUrgentPurchaseRequests,
+    queryKey: ["urgentPurchaseRequests", status], // Include status in query key
+    queryFn: () => getUrgentPurchaseRequests(status), // Pass status to the fetch function
   });
 };
 
@@ -28,7 +28,7 @@ export const useAddUrgentPurchaseRequest = () => {
     },
     onSuccess: (_, __, context) => {
       dismissToast(context.toastId);
-      queryClient.invalidateQueries({ queryKey: ["urgentPurchaseRequests"] }); // Invalidate relevant queries
+      queryClient.invalidateQueries({ queryKey: ["urgentPurchaseRequests"] }); // Invalidate all urgent requests to refresh lists
       showSuccess("Solicitud de compra urgente creada exitosamente.");
     },
     onError: (error, __, context) => {
@@ -50,7 +50,7 @@ export const useUpdateUrgentPurchaseRequest = () => {
     },
     onSuccess: (_, { id }, context) => {
       dismissToast(context.toastId);
-      queryClient.invalidateQueries({ queryKey: ["urgentPurchaseRequests"] });
+      queryClient.invalidateQueries({ queryKey: ["urgentPurchaseRequests"] }); // Invalidate all urgent requests
       queryClient.invalidateQueries({ queryKey: ["urgentPurchaseRequests", id] });
       showSuccess("Solicitud de compra urgente actualizada exitosamente.");
     },
