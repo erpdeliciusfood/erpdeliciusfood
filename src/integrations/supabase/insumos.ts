@@ -53,6 +53,9 @@ export const getInsumoById = async (id: string): Promise<Insumo> => {
 };
 
 export const createInsumo = async (insumo: InsumoFormValues): Promise<Insumo> => {
+  const { data: { user }, error: userError } = await supabase.auth.getUser();
+  if (userError || !user) throw new Error("User not authenticated.");
+
   const { data, error } = await supabase
     .from("insumos")
     .insert({
@@ -69,6 +72,7 @@ export const createInsumo = async (insumo: InsumoFormValues): Promise<Insumo> =>
       last_physical_count_quantity: insumo.last_physical_count_quantity,
       last_physical_count_date: insumo.last_physical_count_date,
       discrepancy_quantity: insumo.discrepancy_quantity,
+      user_id: user.id, // Añadido user_id
     })
     .select("*, proveedores(*)")
     .single();
