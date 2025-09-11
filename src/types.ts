@@ -222,6 +222,7 @@ export interface PurchaseRecord {
   insumo_id: string;
   purchase_date: string;
   quantity_purchased: number;
+  quantity_received: number; // NEW: Track quantity received for partial receptions
   unit_cost_at_purchase: number;
   total_amount: number;
   supplier_name_at_purchase: string | null;
@@ -239,6 +240,7 @@ export interface PurchaseRecordFormValues {
   insumo_id: string;
   purchase_date: string;
   quantity_purchased: number;
+  quantity_received?: number; // NEW: Optional for form, will be managed by system/partial reception dialog
   unit_cost_at_purchase: number;
   total_amount: number;
   supplier_name_at_purchase: string | null;
