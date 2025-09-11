@@ -151,7 +151,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      disabled={isLoading || !availableInsumosData?.data || availableInsumosData.data.length === 0}
+                      disabled={isLoading || !availableInsumosData?.data || availableInsumosData.data.length === 0 || !!initialData} // Disable if initialData exists
                     >
                       <FormControl>
                         <SelectTrigger className="h-12 text-base">

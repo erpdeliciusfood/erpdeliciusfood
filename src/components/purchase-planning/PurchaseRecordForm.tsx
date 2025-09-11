@@ -90,7 +90,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
       insumo_id: prefilledInsumoId || "",
       purchase_date: format(new Date(), "yyyy-MM-dd"),
       quantity_purchased: prefilledQuantity || 0,
-      quantity_received: prefilledInsumoId ? prefilledQuantity : 0, // Set quantity_received if prefilled
+      quantity_received: prefilledInsumoId ? prefilledQuantity : 0, // Set quantity_received to prefilledQuantity if prefilled, else 0
       unit_cost_at_purchase: prefilledUnitCost || 0,
       total_amount: (prefilledQuantity && prefilledUnitCost) ? prefilledQuantity * prefilledUnitCost : 0,
       supplier_name_at_purchase: prefilledSupplierName || "",
@@ -98,8 +98,8 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
       supplier_address_at_purchase: prefilledSupplierAddress || "",
       from_registered_supplier: true,
       notes: "",
-      status: prefilledInsumoId ? 'received_by_warehouse' : 'ordered', // Default to received_by_warehouse if prefilled
-      received_date: prefilledInsumoId ? format(new Date(), "yyyy-MM-dd") : null, // Set received date if prefilled
+      status: prefilledInsumoId ? 'received_by_warehouse' : 'ordered', // Default to received_by_warehouse if prefilled, else ordered
+      received_date: prefilledInsumoId ? format(new Date(), "yyyy-MM-dd") : null, // Set received date if prefilled, else null
     },
   });
 
@@ -133,7 +133,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         insumo_id: prefilledInsumoId || "",
         purchase_date: format(new Date(), "yyyy-MM-dd"),
         quantity_purchased: prefilledQuantity || 0,
-        quantity_received: prefilledInsumoId ? prefilledQuantity : 0, // Set quantity_received if prefilled
+        quantity_received: prefilledInsumoId ? prefilledQuantity : 0, // Set quantity_received to prefilledQuantity if prefilled, else 0
         unit_cost_at_purchase: prefilledUnitCost || 0,
         total_amount: (prefilledQuantity && prefilledUnitCost) ? prefilledQuantity * prefilledUnitCost : 0,
         supplier_name_at_purchase: prefilledSupplierName || "",
@@ -141,15 +141,15 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         supplier_address_at_purchase: prefilledSupplierAddress || "",
         from_registered_supplier: true,
         notes: "",
-        status: prefilledInsumoId ? 'received_by_warehouse' : 'ordered', // Default to received_by_warehouse if prefilled
-        received_date: prefilledInsumoId ? format(new Date(), "yyyy-MM-dd") : null, // Set received date if prefilled
+        status: prefilledInsumoId ? 'received_by_warehouse' : 'ordered', // Default to received_by_warehouse if prefilled, else ordered
+        received_date: prefilledInsumoId ? format(new Date(), "yyyy-MM-dd") : null, // Set received date if prefilled, else null
       });
     }
   }, [initialData, form, prefilledInsumoId, prefilledQuantity, prefilledUnitCost, prefilledSupplierName, prefilledSupplierPhone, prefilledSupplierAddress]);
 
   useEffect(() => {
     const calculatedTotal = quantityPurchased * unitCostAtPurchase;
-    if (form.getValues("total_amount") !== calculatedTotal) {
+    if (form.getValues("total_amount") !== parseFloat(calculatedTotal.toFixed(2))) { // Ensure comparison is with parsed float
       form.setValue("total_amount", parseFloat(calculatedTotal.toFixed(2)), { shouldValidate: true });
     }
   }, [quantityPurchased, unitCostAtPurchase, form]);

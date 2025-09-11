@@ -51,7 +51,7 @@ const PurchaseTableActions: React.FC<PurchaseTableActionsProps> = ({
               <Button
                 variant="outline"
                 className="px-4 py-2 text-base bg-green-500 hover:bg-green-600 text-white transition-colors duration-200 ease-in-out"
-                disabled={selectedInsumoIds.size === 0}
+                disabled={selectedInsumoIds.size === 0} // Disable if no items are selected
               >
                 <ShoppingBag className="mr-2 h-4 w-4" />
                 Registrar {selectedInsumoIds.size} Seleccionados

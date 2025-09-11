@@ -48,11 +48,13 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
   const [isIndividualRegisterFormOpen, setIsIndividualRegisterFormOpen] = useState(false);
   const [selectedInsumoForIndividualRegistration, setSelectedInsumoForIndividualRegistration] = useState<InsumoNeeded | null>(null);
 
+  const purchasableInsumos = suggestedPurchases.filter(i => i.purchase_suggestion_rounded > 0);
+
   useEffect(() => {
     // Update "Select All" checkbox state when suggestedPurchases or selectedInsumoIds change
-    const allPurchasableIds = suggestedPurchases.filter(i => i.purchase_suggestion_rounded > 0).map(i => i.id);
+    const allPurchasableIds = purchasableInsumos.map(i => i.id);
     setIsSelectAllChecked(allPurchasableIds.length > 0 && selectedInsumoIds.size === allPurchasableIds.length);
-  }, [suggestedPurchases, selectedInsumoIds]);
+  }, [purchasableInsumos, selectedInsumoIds]);
 
   // NEW: Effect to update internal selectedInsumoIds if initialSelectedInsumoIds changes
   useEffect(() => {
@@ -76,7 +78,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
 
   const handleSelectAllChange = (checked: boolean) => {
     if (checked) {
-      const allPurchasableIds = suggestedPurchases.filter(i => i.purchase_suggestion_rounded > 0).map(i => i.id);
+      const allPurchasableIds = purchasableInsumos.map(i => i.id);
       setSelectedInsumoIds(new Set(allPurchasableIds));
     } else {
       setSelectedInsumoIds(new Set());
@@ -118,6 +120,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
           insumo_id: insumo.id,
           purchase_date: new Date().toISOString().split('T')[0],
           quantity_purchased: insumo.purchase_suggestion_rounded,
+          quantity_received: insumo.purchase_suggestion_rounded, // NEW: Set quantity_received to full amount for batch
           unit_cost_at_purchase: insumo.costo_unitario,
           total_amount: insumo.estimated_purchase_cost,
           supplier_name_at_purchase: insumo.supplier_name || null,
@@ -125,6 +128,8 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
           supplier_address_at_purchase: insumo.supplier_address || null,
           from_registered_supplier: true,
           notes: `Compra sugerida por análisis para el período.`,
+          status: 'received_by_warehouse', // NEW: Set status to received by warehouse for batch
+          received_date: new Date().toISOString().split('T')[0], // NEW: Set received date for batch
         });
         successfulRegistrations++;
       } catch (error: any) {
@@ -162,8 +167,6 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
     }
   };
 
-  const purchasableInsumos = suggestedPurchases.filter(i => i.purchase_suggestion_rounded > 0);
-
   if (purchasableInsumos.length === 0) {
     return (
       <div className="text-center py-6 text-gray-600 dark:text-gray-400">
@@ -185,7 +188,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
           id="select-all"
           checked={isSelectAllChecked}
           onCheckedChange={(checked: boolean) => handleSelectAllChange(checked)}
-          disabled={isRegisteringBatch}
+          disabled={isRegisteringBatch || purchasableInsumos.length === 0}
         />
         <label
           htmlFor="select-all"
@@ -276,7 +279,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
                 <TooltipProvider>
                   <Tooltip>
                     <TooltipTrigger asChild>
-                      <span className="inline-flex items-center">
+                      <span className="inline-flex items-center cursor-help">
                         {insumo.quantity_needed_for_period_rounded} {insumo.purchase_unit}
                         {insumo.quantity_needed_for_period_rounded_up && (
                           <Info className="ml-1 h-4 w-4 text-blue-500 cursor-help" />
