@@ -9,12 +9,12 @@ import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { useAddStockMovement } from "@/hooks/useStockMovements";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
-import { useQueryClient } from "@tanstack/react-query";
+import { useQueryClient } from "@tanstack/react-query"; // RE-ADDED: Import useQueryClient
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { ColoredProgress } from "@/components/ui/colored-progress";
 import { cn } from "@/lib/utils";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // NEW: Import Select components
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 interface DailyPrepOverviewProps {
   selectedDate: Date;
@@ -22,10 +22,10 @@ interface DailyPrepOverviewProps {
 }
 
 const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, menus }) => {
-  const queryClient = useQueryClient();
+  const queryClient = useQueryClient(); // RE-ADDED: useQueryClient
   const addStockMovementMutation = useAddStockMovement();
   const [isDeductingStock, setIsDeductingStock] = useState(false);
-  const [stockFilter, setStockFilter] = useState<'all' | 'sufficient' | 'insufficient'>('all'); // NEW: State for stock filter
+  const [stockFilter, setStockFilter] = useState<'all' | 'sufficient' | 'insufficient'>('all');
 
   const aggregatedInsumoNeeds: AggregatedInsumoNeed[] = useMemo(() => {
     const needsMap = new Map<string, AggregatedInsumoNeed>();
@@ -78,7 +78,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
       return allNeeds.filter(need => need.current_stock_quantity < need.total_needed_purchase_unit);
     }
     return allNeeds;
-  }, [menus, stockFilter]); // NEW: Add stockFilter to dependencies
+  }, [menus, stockFilter]);
 
   const handleDeductStock = async () => {
     setIsDeductingStock(true);
@@ -113,9 +113,9 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     }
 
     setIsDeductingStock(false);
-    queryClient.invalidateQueries({ queryKey: ["stockMovements"] });
-    queryClient.invalidateQueries({ queryKey: ["insumos"] });
-    queryClient.invalidateQueries({ queryKey: ["menus"] });
+    queryClient.invalidateQueries({ queryKey: ["stockMovements"] }); // RE-ADDED: Invalidate stock movements
+    queryClient.invalidateQueries({ queryKey: ["insumos"] }); // RE-ADDED: Invalidate insumos
+    queryClient.invalidateQueries({ queryKey: ["menus"] }); // RE-ADDED: Invalidate menus
   };
 
   const allStockSufficient = aggregatedInsumoNeeds.every(
@@ -186,14 +186,38 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button
-                    disabled={isDeductingStock || aggregatedInsumoNeeds.length === 0 || !allStockSufficient}
-                    className="px-6 py-3 text-lg bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
-                  >
-                    {isDeductingStock && <Loader2 className="mr-2 h-6 w-6 animate-spin" />}
-                    <MinusCircle className="mr-3 h-6 w-6" />
-                    Deducir Stock para Preparación
-                  </Button>
+                  <AlertDialog> {/* AlertDialogTrigger is inside TooltipTrigger */}
+                    <AlertDialogTrigger asChild>
+                      <Button
+                        disabled={isDeductingStock || aggregatedInsumoNeeds.length === 0 || !allStockSufficient}
+                        className="px-6 py-3 text-lg bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
+                      >
+                        {isDeductingStock && <Loader2 className="mr-2 h-6 w-6 animate-spin" />}
+                        <MinusCircle className="mr-3 h-6 w-6" />
+                        Deducir Stock para Preparación
+                      </Button>
+                    </AlertDialogTrigger>
+                    <AlertDialogContent className="p-6">
+                      <AlertDialogHeader>
+                        <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Confirmar Deducción de Stock</AlertDialogTitle>
+                        <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
+                          ¿Estás seguro de que deseas deducir el stock de los insumos necesarios para la preparación diaria del {formattedDate}?
+                          Esta acción registrará los movimientos de salida en el historial de stock.
+                        </AlertDialogDescription>
+                      </AlertDialogHeader>
+                      <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
+                        <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
+                        <AlertDialogAction
+                          onClick={() => handleDeductStock()} {/* Calling the function here */}
+                          className="w-full sm:w-auto px-6 py-3 text-lg bg-destructive hover:bg-destructive-foreground text-destructive-foreground hover:text-destructive transition-colors duration-200 ease-in-out"
+                          disabled={isDeductingStock}
+                        >
+                          {isDeductingStock && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                          Confirmar Deducción
+                        </AlertDialogAction>
+                      </AlertDialogFooter>
+                    </AlertDialogContent>
+                  </AlertDialog>
                 </TooltipTrigger>
                 {!allStockSufficient && (
                   <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
