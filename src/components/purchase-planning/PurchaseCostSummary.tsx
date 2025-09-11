@@ -8,6 +8,14 @@ interface PurchaseCostSummaryProps {
 }
 
 const PurchaseCostSummary: React.FC<PurchaseCostSummaryProps> = ({ totalEstimatedPurchaseCost, isLoading }) => {
+  // NEW: Formatear el costo total estimado a Sol Peruano
+  const formattedCost = new Intl.NumberFormat('es-PE', {
+    style: 'currency',
+    currency: 'PEN',
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
+  }).format(totalEstimatedPurchaseCost);
+
   return (
     <Card className="w-full shadow-lg dark:bg-gray-800">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
@@ -23,7 +31,7 @@ const PurchaseCostSummary: React.FC<PurchaseCostSummaryProps> = ({ totalEstimate
           </div>
         ) : (
           <div className="text-5xl font-extrabold text-green-700 dark:text-green-400">
-            S/ {totalEstimatedPurchaseCost.toFixed(2)}
+            {formattedCost}
           </div>
         )}
         <p className="text-lg text-gray-700 dark:text-gray-300 mt-2">
