@@ -115,35 +115,35 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
       <Table className="w-full">
         <TableHeader className="bg-gray-50 dark:bg-gray-700">
           <TableRow>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Fecha Solicitud</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Insumo</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Cantidad</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Prioridad</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Estado</TableHead>
-            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Insistencia</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Notas</TableHead>
-            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Fecha Solicitud</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Insumo</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Cantidad</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Prioridad</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Estado</TableHead>
+            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[100px]">Insistencia</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[200px]">Notas</TableHead>
+            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[200px]">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {requests.map((request) => (
             <TableRow key={request.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
-              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left">
+              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[150px]">
                 {format(new Date(request.request_date), "PPP", { locale: es })}
               </TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left">
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[180px]">
                 {request.insumos?.nombre || "Insumo Desconocido"}
               </TableCell>
-              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[120px]">
                 {request.quantity_requested.toFixed(2)} {request.insumos?.purchase_unit || "unidad"}
               </TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left">
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[120px]">
                 {getPriorityBadge(request.priority)}
               </TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left">
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[120px]">
                 {getStatusBadge(request.status)}
               </TableCell>
-              <TableCell className="text-center text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-center text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[100px]">
                 {request.insistence_count > 1 ? (
                   <Badge variant="destructive" className="text-base px-2 py-1 flex items-center justify-center mx-auto w-fit">
                     <Repeat2 className="h-4 w-4 mr-1" /> {request.insistence_count}
@@ -154,7 +154,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                   </Badge>
                 )}
               </TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left">
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[200px]">
                 {request.notes || "N/A"}
                 {request.status === 'rejected' && request.rejection_reason && (
                   <p className="text-sm text-red-500 dark:text-red-400 mt-1">
@@ -162,7 +162,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                   </p>
                 )}
               </TableCell>
-              <TableCell className="flex justify-center space-x-2 py-3 px-6">
+              <TableCell className="flex justify-center space-x-2 py-3 px-6 min-w-[200px]">
                 {request.status === 'pending' && (
                   <>
                     <AlertDialog>
@@ -258,17 +258,17 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                           Esta acción no se puede deshacer. Esto eliminará permanentemente la solicitud de compra urgente de <span className="font-semibold">{request.insumos?.nombre || "Insumo Desconocido"}</span> de nuestros servidores.
                         </AlertDialogDescription>
                       </AlertDialogHeader>
-                      <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
-                        <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
-                        <AlertDialogAction
-                          onClick={() => handleDelete(request.id)}
-                          className="w-full sm:w-auto px-6 py-3 text-lg bg-destructive hover:bg-destructive-foreground text-destructive-foreground hover:text-destructive transition-colors duration-200 ease-in-out"
-                          disabled={updateMutation.isPending}
-                        >
-                          {updateMutation.isPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-                          Eliminar
-                        </AlertDialogAction>
-                      </AlertDialogFooter>
+                        <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
+                          <AlertDialogCancel className="w-full sm:w-auto px-6 py-3 text-lg">Cancelar</AlertDialogCancel>
+                          <AlertDialogAction
+                            onClick={() => handleDelete(request.id)}
+                            className="w-full sm:w-auto px-6 py-3 text-lg bg-destructive hover:bg-destructive-foreground text-destructive-foreground hover:text-destructive transition-colors duration-200 ease-in-out"
+                            disabled={updateMutation.isPending}
+                          >
+                            {updateMutation.isPending && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+                            Eliminar
+                          </AlertDialogAction>
+                        </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
                 )}

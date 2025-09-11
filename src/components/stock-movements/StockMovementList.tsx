@@ -39,6 +39,8 @@ const StockMovementList: React.FC<StockMovementListProps> = ({ stockMovements })
         return <Badge className="bg-orange-500 hover:bg-orange-600 text-white">Ajuste de Salida</Badge>;
       case 'daily_prep_out': // NEW: Badge for daily_prep_out
         return <Badge className="bg-purple-500 hover:bg-purple-600 text-white">Salida por Prep. Diaria</Badge>;
+      case 'reception_in': // NEW: Badge for reception_in
+        return <Badge className="bg-indigo-500 hover:bg-indigo-600 text-white">Recepción por Empresa</Badge>;
       default:
         return <Badge variant="secondary">Desconocido</Badge>;
     }
@@ -47,7 +49,7 @@ const StockMovementList: React.FC<StockMovementListProps> = ({ stockMovements })
   const getQuantityDisplay = (movement: StockMovement) => {
     const quantity = movement.quantity_change;
     const unit = movement.insumos?.purchase_unit || "unidad";
-    const isPositive = movement.movement_type === 'purchase_in' || movement.movement_type === 'adjustment_in';
+    const isPositive = movement.movement_type === 'purchase_in' || movement.movement_type === 'adjustment_in' || movement.movement_type === 'reception_in'; // NEW: Include reception_in
 
     return (
       <span className={`flex items-center justify-end font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
@@ -62,33 +64,33 @@ const StockMovementList: React.FC<StockMovementListProps> = ({ stockMovements })
       <Table className="w-full">
         <TableHeader className="bg-gray-50 dark:bg-gray-700">
           <TableRow>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Fecha</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Insumo</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Tipo de Movimiento</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Cantidad</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Nuevo Stock</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Notas</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Fecha</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Insumo</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Tipo de Movimiento</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Cantidad</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Nuevo Stock</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[200px]">Notas</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {stockMovements.map((movement) => (
             <TableRow key={movement.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
-              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">
+              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[180px]">
                 {format(new Date(movement.created_at), "PPP HH:mm", { locale: es })}
               </TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[180px]">
                 {movement.insumos?.nombre || "Insumo Desconocido"}
               </TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[180px]">
                 {getMovementTypeBadge(movement.movement_type)}
               </TableCell>
-              <TableCell className="text-right text-base py-3 px-6">
+              <TableCell className="text-right text-base py-3 px-6 min-w-[120px]">
                 {getQuantityDisplay(movement)}
               </TableCell>
-              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[120px]">
                 {movement.new_stock_quantity.toFixed(2)} {movement.insumos?.purchase_unit || "unidad"}
               </TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[200px]">
                 {movement.notes || "N/A"}
               </TableCell>
             </TableRow>

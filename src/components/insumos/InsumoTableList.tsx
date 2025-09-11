@@ -80,49 +80,49 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
       <Table className="w-full">
         <TableHeader className="bg-gray-50 dark:bg-gray-700">
           <TableRow>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Nombre</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Categoría</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Stock Actual</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Pendiente Entrega</TableHead> {/* NEW */}
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Pendiente Recepción</TableHead> {/* NEW */}
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Mínimo</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Unitario (S/)</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Proveedor</TableHead>
-            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Nombre</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Categoría</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Stock Actual</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Pendiente Entrega</TableHead> {/* NEW */}
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Pendiente Recepción</TableHead> {/* NEW */}
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[100px]">Mínimo</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Costo Unitario (S/)</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Proveedor</TableHead>
+            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {insumos.map((insumo) => (
             <TableRow key={insumo.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
-              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 flex items-center">
+              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left flex items-center min-w-[180px]">
                 <Package className="mr-2 h-5 w-5 text-primary dark:text-primary-foreground" />
                 {insumo.nombre}
               </TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[120px]">
                 <Badge variant="secondary" className="text-sm">{insumo.category}</Badge>
               </TableCell>
-              <TableCell className="text-right text-base py-3 px-6">
+              <TableCell className="text-right text-base py-3 px-6 min-w-[120px]">
                 <Badge variant={insumo.stock_quantity <= (insumo.min_stock_level ?? 0) ? "destructive" : "outline"} className="text-base px-2 py-1">
                   {insumo.stock_quantity.toFixed(2)} {insumo.purchase_unit}
                 </Badge>
               </TableCell>
-              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[120px]">
                 {insumo.pending_delivery_quantity.toFixed(2)} {insumo.purchase_unit}
               </TableCell>
-              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[120px]">
                 {insumo.pending_reception_quantity.toFixed(2)} {insumo.purchase_unit}
               </TableCell>
-              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[100px]">
                 {insumo.min_stock_level ?? 0} {insumo.purchase_unit}
               </TableCell>
-              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 flex items-center justify-end">
+              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 flex items-center justify-end min-w-[150px]">
                 <DollarSign className="mr-1 h-5 w-5 text-green-600" />
                 S/ {insumo.costo_unitario.toFixed(2)}
               </TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[150px]">
                 {insumo.supplier_name || "N/A"}
               </TableCell>
-              <TableCell className="flex justify-center space-x-2 py-3 px-6">
+              <TableCell className="flex justify-center space-x-2 py-3 px-6 min-w-[180px]">
                 <Button
                   variant="outline"
                   size="icon"
@@ -154,7 +154,7 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
                       size="icon"
                       className="h-10 w-10 rounded-full hover:bg-red-100 dark:hover:bg-red-900 transition-colors duration-150 ease-in-out"
                     >
-                      <Trash2 className="h-5 w-5 text-red-600" />
+                      <Trash2 className="h-6 w-6 text-red-600" />
                     </Button>
                   </AlertDialogTrigger>
                   <AlertDialogContent className="p-6">

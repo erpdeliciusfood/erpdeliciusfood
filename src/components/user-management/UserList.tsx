@@ -61,22 +61,22 @@ const UserList: React.FC<UserListProps> = ({ users }) => {
       <Table className="w-full">
         <TableHeader className="bg-gray-50 dark:bg-gray-700">
           <TableRow>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">ID de Usuario</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Nombre Completo</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Rol</TableHead>
-            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[250px]">ID de Usuario</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[200px]">Nombre Completo</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Rol</TableHead>
+            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[100px]">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {users.map((userProfile) => (
             <TableRow key={userProfile.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
-              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">
+              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[250px]">
                 {userProfile.id}
               </TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[200px]">
                 {userProfile.first_name || "N/A"} {userProfile.last_name || ""}
               </TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[180px]">
                 <Select
                   onValueChange={(value: 'user' | 'admin') => handleRoleChange(userProfile.id, value)}
                   defaultValue={userProfile.role}
@@ -91,7 +91,7 @@ const UserList: React.FC<UserListProps> = ({ users }) => {
                   </SelectContent>
                 </Select>
               </TableCell>
-              <TableCell className="flex justify-center space-x-2 py-3 px-6">
+              <TableCell className="flex justify-center space-x-2 py-3 px-6 min-w-[100px]">
                 {/* Add any other user management actions here */}
               </TableCell>
             </TableRow>

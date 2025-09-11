@@ -46,10 +46,10 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
       <Table className="w-full">
         <TableHeader className="bg-gray-50 dark:bg-gray-700">
           <TableRow>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Título</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Tipo</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Servicios</TableHead>
-            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Título</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Tipo</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[250px]">Servicios</TableHead>
+            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -83,8 +83,8 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
             return (
               <React.Fragment key={menu.id}>
                 <TableRow className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
-                  <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{menu.title}</TableCell>
-                  <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+                  <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[180px]">{menu.title}</TableCell>
+                  <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[150px]">
                     {menu.menu_date ? (
                       <span className="flex items-center">
                         <CalendarDays className="h-4 w-4 mr-2" />
@@ -97,7 +97,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                       </span>
                     ) : "N/A"}
                   </TableCell>
-                  <TableCell className="py-3 px-6">
+                  <TableCell className="py-3 px-6 text-left min-w-[250px]">
                     {isLoadingMealServices ? (
                       <span className="text-sm text-gray-500">Cargando...</span>
                     ) : (
@@ -115,7 +115,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                       </div>
                     )}
                   </TableCell>
-                  <TableCell className="flex justify-center space-x-2 py-3 px-6">
+                  <TableCell className="flex justify-center space-x-2 py-3 px-6 min-w-[150px]">
                     <Button
                       variant="outline"
                       size="icon"

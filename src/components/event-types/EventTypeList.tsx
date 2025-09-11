@@ -47,17 +47,17 @@ const EventTypeList: React.FC<EventTypeListProps> = ({ eventTypes, onEdit, onAdd
       <Table className="w-full">
         <TableHeader className="bg-gray-50 dark:bg-gray-700">
           <TableRow>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Nombre</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Descripción</TableHead>
-            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Nombre</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[250px]">Descripción</TableHead>
+            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {eventTypes.map((eventType) => (
             <TableRow key={eventType.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
-              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{eventType.name}</TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{eventType.description || "N/A"}</TableCell>
-              <TableCell className="flex justify-center space-x-2 py-3 px-6">
+              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[180px]">{eventType.name}</TableCell>
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[250px]">{eventType.description || "N/A"}</TableCell>
+              <TableCell className="flex justify-center space-x-2 py-3 px-6 min-w-[150px]">
                 <Button
                   variant="outline"
                   size="icon"

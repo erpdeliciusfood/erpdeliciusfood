@@ -41,33 +41,33 @@ const ServiceReportList: React.FC<ServiceReportListProps> = ({ reports, onEdit }
       <Table className="w-full">
         <TableHeader className="bg-gray-50 dark:bg-gray-700">
           <TableRow>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Fecha</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Servicio</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Tickets Emitidos</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Colaciones Vendidas</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Ingresos Adicionales (S/)</TableHead>
-            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Fecha</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Servicio</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Tickets Emitidos</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Colaciones Vendidas</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Ingresos Adicionales (S/)</TableHead>
+            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
           {reports.map((report) => (
             <TableRow key={report.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
-              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">
+              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[150px]">
                 {format(new Date(report.report_date), "PPP", { locale: es })}
               </TableCell>
-              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[150px]">
                 {report.meal_services?.name || "N/A"}
               </TableCell>
-              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[120px]">
                 {report.tickets_issued}
               </TableCell>
-              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[120px]">
                 {report.meals_sold}
               </TableCell>
-              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">
+              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[180px]">
                 S/ {report.additional_services_revenue.toFixed(2)}
               </TableCell>
-              <TableCell className="flex justify-center space-x-2 py-3 px-6">
+              <TableCell className="flex justify-center space-x-2 py-3 px-6 min-w-[150px]">
                 <Button
                   variant="outline"
                   size="icon"

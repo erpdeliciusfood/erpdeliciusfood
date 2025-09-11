@@ -54,10 +54,10 @@ const RecetaList: React.FC<RecetaListProps> = ({ recetas, onEdit }) => {
       <Table className="w-full">
         <TableHeader className="bg-gray-50 dark:bg-gray-700">
           <TableRow>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Nombre</TableHead>
-            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Descripción</TableHead>
-            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Costo Producción (S/)</TableHead>
-            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6">Acciones</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[200px]">Nombre</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[300px]">Descripción</TableHead>
+            <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Costo Producción (S/)</TableHead>
+            <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Acciones</TableHead>
           </TableRow>
         </TableHeader>
         <TableBody>
@@ -65,10 +65,10 @@ const RecetaList: React.FC<RecetaListProps> = ({ recetas, onEdit }) => {
             const productionCost = calculateProductionCost(receta);
             return (
               <TableRow key={receta.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
-                <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6">{receta.nombre}</TableCell>
-                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6">{receta.descripcion || "N/A"}</TableCell>
-                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6">S/ {productionCost.toFixed(2)}</TableCell>
-                <TableCell className="flex justify-center space-x-2 py-3 px-6">
+                <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[200px]">{receta.nombre}</TableCell>
+                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[300px]">{receta.descripcion || "N/A"}</TableCell>
+                <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[180px]">S/ {productionCost.toFixed(2)}</TableCell>
+                <TableCell className="flex justify-center space-x-2 py-3 px-6 min-w-[150px]">
                   <Button
                     variant="outline"
                     size="icon"
