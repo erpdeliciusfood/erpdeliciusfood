@@ -1,157 +1,150 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Menu, MenuFormValues } from "@/types"; // Removed Receta
+import { Menu, MenuFormValues, Receta } from "@/types"; // Removed unused MenuPlato, MealService, EventType
+
+// Helper to map DB fields to Menu interface fields
+const mapDbMenuToMenu = (dbMenu: any): Menu => ({
+  id: dbMenu.id,
+  date: dbMenu.date,
+  meal_service_id: dbMenu.meal_service_id,
+  event_type_id: dbMenu.event_type_id,
+  meal_service: dbMenu.meal_services, // Assuming 'meal_services' is the joined table
+  event_type: dbMenu.event_types, // Assuming 'event_types' is the joined table
+  menu_platos: dbMenu.menu_platos?.map((mp: any) => ({
+    id: mp.id,
+    menu_id: mp.menu_id,
+    meal_service_id: mp.meal_service_id, // Ensure this is mapped if it exists in DB
+    receta_id: mp.receta_id,
+    dish_category: mp.dish_category,
+    quantity_needed: mp.quantity_needed,
+    receta: {
+      id: mp.platos.id,
+      nombre: mp.platos.nombre,
+      descripcion: mp.platos.descripcion,
+      category: mp.platos.categoria, // Map DB field
+      tiempo_preparacion: mp.platos.tiempo_preparacion,
+      costo_total: mp.platos.costo_total,
+      plato_insumos: [], // Not fetching deep insumos here for brevity
+    } as Receta,
+  })) || [],
+  total_cost: dbMenu.total_cost,
+  total_servings: dbMenu.total_servings,
+  title: dbMenu.title,
+  description: dbMenu.description,
+});
 
 export const getMenus = async (startDate?: string, endDate?: string): Promise<Menu[]> => {
   let query = supabase
     .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))")
-    .order("menu_date", { ascending: false })
-    .order("created_at", { ascending: false });
+    .select(`
+      *,
+      meal_services (id, name, description, order_index),
+      event_types (id, name, description),
+      menu_platos (
+        *,
+        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total)
+      )
+    `)
+    .order("date", { ascending: true });
 
   if (startDate) {
-    query = query.gte("menu_date", startDate);
+    query = query.gte("date", startDate);
   }
   if (endDate) {
-    query = query.lte("menu_date", endDate);
+    query = query.lte("date", endDate);
   }
 
   const { data, error } = await query;
-
-  if (error) throw new Error(error.message);
-  return data;
+  if (error) throw error;
+  return data.map(mapDbMenuToMenu);
 };
 
-export const getMenuById = async (id: string): Promise<Menu | null> => {
+export const getMenuById = async (id: string): Promise<Menu> => {
   const { data, error } = await supabase
     .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))")
+    .select(`
+      *,
+      meal_services (id, name, description, order_index),
+      event_types (id, name, description),
+      menu_platos (
+        *,
+        platos (id, nombre, descripcion, categoria, tiempo_preparacion, costo_total)
+      )
+    `)
     .eq("id", id)
     .single();
-
-  if (error) {
-    if (error.code === 'PGRST116') return null; // No rows found
-    throw new Error(error.message);
-  }
-  return data;
+  if (error) throw error;
+  return mapDbMenuToMenu(data);
 };
 
-export const createMenu = async (menuData: MenuFormValues): Promise<Menu> => {
-  const { title, menu_date, event_type_id, description, platos_por_servicio } = menuData;
+export const createMenu = async (menu: MenuFormValues): Promise<Menu> => {
+  const { platos_por_servicio, menu_type, menu_date, ...menuData } = menu;
 
-  // Get authenticated user ID
-  const { data: { user }, error: userError } = await supabase.auth.getUser();
-  if (userError || !user) throw new Error("User not authenticated.");
-
-  // Insert the main menu
   const { data: newMenu, error: menuError } = await supabase
     .from("menus")
     .insert({
-      title,
-      menu_date: menu_date === "" ? null : menu_date, // Explicitly convert empty string to null
-      event_type_id: event_type_id === "" ? null : event_type_id, // Explicitly convert empty string to null
-      description,
-      user_id: user.id
+      ...menuData,
+      date: menu_type === 'daily' ? menu_date : null, // Use 'date' field
+      event_type_id: menu_type === 'event' ? menuData.event_type_id : null,
     })
     .select()
     .single();
+  if (menuError) throw menuError;
 
-  if (menuError) throw new Error(menuError.message);
-  if (!newMenu) throw new Error("Failed to create menu.");
-
-  // Insert associated menu_platos
   if (platos_por_servicio && platos_por_servicio.length > 0) {
-    const menuPlatosToInsert = platos_por_servicio.map((item) => ({
+    const menuPlatosToInsert = platos_por_servicio.map((item: { meal_service_id: string; receta_id: string; dish_category: string; quantity_needed: number; }) => ({ // Typed item
       menu_id: newMenu.id,
-      plato_id: item.plato_id,
-      meal_service_id: item.meal_service_id,
+      meal_service_id: item.meal_service_id, // Ensure this is passed
+      receta_id: item.receta_id,
       dish_category: item.dish_category,
       quantity_needed: item.quantity_needed,
     }));
-
     const { error: menuPlatoError } = await supabase
       .from("menu_platos")
       .insert(menuPlatosToInsert);
-
-    if (menuPlatoError) {
-      throw new Error(`Failed to add recetas to menu: ${menuPlatoError.message}`);
-    }
+    if (menuPlatoError) throw menuPlatoError;
   }
 
-  // Fetch the complete menu with its relations for the return value
-  const { data: completeMenu, error: fetchError } = await supabase
-    .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))")
-    .eq("id", newMenu.id)
-    .single();
-
-  if (fetchError) throw new Error(`Failed to fetch complete menu: ${fetchError.message}`);
-
-  return completeMenu;
+  return getMenuById(newMenu.id);
 };
 
-export const updateMenu = async (id: string, menuData: MenuFormValues): Promise<Menu> => {
-  const { title, menu_date, event_type_id, description, platos_por_servicio } = menuData;
+export const updateMenu = async (id: string, menu: MenuFormValues): Promise<Menu> => {
+  const { platos_por_servicio, menu_type, menu_date, ...menuData } = menu;
 
-  // Update the main menu
   const { data: updatedMenu, error: menuError } = await supabase
     .from("menus")
     .update({
-      title,
-      menu_date: menu_date === "" ? null : menu_date, // Explicitly convert empty string to null
-      event_type_id: event_type_id === "" ? null : event_type_id, // Explicitly convert empty string to null
-      description
+      ...menuData,
+      date: menu_type === 'daily' ? menu_date : null, // Use 'date' field
+      event_type_id: menu_type === 'event' ? menuData.event_type_id : null,
     })
     .eq("id", id)
     .select()
     .single();
+  if (menuError) throw menuError;
 
-  if (menuError) throw new Error(menuError.message);
-  if (!updatedMenu) throw new Error("Failed to update menu.");
+  // Delete existing menu_platos and insert new ones
+  await supabase.from("menu_platos").delete().eq("menu_id", id);
 
-  // Delete existing menu_platos for this menu
-  const { error: deleteError } = await supabase
-    .from("menu_platos")
-    .delete()
-    .eq("menu_id", id);
-
-  if (deleteError) throw new Error(`Failed to delete existing recetas for menu: ${deleteError.message}`);
-
-  // Insert new associated menu_platos
   if (platos_por_servicio && platos_por_servicio.length > 0) {
-    const menuPlatosToInsert = platos_por_servicio.map((item) => ({
+    const menuPlatosToInsert = platos_por_servicio.map((item: { meal_service_id: string; receta_id: string; dish_category: string; quantity_needed: number; }) => ({ // Typed item
       menu_id: updatedMenu.id,
-      plato_id: item.plato_id,
-      meal_service_id: item.meal_service_id,
+      meal_service_id: item.meal_service_id, // Ensure this is passed
+      receta_id: item.receta_id,
       dish_category: item.dish_category,
       quantity_needed: item.quantity_needed,
     }));
-
     const { error: menuPlatoError } = await supabase
       .from("menu_platos")
       .insert(menuPlatosToInsert);
-
-    if (menuPlatoError) {
-      throw new Error(`Failed to add new recetas to menu: ${menuPlatoError.message}`);
-    }
+    if (menuPlatoError) throw menuPlatoError;
   }
 
-  // Fetch the complete menu with its relations for the return value
-  const { data: completeMenu, error: fetchError } = await supabase
-    .from("menus")
-    .select("*, event_types(*), menu_platos(*, platos(*, plato_insumos(*, insumos(*))), meal_services(*))")
-    .eq("id", updatedMenu.id)
-    .single();
-
-  if (fetchError) throw new Error(`Failed to fetch complete menu: ${fetchError.message}`);
-
-  return completeMenu;
+  return getMenuById(updatedMenu.id);
 };
 
 export const deleteMenu = async (id: string): Promise<void> => {
-  const { error } = await supabase
-    .from("menus")
-    .delete()
-    .eq("id", id);
-
-  if (error) throw new Error(error.message);
+  // Delete associated menu_platos first
+  await supabase.from("menu_platos").delete().eq("menu_id", id);
+  const { error } = await supabase.from("menus").delete().eq("id", id);
+  if (error) throw error;
 };

@@ -53,9 +53,9 @@ const FinancialOverviewReport: React.FC<FinancialOverviewReportProps> = ({ start
         const currentDayData = dailyDataMap.get(formattedReportDate) || { cogs: 0 };
 
         report.service_report_platos?.forEach(pv => {
-          const receta = pv.platos; // Changed plato to receta
+          const receta = pv.receta; // Changed plato to receta
           if (receta) {
-            const cogs = receta.costo_produccion * pv.quantity_sold;
+            const cogs = receta.costo_total * pv.quantity_sold; // Assuming costo_total is per serving
             currentDayData.cogs += cogs;
             overallCogs += cogs;
           }
