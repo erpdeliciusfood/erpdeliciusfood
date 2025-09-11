@@ -138,7 +138,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                         <AlertDialogHeader>
                           <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
                           <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                            Esta acción no se puede deshacer. Esto eliminará permanentemente el menú <span className="font-semibold">{menu.title}</span> y sus recetas asociadas de nuestros servidores. {/* Changed text */}
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente el menú <span className="font-semibold">{menu.title}</span>. Las recetas no se eliminarán, solo su asociación con este menú.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
