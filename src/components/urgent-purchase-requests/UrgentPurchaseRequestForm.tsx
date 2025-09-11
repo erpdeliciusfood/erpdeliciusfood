@@ -190,6 +190,17 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
           )}
         />
 
+        {initialData?.insistence_count !== undefined && (
+          <div>
+            <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Veces Solicitado (Insistencia)</FormLabel>
+            <Input
+              value={initialData.insistence_count.toString()}
+              readOnly
+              className="h-10 text-base mt-1 bg-gray-100 dark:bg-gray-700"
+            />
+          </div>
+        )}
+
         <FormField
           control={form.control}
           name="notes"
