@@ -73,25 +73,25 @@ const WeeklyMenuOverview: React.FC<WeeklyMenuOverviewProps> = ({ onAddMenu }) =>
             return (
               <div
                 key={format(day, "yyyy-MM-dd")}
-                className={`flex flex-col items-center justify-between p-3 sm:p-4 rounded-lg border ${isToday ? "border-primary dark:border-primary-foreground bg-primary/10 dark:bg-primary-foreground/10" : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50"} h-32 sm:h-36`} {/* Adjusted padding and height */}
+                className={`flex flex-col items-center justify-between p-3 sm:p-4 rounded-lg border ${isToday ? "border-primary dark:border-primary-foreground bg-primary/10 dark:bg-primary-foreground/10" : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50"} h-32 sm:h-36`} 
               >
-                <p className={`text-base sm:text-lg font-semibold ${isToday ? "text-primary dark:text-primary-foreground" : "text-gray-800 dark:text-gray-200"}`}> {/* Adjusted text size */}
+                <p className={`text-base sm:text-lg font-semibold ${isToday ? "text-primary dark:text-primary-foreground" : "text-gray-800 dark:text-gray-200"}`}> 
                   {format(day, "EEE", { locale: es })}
                 </p>
-                <p className={`text-xl sm:text-2xl font-bold ${isToday ? "text-primary dark:text-primary-foreground" : "text-gray-900 dark:text-gray-100"}`}> {/* Adjusted text size */}
+                <p className={`text-xl sm:text-2xl font-bold ${isToday ? "text-primary dark:text-primary-foreground" : "text-gray-900 dark:text-gray-100"}`}> 
                   {format(day, "dd")}
                 </p>
                 {hasMenu ? (
                   <div className="flex items-center text-green-600 dark:text-green-400 mt-2">
-                    <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 mr-1" /> {/* Adjusted icon size */}
-                    <span className="text-sm sm:text-base">Menú</span> {/* Adjusted text size */}
+                    <CheckCircle2 className="h-4 w-4 sm:h-5 sm:w-5 mr-1" /> 
+                    <span className="text-sm sm:text-base">Menú</span> 
                   </div>
                 ) : (
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onAddMenu(day)}
-                    className="mt-2 text-sm sm:text-base h-8 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white dark:bg-blue-700 dark:hover:bg-blue-800" {/* Adjusted text and padding */}
+                    className="mt-2 text-sm sm:text-base h-8 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white dark:bg-blue-700 dark:hover:bg-blue-800" 
                   >
                     <PlusCircle className="h-4 w-4 mr-1" />
                     Añadir

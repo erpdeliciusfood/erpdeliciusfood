@@ -26,7 +26,7 @@ interface DailyPrepOverviewProps {
 
 const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, menus }) => {
   const [stockFilter, setStockFilter] = useState<'all' | 'sufficient' | 'insufficient'>('all');
-  const [selectedInsumoIds, setSelectedInsumoIds] = new Set();
+  const [selectedInsumoIds, setSelectedInsumoIds] = useState<Set<string>>(new Set()); // Corrected initialization
   const [isSelectAllChecked, setIsSelectAllChecked] = useState(false);
   const [isDeductQuantitiesDialogOpen, setIsDeductQuantitiesDialogOpen] = useState(false);
   const [isUrgentPurchaseRequestDialogOpen, setIsUrgentPurchaseRequestDialogOpen] = useState(false); // NEW: State for urgent purchase dialog
@@ -93,7 +93,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
   // Handle individual checkbox change
   const handleCheckboxChange = (insumoId: string, checked: boolean) => {
-    setSelectedInsumoIds(prev => {
+    setSelectedInsumoIds((prev: Set<string>) => { // Corrected typing for 'prev'
       const newSet = new Set(prev);
       if (checked) {
         newSet.add(insumoId);

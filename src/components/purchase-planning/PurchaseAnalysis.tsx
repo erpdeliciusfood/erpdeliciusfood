@@ -5,7 +5,6 @@ import { Loader2, ShoppingBag } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { Insumo } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import InsumoSupplierDetailsDialog from "@/components/insumos/InsumoSupplierDetailsDialog";
@@ -13,7 +12,8 @@ import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordFor
 import PurchaseCostSummary from "./PurchaseCostSummary";
 import PurchaseTableActions from "./PurchaseTableActions";
 import InsumoPurchaseTable from "./InsumoPurchaseTable";
-import ReasonBadge from "@/components/shared/ReasonBadge"; // NEW: Import ReasonBadge
+// Removed: import { Badge } from "@/components/ui/badge";
+// Removed: import ReasonBadge from "@/components/shared/ReasonBadge"; // NEW: Import ReasonBadge
 
 interface PurchaseAnalysisProps {
   startDate: Date;
