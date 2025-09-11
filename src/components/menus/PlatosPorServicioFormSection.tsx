@@ -108,9 +108,10 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
                 </FormItem>
               )}
             />
+            {/* Changed receta_id to plato_id */}
             <FormField
               control={form.control}
-              name={`platos_por_servicio.${index}.plato_id`} {/* Changed receta_id to plato_id */}
+              name={`platos_por_servicio.${index}.plato_id`}
               render={({ field: platoField }) => (
                 <FormItem className="flex-grow w-full md:w-1/3">
                   <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Receta</FormLabel> {/* Changed text */}
@@ -197,10 +198,11 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
             </Button>
           </div>
         ))}
+        {/* Changed receta_id to plato_id */}
         <Button
           type="button"
           variant="outline"
-          onClick={() => append({ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 })} {/* Changed receta_id to plato_id */}
+          onClick={() => append({ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 })}
           className="w-full mt-4 px-6 py-3 text-lg"
           disabled={isLoading || !availablePlatos || availablePlatos.length === 0 || !availableMealServices || availableMealServices.length === 0}
         >
