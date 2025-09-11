@@ -18,11 +18,9 @@ import PlatosPorServicioFormSection from "./PlatosPorServicioFormSection";
 import { formatISO } from "date-fns";
 
 const formSchema = z.object({
-  title: z.string().min(2, {
-    message: "El título debe tener al menos 2 caracteres.",
-  }).max(100, {
+  title: z.string().max(100, { // Removed .min(2) to make it optional
     message: "El título no debe exceder los 100 caracteres.",
-  }),
+  }).nullable().optional(), // Made title optional and nullable
   description: z.string().max(500, {
     message: "La descripción no debe exceder los 500 caracteres.",
   }).nullable(),
