@@ -1,7 +1,7 @@
 import React from "react";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { LogOut, Utensils, UserCircle2, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText, Warehouse } from "lucide-react";
+import { LogOut, Utensils, UserCircle2, ChefHat, CalendarDays, BookText, BarChart3, Users, ShoppingBag, FileText, Package, ReceiptText, Warehouse, AlertCircle } from "lucide-react"; // NEW: AlertCircle icon
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
@@ -28,7 +28,7 @@ const Header: React.FC = () => {
     <header className="bg-primary dark:bg-primary-foreground text-primary-foreground dark:text-primary p-4 shadow-md">
       <div className="container mx-auto flex justify-between items-center">
         <Link to="/" className="flex items-center">
-          <img src="/logo-erp.png" alt="App Logo" className="h-10 w-auto mr-2" /> {/* Cambiado de h-8 a h-10 */}
+          <img src="/logo-erp.png" alt="App Logo" className="h-10 w-auto mr-2" />
           {/* <span className="text-2xl font-bold">ERP App</span> */}
         </Link>
         <nav className="flex items-center space-x-4">
@@ -72,6 +72,12 @@ const Header: React.FC = () => {
             <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
               <ReceiptText className="mr-2 h-5 w-5" />
               Registros Compra
+            </Button>
+          </Link>
+          <Link to="/urgent-purchase-requests"> {/* NEW: Link to Urgent Purchase Requests */}
+            <Button variant="ghost" className="text-primary-foreground dark:text-primary hover:bg-primary-foreground/20 dark:hover:bg-primary/20">
+              <AlertCircle className="mr-2 h-5 w-5" />
+              Solicitudes Urgentes
             </Button>
           </Link>
           <Link to="/stock-movements">
