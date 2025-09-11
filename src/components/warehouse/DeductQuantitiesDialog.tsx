@@ -78,12 +78,12 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
     defaultValues: {
       deductor_name: "",
       insumos_to_deduct: selectedInsumoNeeds.map(need => ({
-        insumo_id: need.insumoId,
-        insumo_nombre: need.insumoNombre,
-        purchase_unit: need.purchaseUnit,
-        current_stock_quantity: need.currentStock,
-        suggested_quantity: need.totalNeededPurchaseUnit,
-        quantity_to_deduct: need.totalNeededPurchaseUnit,
+        insumo_id: need.insumo_id,
+        insumo_nombre: need.insumo_nombre,
+        purchase_unit: need.purchase_unit,
+        current_stock_quantity: need.current_stock_quantity,
+        suggested_quantity: need.total_needed_purchase_unit,
+        quantity_to_deduct: need.total_needed_purchase_unit,
       })),
       confirm_deduction: false,
     },
@@ -110,10 +110,9 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
           await addStockMovementMutation.mutateAsync({
             insumo_id: item.insumo_id,
             movement_type: 'daily_prep_out',
-            quantity: item.quantity_to_deduct,
+            quantity_change: item.quantity_to_deduct,
             notes: `Salida por preparación diaria para el menú del ${format(selectedDate, "PPP", { locale: es })}. Realizado por: ${deductor_name}`,
-            menu_id: menuId || undefined,
-            movement_date: new Date().toISOString(),
+            menu_id: menuId,
           });
           successfulDeductions++;
         } catch (error: any) {

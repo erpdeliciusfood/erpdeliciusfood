@@ -1,18 +1,18 @@
 import { useState } from "react";
 import { Loader2, BookText } from "lucide-react";
-import { useMenusList } from "@/hooks/menus/useMenusList";
+import { useMenus } from "@/hooks/useMenus";
 import MenuCalendar from "@/components/menus/MenuCalendar";
 import WeeklyMenuOverview from "@/components/menus/WeeklyMenuOverview";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Menu } from "@/types";
-import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const Menus = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingMenu, setEditingMenu] = useState<Menu | null>(null);
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(undefined);
 
-  const { isLoading, isError, error } = useMenusList();
+  const { isLoading, isError, error } = useMenus();
 
   const handleAddMenu = (date: Date) => {
     setEditingMenu(null);
@@ -22,7 +22,7 @@ const Menus = () => {
 
   const handleEditMenu = (menu: Menu) => {
     setEditingMenu(menu);
-    setSelectedDate(menu.date ? new Date(menu.date) : undefined); // Corrected property access
+    setSelectedDate(menu.menu_date ? new Date(menu.menu_date) : undefined);
     setIsFormOpen(true);
   };
 

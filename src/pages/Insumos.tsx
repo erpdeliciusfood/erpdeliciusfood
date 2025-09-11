@@ -74,21 +74,8 @@ const Insumos = () => {
   // Map Insumo to InsumoFormValues for the form
   const mappedEditingInsumo: InsumoFormValues | null = editingInsumo
     ? {
-        id: editingInsumo.id,
-        nombre: editingInsumo.nombre,
-        base_unit: editingInsumo.base_unit,
-        purchase_unit: editingInsumo.purchase_unit,
-        conversion_factor: editingInsumo.conversion_factor,
-        costo_unitario: editingInsumo.costo_unitario,
-        stock_quantity: editingInsumo.stock_quantity,
-        min_stock_level: editingInsumo.min_stock_level ?? 0,
-        category: editingInsumo.category,
-        proveedor_preferido_id: editingInsumo.proveedor_preferido_id,
-        pending_reception_quantity: editingInsumo.pending_reception_quantity,
-        pending_delivery_quantity: editingInsumo.pending_delivery_quantity,
-        last_physical_count_quantity: editingInsumo.last_physical_count_quantity,
-        last_physical_count_date: editingInsumo.last_physical_count_date,
-        discrepancy_quantity: editingInsumo.discrepancy_quantity,
+        ...editingInsumo,
+        min_stock_level: editingInsumo.min_stock_level ?? 0, // Ensure it's a number
       }
     : null;
 

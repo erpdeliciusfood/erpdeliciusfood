@@ -110,19 +110,19 @@ const InsumoCardGrid: React.FC<InsumoCardGridProps> = ({ insumos, onEdit }) => {
               <DollarSign className="mr-1 h-5 w-5 text-green-600" />
               <span className="font-semibold">Costo Unitario:</span> S/ {insumo.costo_unitario.toFixed(2)} / {insumo.purchase_unit}
             </p>
-            {insumo.last_physical_count_quantity !== null && insumo.last_physical_count_quantity !== undefined && (
+            {insumo.last_physical_count_quantity !== null && (
               <p className="text-lg">
                 <span className="font-semibold">Último Conteo:</span> {insumo.last_physical_count_quantity.toFixed(2)} {insumo.purchase_unit} ({insumo.last_physical_count_date ? format(new Date(insumo.last_physical_count_date), "PPP", { locale: es }) : "N/A"})
               </p>
             )}
-            {insumo.discrepancy_quantity !== 0 && insumo.discrepancy_quantity !== undefined && insumo.discrepancy_quantity !== null && (
+            {insumo.discrepancy_quantity !== 0 && (
               <p className="text-lg flex items-center text-orange-700 dark:text-orange-300">
                 <AlertCircle className="mr-1 h-5 w-5" />
                 <span className="font-semibold">Diferencia:</span> {insumo.discrepancy_quantity.toFixed(2)} {insumo.purchase_unit}
               </p>
             )}
             <p className="text-lg">
-              <span className="font-semibold">Proveedor:</span> {insumo.proveedor_preferido?.name || "N/A"}
+              <span className="font-semibold">Proveedor:</span> {insumo.supplier_name || "N/A"}
             </p>
           </CardContent>
           <CardFooter className="flex justify-end space-x-2 pt-4">

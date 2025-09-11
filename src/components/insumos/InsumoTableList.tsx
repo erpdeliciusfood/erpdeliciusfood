@@ -120,7 +120,7 @@ const InsumoTableList: React.FC<InsumoTableListProps> = ({ insumos, onEdit }) =>
                 S/ {insumo.costo_unitario.toFixed(2)}
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[150px]">
-                {insumo.proveedor_preferido?.name || "N/A"}
+                {insumo.supplier_name || "N/A"}
               </TableCell>
               <TableCell className="flex justify-center space-x-2 py-3 px-6 min-w-[180px]">
                 <Button

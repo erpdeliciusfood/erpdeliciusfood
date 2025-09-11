@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getProfile, updateProfile, getAllProfiles, deleteUser } from "@/integrations/supabase/profiles";
+import { getProfile, updateProfile, getAllProfiles } from "@/integrations/supabase/profiles";
 import { useSession } from "@/contexts/SessionContext";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { Profile } from "@/types"; // Import Profile from types
@@ -55,29 +55,6 @@ export const useUpdateProfile = () => {
         dismissToast(context.toastId);
       }
       showError(`Error al actualizar perfil: ${error.message}`);
-    },
-  });
-};
-
-export const useDeleteUser = () => {
-  const queryClient = useQueryClient();
-
-  return useMutation<{ message: string }, Error, string, { toastId: string } >({
-    mutationFn: (userId: string) => deleteUser(userId),
-    onMutate: () => {
-      const toastId = showLoading("Eliminando usuario...");
-      return { toastId };
-    },
-    onSuccess: (_, __, context) => {
-      dismissToast(context.toastId);
-      showSuccess("Usuario eliminado exitosamente.");
-      queryClient.invalidateQueries({ queryKey: ["allProfiles"] });
-    },
-    onError: (error, __, context) => {
-      if (context?.toastId) {
-        dismissToast(context.toastId);
-      }
-      showError(`Error al eliminar usuario: ${error.message}`);
     },
   });
 };

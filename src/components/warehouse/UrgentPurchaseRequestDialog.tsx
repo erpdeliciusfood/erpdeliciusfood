@@ -44,27 +44,25 @@ const UrgentPurchaseRequestDialog: React.FC<UrgentPurchaseRequestDialogProps> = 
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      quantity_requested: insumoNeed.missingQuantity > 0 ? Math.ceil(insumoNeed.missingQuantity) : 1, // Pre-fill with missing quantity, or 1 if none missing
+      quantity_requested: insumoNeed.missing_quantity > 0 ? Math.ceil(insumoNeed.missing_quantity) : 1, // Pre-fill with missing quantity, or 1 if none missing
       notes: `Solicitud urgente por stock insuficiente para preparación diaria del menú.`,
     },
   });
 
   useEffect(() => {
     form.reset({
-      quantity_requested: insumoNeed.missingQuantity > 0 ? Math.ceil(insumoNeed.missingQuantity) : 1,
+      quantity_requested: insumoNeed.missing_quantity > 0 ? Math.ceil(insumoNeed.missing_quantity) : 1,
       notes: `Solicitud urgente por stock insuficiente para preparación diaria del menú.`,
     });
   }, [insumoNeed, form]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const requestData: UrgentPurchaseRequestFormValues = {
-      insumo_id: insumoNeed.insumoId,
+      insumo_id: insumoNeed.insumo_id,
       quantity_requested: values.quantity_requested,
       notes: values.notes,
       source_module: 'warehouse',
       priority: 'urgent',
-      reason: 'Stock Insufficient for Daily Prep',
-      status: 'pending',
     };
     await addUrgentPurchaseRequestMutation.mutateAsync(requestData);
     onClose();
@@ -76,7 +74,7 @@ const UrgentPurchaseRequestDialog: React.FC<UrgentPurchaseRequestDialogProps> = 
     <DialogContent className="sm:max-w-[425px] md:max-w-lg p-6 max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Solicitar Compra Urgente para {insumoNeed.insumoNombre}
+          Solicitar Compra Urgente para {insumoNeed.insumo_nombre}
         </DialogTitle>
       </DialogHeader>
       <Form {...form}>
@@ -89,7 +87,7 @@ const UrgentPurchaseRequestDialog: React.FC<UrgentPurchaseRequestDialogProps> = 
             <div>
               <Label className="text-base font-semibold text-gray-800 dark:text-gray-200">Stock Actual</Label>
               <Input
-                value={`${insumoNeed.currentStock.toFixed(2)} ${insumoNeed.purchaseUnit}`}
+                value={`${insumoNeed.current_stock_quantity.toFixed(2)} ${insumoNeed.purchase_unit}`}
                 readOnly
                 className="h-10 text-base mt-1 bg-gray-100 dark:bg-gray-700"
               />
@@ -97,7 +95,7 @@ const UrgentPurchaseRequestDialog: React.FC<UrgentPurchaseRequestDialogProps> = 
             <div>
               <Label className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad Faltante</Label>
               <Input
-                value={`${insumoNeed.missingQuantity.toFixed(2)} ${insumoNeed.purchaseUnit}`}
+                value={`${insumoNeed.missing_quantity.toFixed(2)} ${insumoNeed.purchase_unit}`}
                 readOnly
                 className="h-10 text-base mt-1 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300"
               />
@@ -109,7 +107,7 @@ const UrgentPurchaseRequestDialog: React.FC<UrgentPurchaseRequestDialogProps> = 
             name="quantity_requested"
             render={({ field }) => (
               <FormItem>
-                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad a Solicitar ({insumoNeed.purchaseUnit})</FormLabel>
+                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Cantidad a Solicitar ({insumoNeed.purchase_unit})</FormLabel>
                 <FormControl>
                   <Input
                     type="number"

@@ -2,6 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -13,14 +14,13 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Insumo, Receta, RecetaFormValues, InsumoFormValues } from "@/types";
+import { Receta, RecetaFormValues, Insumo, InsumoFormValues } from "@/types"; // Import InsumoFormValues
 import { useAddReceta, useUpdateReceta } from "@/hooks/useRecetas";
 import { useInsumos } from "@/hooks/useInsumos";
-import { Loader2, PlusCircle, Trash2, Edit } from "lucide-react";
+import { Loader2, PlusCircle, Trash2, Edit } from "lucide-react"; // Added Edit icon
 import SearchableInsumoSelect from "./SearchableInsumoSelect";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
-import InsumoForm from "@/components/insumos/InsumoForm";
-import { Button } from "@/components/ui/button"; // Added Button import
+import InsumoForm from "@/components/insumos/InsumoForm"; // Import InsumoForm
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -55,9 +55,9 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
   const { data: availableInsumosData, isLoading: isLoadingInsumos, refetch: refetchInsumos } = useInsumos(undefined, undefined, 1, 9999);
 
   const [isCreateInsumoFormOpen, setIsCreateInsumoFormOpen] = useState(false);
-  const [isEditInsumoFormOpen, setIsEditInsumoFormOpen] = useState(false);
+  const [isEditInsumoFormOpen, setIsEditInsumoFormOpen] = useState(false); // NEW: State for editing insumo
   const [newInsumoSearchTerm, setNewInsumoSearchTerm] = useState("");
-  const [insumoToEdit, setInsumoToEdit] = useState<Insumo | null>(null);
+  const [insumoToEdit, setInsumoToEdit] = useState<Insumo | null>(null); // NEW: State for insumo being edited
   const [currentInsumoFieldIndex, setCurrentInsumoFieldIndex] = useState<number | null>(null);
 
   const form = useForm<RecetaFormValues>({
@@ -108,29 +108,31 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
     setIsCreateInsumoFormOpen(true);
   };
 
-  const handleEditInsumo = (insumoId: string, index: number) => {
-    const foundInsumo = availableInsumosData?.data.find((i: Insumo) => i.id === insumoId);
+  const handleEditInsumo = (insumoId: string, index: number) => { // NEW: Handler for editing insumo
+    const foundInsumo = availableInsumosData?.data.find(i => i.id === insumoId);
     if (foundInsumo) {
       setInsumoToEdit(foundInsumo);
       setCurrentInsumoFieldIndex(index);
       setIsEditInsumoFormOpen(true);
     } else {
+      // Handle case where insumo is not found (e.g., show error toast)
       console.error("Insumo no encontrado para editar:", insumoId);
     }
   };
 
   const handleInsumoFormSuccess = async (newOrUpdatedInsumo: Insumo) => {
     setIsCreateInsumoFormOpen(false);
-    setIsEditInsumoFormOpen(false);
+    setIsEditInsumoFormOpen(false); // Close edit dialog too
     setNewInsumoSearchTerm("");
-    setInsumoToEdit(null);
-    await refetchInsumos();
+    setInsumoToEdit(null); // Clear insumo being edited
+    await refetchInsumos(); // Refetch insumos to include the new/updated one
 
     if (currentInsumoFieldIndex !== null) {
+      // If it was a new insumo, set its ID in the form field
       if (!initialData || !initialData.plato_insumos?.some(pi => pi.insumo_id === newOrUpdatedInsumo.id)) {
         update(currentInsumoFieldIndex, {
           ...fields[currentInsumoFieldIndex],
-          insumo_id: newOrUpdatedInsumo.id,
+          insumo_id: newOrUpdatedInsumo.id, // Set the newly created insumo's ID
         });
       }
       setCurrentInsumoFieldIndex(null);
@@ -139,18 +141,19 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
 
   const handleInsumoFormCancel = () => {
     setIsCreateInsumoFormOpen(false);
-    setIsEditInsumoFormOpen(false);
+    setIsEditInsumoFormOpen(false); // Close edit dialog too
     setNewInsumoSearchTerm("");
-    setInsumoToEdit(null);
+    setInsumoToEdit(null); // Clear insumo being edited
     setCurrentInsumoFieldIndex(null);
   };
 
   const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingInsumos;
 
+  // Map Insumo to InsumoFormValues for the edit form
   const mappedInsumoToEdit: InsumoFormValues | null = insumoToEdit
     ? {
         ...insumoToEdit,
-        min_stock_level: insumoToEdit.min_stock_level ?? 0,
+        min_stock_level: insumoToEdit.min_stock_level ?? 0, // Ensure it's a number
       }
     : null;
 
@@ -209,7 +212,7 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
                     render={({ field: insumoField }) => (
                       <FormItem className="flex-grow w-full">
                         <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Insumo</FormLabel>
-                        <div className="flex items-center space-x-2">
+                        <div className="flex items-center space-x-2"> {/* NEW: Wrapper for select and edit button */}
                           <SearchableInsumoSelect
                             value={insumoField.value}
                             onChange={insumoField.onChange}
@@ -217,7 +220,7 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
                             availableInsumos={availableInsumosData?.data}
                             onAddNewInsumo={(searchTerm: string) => handleAddNewInsumo(searchTerm, index)}
                           />
-                          {insumoField.value && (
+                          {insumoField.value && ( // Show edit button only if an insumo is selected
                             <Button
                               type="button"
                               variant="outline"
@@ -302,6 +305,7 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
         </form>
       </Form>
 
+      {/* Dialog for creating a new Insumo */}
       <Dialog open={isCreateInsumoFormOpen} onOpenChange={setIsCreateInsumoFormOpen}>
         <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -326,6 +330,7 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
         </DialogContent>
       </Dialog>
 
+      {/* Dialog for editing an existing Insumo */}
       <Dialog open={isEditInsumoFormOpen} onOpenChange={setIsEditInsumoFormOpen}>
         <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
           <DialogHeader>
@@ -335,7 +340,7 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
           </DialogHeader>
           {mappedInsumoToEdit && (
             <InsumoForm
-              initialData={mappedInsumoToEdit}
+              initialData={mappedInsumoToEdit} // Pass the mapped InsumoFormValues object for editing
               onSuccess={handleInsumoFormSuccess}
               onCancel={handleInsumoFormCancel}
             />

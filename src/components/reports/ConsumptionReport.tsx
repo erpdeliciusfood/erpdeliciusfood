@@ -32,10 +32,10 @@ const ConsumptionReport: React.FC<ConsumptionReportProps> = ({ startDate, endDat
       const reportDate = parseISO(report.report_date);
       if (isWithinInterval(reportDate, { start: startDate, end: endDate })) {
         report.service_report_platos?.forEach(srp => {
-          const receta = srp.receta; // Changed plato to receta
+          const receta = srp.platos; // Changed plato to receta
           if (receta) {
             receta.plato_insumos?.forEach(pi => {
-              const insumo = pi.insumo;
+              const insumo = pi.insumos;
               if (insumo) {
                 const consumedQuantityInBaseUnit = pi.cantidad_necesaria * srp.quantity_sold;
                 const currentData = consumptionMap.get(insumo.id) || {

@@ -64,7 +64,7 @@ const PurchaseTableActions: React.FC<PurchaseTableActionsProps> = ({
                 </DialogTitle>
               </DialogHeader>
               <SuggestedPurchaseListContent
-                suggestedPurchases={selectedInsumosForBatchPurchase as InsumoNeeded[]}
+                suggestedPurchases={selectedInsumosForBatchPurchase}
                 onClose={handleCloseSuggestedPurchaseList}
                 initialSelectedInsumoIds={selectedInsumoIds}
               />
@@ -89,9 +89,9 @@ const PurchaseTableActions: React.FC<PurchaseTableActionsProps> = ({
               </DialogTitle>
             </DialogHeader>
             <SuggestedPurchaseListContent
-              suggestedPurchases={insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0) as InsumoNeeded[]}
+              suggestedPurchases={insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0)}
               onClose={handleCloseSuggestedPurchaseList}
-              initialSelectedInsumoIds={new Set(insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0).map(i => i.id))}
+              initialSelectedInsumoIds={selectedInsumoIds}
             />
           </DialogContent>
         </Dialog>

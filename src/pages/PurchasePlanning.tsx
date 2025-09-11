@@ -14,6 +14,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { InsumoNeeded } from "@/types";
 import UrgentPurchaseAlert from "@/components/purchase-planning/UrgentPurchaseAlert";
 
 const PurchasePlanning = () => {
@@ -23,7 +24,7 @@ const PurchasePlanning = () => {
   });
   const [periodType, setPeriodType] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('monthly');
   const [isRegisterPurchaseFormOpen, setIsRegisterPurchaseFormOpen] = useState(false);
-  const [selectedReasonFilter, setSelectedReasonFilter] = useState<'all' | 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert'>('all');
+  const [selectedReasonFilter, setSelectedReasonFilter] = useState<'all' | InsumoNeeded['reason_for_purchase_suggestion']>('all');
 
   const handlePeriodChange = (period: 'daily' | 'weekly' | 'monthly' | 'custom') => {
     setPeriodType(period);
@@ -151,7 +152,7 @@ const PurchasePlanning = () => {
             </Popover>
           )}
 
-          <Select onValueChange={(value: 'all' | 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert') => setSelectedReasonFilter(value)} value={selectedReasonFilter}>
+          <Select onValueChange={(value: 'all' | InsumoNeeded['reason_for_purchase_suggestion']) => setSelectedReasonFilter(value)} value={selectedReasonFilter}>
             <SelectTrigger className="w-full sm:w-[200px] h-12 text-base">
               <SelectValue placeholder="Filtrar por motivo" />
             </SelectTrigger>

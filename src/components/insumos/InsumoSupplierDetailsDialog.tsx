@@ -1,129 +1,243 @@
 import React, { useEffect } from "react";
-import { useForm } from "react-hook-form";
-import { z } from "zod";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
-import { Insumo } from "@/types";
-import { useUpdateInsumo } from "@/hooks/useInsumos";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useSuppliers } from "@/hooks/useSuppliers";
-import { Loader2 } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
+import { Insumo, InsumoSupplierHistory, InsumoPriceHistory, InsumoFormValues } from "@/types"; // Import InsumoFormValues
+import { useUpdateInsumo, useInsumoSupplierHistory, useInsumoPriceHistory } from "@/hooks/useInsumos";
+import { Loader2, Building2, DollarSign, History } from "lucide-react";
+import { format } from "date-fns";
+import { es } from "date-fns/locale";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { showSuccess, showError } from "@/utils/toast";
+
+const supplierFormSchema = z.object({
+  supplier_name: z.string().max(100, {
+    message: "El nombre del proveedor no debe exceder los 100 caracteres.",
+  }).nullable(),
+  supplier_phone: z.string().nullable().refine((val) => {
+    if (!val) return true; // Allow null or empty string
+    // Regex for +51 followed by 9 digits
+    return /^\+51\d{9}$/.test(val);
+  }, {
+    message: "El teléfono debe empezar con +51 y tener 9 dígitos (ej. +51987654321).",
+  }),
+  supplier_address: z.string().max(255, {
+    message: "La dirección del proveedor no debe exceder los 255 caracteres.",
+  }).nullable(),
+});
 
 interface InsumoSupplierDetailsDialogProps {
   insumo: Insumo;
   onClose: () => void;
 }
 
-const FormSchema = z.object({
-  proveedor_preferido_id: z.string().uuid().nullable().optional(),
-});
-
 const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = ({ insumo, onClose }) => {
   const updateInsumoMutation = useUpdateInsumo();
-  const { data: suppliers, isLoading: isLoadingSuppliers } = useSuppliers();
+  const { data: supplierHistory, isLoading: isLoadingSupplierHistory } = useInsumoSupplierHistory(insumo.id);
+  const { data: priceHistory, isLoading: isLoadingPriceHistory } = useInsumoPriceHistory(insumo.id);
 
-  const form = useForm<z.infer<typeof FormSchema>>({
-    resolver: zodResolver(FormSchema),
+  const form = useForm<z.infer<typeof supplierFormSchema>>({
+    resolver: zodResolver(supplierFormSchema),
     defaultValues: {
-      proveedor_preferido_id: insumo.proveedor_preferido_id || null,
+      supplier_name: insumo.supplier_name || "",
+      supplier_phone: insumo.supplier_phone || "",
+      supplier_address: insumo.supplier_address || "",
     },
   });
 
   useEffect(() => {
     form.reset({
-      proveedor_preferido_id: insumo.proveedor_preferido_id || null,
+      supplier_name: insumo.supplier_name || "",
+      supplier_phone: insumo.supplier_phone || "",
+      supplier_address: insumo.supplier_address || "",
     });
   }, [insumo, form]);
 
-  const onSubmit = async (values: z.infer<typeof FormSchema>) => {
+  const onSubmit = async (values: z.infer<typeof supplierFormSchema>) => {
     try {
+      // Construct the InsumoFormValues object explicitly to avoid sending extra fields
+      const updatedInsumoData: InsumoFormValues = {
+        nombre: insumo.nombre,
+        base_unit: insumo.base_unit,
+        costo_unitario: insumo.costo_unitario,
+        stock_quantity: insumo.stock_quantity,
+        purchase_unit: insumo.purchase_unit,
+        conversion_factor: insumo.conversion_factor,
+        min_stock_level: insumo.min_stock_level ?? 0, // Safely handle null
+        category: insumo.category,
+        supplier_name: values.supplier_name,
+        supplier_phone: values.supplier_phone,
+        supplier_address: values.supplier_address,
+      };
+
       await updateInsumoMutation.mutateAsync({
         id: insumo.id,
-        updates: {
-          proveedor_preferido_id: values.proveedor_preferido_id,
-        },
+        insumo: updatedInsumoData,
       });
-      onClose();
-    } catch (error) {
-      console.error("Error updating insumo supplier details:", error);
+      showSuccess("Datos del proveedor actualizados exitosamente.");
+      onClose(); // Close dialog on success
+    } catch (error: any) {
+      showError(`Error al actualizar el proveedor: ${error.message}`);
     }
   };
 
+  const isUpdating = updateInsumoMutation.isPending;
+
   return (
-    <DialogContent className="sm:max-w-[425px] p-6">
+    <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
       <DialogHeader>
         <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Detalles del Proveedor de {insumo.nombre}
+          Detalles del Proveedor y Historial de {insumo.nombre}
         </DialogTitle>
       </DialogHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-          <FormField
-            control={form.control}
-            name="proveedor_preferido_id"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel>Proveedor Preferido</FormLabel>
-                <Select onValueChange={field.onChange} defaultValue={field.value || ""}>
-                  <FormControl>
-                    <SelectTrigger>
-                      <SelectValue placeholder="Selecciona un proveedor" />
-                    </SelectTrigger>
-                  </FormControl>
-                  <SelectContent>
-                    {isLoadingSuppliers ? (
-                      <div className="flex items-center justify-center p-4">
-                        <Loader2 className="h-6 w-6 animate-spin text-primary" />
-                      </div>
-                    ) : (
-                      <>
-                        <SelectItem value="">Ninguno</SelectItem>
-                        {suppliers?.map((supplier) => (
-                          <SelectItem key={supplier.id} value={supplier.id}>
-                            {supplier.name}
-                          </SelectItem>
-                        ))}
-                      </>
-                    )}
-                  </SelectContent>
-                </Select>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          {insumo.proveedor_preferido && (
-            <div className="space-y-2 text-gray-700 dark:text-gray-300">
-              <p>
-                <span className="font-semibold">Nombre:</span> {insumo.proveedor_preferido.name}
-              </p>
-              <p>
-                <span className="font-semibold">Contacto:</span> {insumo.proveedor_preferido.contact_person || "N/A"}
-              </p>
-              <p>
-                <span className="font-semibold">Teléfono:</span> {insumo.proveedor_preferido.phone || "N/A"}
-              </p>
-              <p>
-                <span className="font-semibold">Email:</span> {insumo.proveedor_preferido.email || "N/A"}
-              </p>
-              <p>
-                <span className="font-semibold">Dirección:</span> {insumo.proveedor_preferido.address || "N/A"}
-              </p>
+      <Tabs defaultValue="current-supplier" className="w-full mt-4">
+        <TabsList className="grid w-full grid-cols-2">
+          <TabsTrigger value="current-supplier" className="text-base">Proveedor Actual</TabsTrigger>
+          <TabsTrigger value="history" className="text-base">Historial</TabsTrigger>
+        </TabsList>
+        <TabsContent value="current-supplier" className="mt-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            <div>
+              <Label htmlFor="supplier_name" className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre del Proveedor</Label>
+              <Input
+                id="supplier_name"
+                placeholder="Nombre del proveedor"
+                {...form.register("supplier_name")}
+                className="h-10 text-base mt-1"
+                disabled={isUpdating}
+              />
+              {form.formState.errors.supplier_name && (
+                <p className="text-red-500 text-sm mt-1">{form.formState.errors.supplier_name.message}</p>
+              )}
             </div>
-          )}
+            <div>
+              <Label htmlFor="supplier_phone" className="text-base font-semibold text-gray-800 dark:text-gray-200">Teléfono del Proveedor</Label>
+              <Input
+                id="supplier_phone"
+                placeholder="Ej. +51987654321"
+                {...form.register("supplier_phone")}
+                className="h-10 text-base mt-1"
+                disabled={isUpdating}
+              />
+              {form.formState.errors.supplier_phone && (
+                <p className="text-red-500 text-sm mt-1">{form.formState.errors.supplier_phone.message}</p>
+              )}
+            </div>
+            <div>
+              <Label htmlFor="supplier_address" className="text-base font-semibold text-gray-800 dark:text-gray-200">Dirección del Proveedor</Label>
+              <Input
+                id="supplier_address"
+                placeholder="Ej. Av. Los Girasoles 123, Lima"
+                {...form.register("supplier_address")}
+                className="h-10 text-base mt-1"
+                disabled={isUpdating}
+              />
+              {form.formState.errors.supplier_address && (
+                <p className="text-red-500 text-sm mt-1">{form.formState.errors.supplier_address.message}</p>
+              )}
+            </div>
+            <div className="flex justify-end space-x-2 pt-2">
+              <Button type="button" variant="outline" onClick={onClose} disabled={isUpdating}>
+                Cancelar
+              </Button>
+              <Button type="submit" disabled={isUpdating}>
+                {isUpdating && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                Guardar Cambios
+              </Button>
+            </div>
+          </form>
+        </TabsContent>
+        <TabsContent value="history" className="mt-4">
+          <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 mb-4 flex items-center">
+            <History className="mr-2 h-5 w-5" /> Historial de Proveedores y Precios
+          </h3>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={onClose}>
-              Cancelar
-            </Button>
-            <Button type="submit" disabled={updateInsumoMutation.isPending || isLoadingSuppliers}>
-              {updateInsumoMutation.isPending ? "Guardando..." : "Guardar Cambios"}
-            </Button>
-          </DialogFooter>
-        </form>
-      </Form>
+          <div className="mb-6">
+            <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center">
+              <Building2 className="mr-2 h-4 w-4" /> Cambios de Proveedor
+            </h4>
+            {isLoadingSupplierHistory ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-8 w-8 animate-spin text-primary dark:text-primary-foreground" />
+              </div>
+            ) : supplierHistory && supplierHistory.length > 0 ? (
+              <div className="overflow-x-auto rounded-lg border dark:border-gray-700">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Fecha</TableHead>
+                      <TableHead className="text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Proveedor Anterior</TableHead>
+                      <TableHead className="text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Proveedor Nuevo</TableHead>
+                      <TableHead className="text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Dirección Anterior</TableHead>
+                      <TableHead className="text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Dirección Nueva</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {supplierHistory.map((entry: InsumoSupplierHistory) => (
+                      <TableRow key={entry.id}>
+                        <TableCell className="text-sm text-gray-700 dark:text-gray-300">
+                          {format(new Date(entry.changed_at), "PPP HH:mm", { locale: es })}
+                        </TableCell>
+                        <TableCell className="text-sm text-gray-700 dark:text-gray-300">{entry.old_supplier_name || "N/A"}</TableCell>
+                        <TableCell className="text-sm text-gray-700 dark:text-gray-300">{entry.new_supplier_name || "N/A"}</TableCell>
+                        <TableCell className="text-sm text-gray-700 dark:text-gray-300">{entry.old_supplier_address || "N/A"}</TableCell>
+                        <TableCell className="text-sm text-gray-700 dark:text-gray-300">{entry.new_supplier_address || "N/A"}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <p className="text-gray-600 dark:text-gray-400 text-sm">No hay historial de cambios de proveedor.</p>
+            )}
+          </div>
+
+          <div>
+            <h4 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 flex items-center">
+              <DollarSign className="mr-2 h-4 w-4" /> Historial de Precios
+            </h4>
+            {isLoadingPriceHistory ? (
+              <div className="flex items-center justify-center py-4">
+                <Loader2 className="h-8 w-8 animate-spin text-primary dark:text-primary-foreground" />
+              </div>
+            ) : priceHistory && priceHistory.length > 0 ? (
+              <div className="overflow-x-auto rounded-lg border dark:border-gray-700">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="text-left text-sm font-semibold text-gray-700 dark:text-gray-200">Fecha</TableHead>
+                      <TableHead className="text-right text-sm font-semibold text-gray-700 dark:text-gray-200">Costo Anterior (S/)</TableHead>
+                      <TableHead className="text-right text-sm font-semibold text-gray-700 dark:text-gray-200">Costo Nuevo (S/)</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {priceHistory.map((entry: InsumoPriceHistory) => (
+                      <TableRow key={entry.id}>
+                        <TableCell className="text-sm text-gray-700 dark:text-gray-300">
+                          {format(new Date(entry.changed_at), "PPP HH:mm", { locale: es })}
+                        </TableCell>
+                        <TableCell className="text-right text-sm text-gray-700 dark:text-gray-300">S/ {entry.old_costo_unitario.toFixed(2)}</TableCell>
+                        <TableCell className="text-right text-sm text-gray-700 dark:text-gray-300">S/ {entry.new_costo_unitario.toFixed(2)}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            ) : (
+              <p className="text-gray-600 dark:text-gray-400 text-sm">No hay historial de cambios de precio.</p>
+            )}
+          </div>
+        </TabsContent>
+      </Tabs>
     </DialogContent>
   );
 };

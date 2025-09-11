@@ -1,15 +1,13 @@
 import React, { createContext, useContext, useEffect, useState } from 'react';
-import { Session, User, AuthChangeEvent } from '@supabase/supabase-js';
+import { Session, User } from '@supabase/supabase-js';
 import { supabase } from '@/integrations/supabase/client';
 import { useNavigate } from 'react-router-dom';
 import { Loader2 } from 'lucide-react';
-import { Profile } from '@/types';
 
 interface SessionContextType {
   session: Session | null;
   user: User | null;
   isLoading: boolean;
-  profile: Profile | null;
 }
 
 const SessionContext = createContext<SessionContextType | undefined>(undefined);
@@ -17,36 +15,30 @@ const SessionContext = createContext<SessionContextType | undefined>(undefined);
 export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [user, setUser] = useState<User | null>(null);
-  const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const navigate = useNavigate();
 
   useEffect(() => {
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event: AuthChangeEvent, currentSession: Session | null) => {
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, currentSession) => {
       if (currentSession) {
         setSession(currentSession);
         setUser(currentSession.user);
-        const { data: userProfile } = await supabase.from('profiles').select('*').eq('id', currentSession.user.id).single();
-        setProfile(userProfile);
         if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
           navigate('/'); // Redirigir a la página principal después de iniciar sesión
         }
       } else {
         setSession(null);
         setUser(null);
-        setProfile(null);
         navigate('/login'); // Redirigir a la página de login si no hay sesión
       }
       setIsLoading(false);
     });
 
     // Fetch initial session
-    supabase.auth.getSession().then(async ({ data: { session: initialSession } }: { data: { session: Session | null } }) => {
+    supabase.auth.getSession().then(({ data: { session: initialSession } }) => {
       if (initialSession) {
         setSession(initialSession);
         setUser(initialSession.user);
-        const { data: userProfile } = await supabase.from('profiles').select('*').eq('id', initialSession.user.id).single();
-        setProfile(userProfile);
       }
       setIsLoading(false);
     });
@@ -64,7 +56,7 @@ export const SessionContextProvider: React.FC<{ children: React.ReactNode }> = (
   }
 
   return (
-    <SessionContext.Provider value={{ session, user, isLoading, profile }}>
+    <SessionContext.Provider value={{ session, user, isLoading }}>
       {children}
     </SessionContext.Provider>
   );

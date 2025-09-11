@@ -158,9 +158,9 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
     if (selectedInsumoId && !initialData && !prefilledInsumoId) { // Only auto-fill if not editing and not prefilled
       const selectedInsumo = availableInsumosData?.data.find((insumo: Insumo) => insumo.id === selectedInsumoId);
       if (selectedInsumo) {
-        form.setValue("supplier_name_at_purchase", selectedInsumo.proveedor_preferido?.name || "");
-        form.setValue("supplier_phone_at_purchase", selectedInsumo.proveedor_preferido?.phone || "");
-        form.setValue("supplier_address_at_purchase", selectedInsumo.proveedor_preferido?.address || "");
+        form.setValue("supplier_name_at_purchase", selectedInsumo.supplier_name || "");
+        form.setValue("supplier_phone_at_purchase", selectedInsumo.supplier_phone || "");
+        form.setValue("supplier_address_at_purchase", selectedInsumo.supplier_address || "");
         form.setValue("from_registered_supplier", true);
       }
     }

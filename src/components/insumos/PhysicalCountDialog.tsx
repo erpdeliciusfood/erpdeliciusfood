@@ -10,7 +10,7 @@ import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Insumo } from "@/types";
+import { Insumo, InsumoFormValues } from "@/types";
 import { useUpdateInsumo } from "@/hooks/useInsumos";
 import { Loader2, CalendarIcon, AlertCircle } from "lucide-react";
 import { format, formatISO } from "date-fns";
@@ -60,24 +60,33 @@ const PhysicalCountDialog: React.FC<PhysicalCountDialogProps> = ({ insumo, onClo
 
   const onSubmit = async (values: z.infer<typeof physicalCountSchema>) => {
     try {
+      const updatedInsumoData: InsumoFormValues = {
+        nombre: insumo.nombre,
+        base_unit: insumo.base_unit,
+        costo_unitario: insumo.costo_unitario,
+        stock_quantity: insumo.stock_quantity, // Keep current stock_quantity
+        purchase_unit: insumo.purchase_unit,
+        conversion_factor: insumo.conversion_factor,
+        min_stock_level: insumo.min_stock_level ?? 0,
+        category: insumo.category,
+        supplier_name: insumo.supplier_name,
+        supplier_phone: insumo.supplier_phone,
+        supplier_address: insumo.supplier_address,
+        pending_reception_quantity: insumo.pending_reception_quantity,
+        pending_delivery_quantity: insumo.pending_delivery_quantity,
+        last_physical_count_quantity: values.last_physical_count_quantity,
+        last_physical_count_date: values.last_physical_count_date,
+        discrepancy_quantity: discrepancy, // Update discrepancy based on new count
+      };
+
       await updateInsumoMutation.mutateAsync({
         id: insumo.id,
-        updates: {
-          last_physical_count_quantity: values.last_physical_count_quantity,
-          last_physical_count_date: new Date().toISOString().split('T')[0],
-          discrepancy_quantity: discrepancy, // Update discrepancy based on new count
-          stock_quantity: values.last_physical_count_quantity, // Update stock to physical count
-        }
+        insumo: updatedInsumoData,
       });
       showSuccess("Conteo físico registrado exitosamente.");
       onClose();
-    } catch (error: unknown) { // Añadido 'unknown'
-      console.error("Error updating physical count:", error);
-      let errorMessage = "Error desconocido al registrar conteo físico.";
-      if (error instanceof Error) { // Type guard
-        errorMessage = error.message;
-      }
-      showError(errorMessage);
+    } catch (error: any) {
+      showError(`Error al registrar conteo físico: ${error.message}`);
     }
   };
 
@@ -103,7 +112,7 @@ const PhysicalCountDialog: React.FC<PhysicalCountDialogProps> = ({ insumo, onClo
           <div>
             <Label className="text-base font-semibold text-gray-800 dark:text-gray-200">Último Conteo Físico</Label>
             <Input
-              value={insumo.last_physical_count_quantity !== null && insumo.last_physical_count_quantity !== undefined ? `${insumo.last_physical_count_quantity.toFixed(2)} ${insumo.purchase_unit}` : "N/A"}
+              value={insumo.last_physical_count_quantity !== null ? `${insumo.last_physical_count_quantity.toFixed(2)} ${insumo.purchase_unit}` : "N/A"}
               readOnly
               className="h-10 text-base mt-1 bg-gray-100 dark:bg-gray-700"
             />

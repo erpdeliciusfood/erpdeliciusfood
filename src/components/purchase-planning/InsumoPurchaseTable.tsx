@@ -113,7 +113,7 @@ const InsumoPurchaseTable: React.FC<InsumoPurchaseTableProps> = ({
                 <Button
                   variant="outline"
                   size="icon"
-                  onClick={() => handleOpenSupplierDetails(insumo as Insumo)}
+                  onClick={() => handleOpenSupplierDetails(insumo)}
                   className="h-10 w-10 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out"
                 >
                   <Building2 className="h-5 w-5 text-gray-600 dark:text-gray-300" />

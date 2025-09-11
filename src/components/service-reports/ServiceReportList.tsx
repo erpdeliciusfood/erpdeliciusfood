@@ -56,7 +56,7 @@ const ServiceReportList: React.FC<ServiceReportListProps> = ({ reports, onEdit }
                 {format(new Date(report.report_date), "PPP", { locale: es })}
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[150px]">
-                {report.meal_service?.name || "N/A"}
+                {report.meal_services?.name || "N/A"}
               </TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[120px]">
                 {report.tickets_issued}
@@ -65,7 +65,7 @@ const ServiceReportList: React.FC<ServiceReportListProps> = ({ reports, onEdit }
                 {report.meals_sold}
               </TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[180px]">
-                S/ {report.additional_services_revenue?.toFixed(2)}
+                S/ {report.additional_services_revenue.toFixed(2)}
               </TableCell>
               <TableCell className="flex justify-center space-x-2 py-3 px-6 min-w-[150px]">
                 <Button
@@ -90,7 +90,7 @@ const ServiceReportList: React.FC<ServiceReportListProps> = ({ reports, onEdit }
                     <AlertDialogHeader>
                       <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
                       <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                        Esta acción no se puede deshacer. Esto eliminará permanentemente el reporte de servicio del {format(new Date(report.report_date), "PPP", { locale: es })} para {report.meal_service?.name || "N/A"} de nuestros servidores.
+                        Esta acción no se puede deshacer. Esto eliminará permanentemente el reporte de servicio del {format(new Date(report.report_date), "PPP", { locale: es })} para {report.meal_services?.name || "N/A"} de nuestros servidores.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                     <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">

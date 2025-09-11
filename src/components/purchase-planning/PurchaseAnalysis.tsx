@@ -1,11 +1,11 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useMenusList } from "@/hooks/menus/useMenusList"; // Updated import
+import { useMenus } from "@/hooks/useMenus";
 import { useInsumos } from "@/hooks/useInsumos";
 import { Loader2, ShoppingBag } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Insumo, InsumoNeeded } from "@/types";
+import { Insumo } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import InsumoSupplierDetailsDialog from "@/components/insumos/InsumoSupplierDetailsDialog";
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
@@ -21,8 +21,20 @@ interface PurchaseAnalysisProps {
   selectedReasonFilter: 'all' | InsumoNeeded['reason_for_purchase_suggestion'];
 }
 
+interface InsumoNeeded extends Insumo {
+  quantity_needed_for_period_raw: number;
+  quantity_needed_for_period_rounded: number;
+  quantity_needed_for_period_rounded_up: boolean;
+  current_stock: number;
+  purchase_suggestion_raw: number;
+  purchase_suggestion_rounded: number;
+  purchase_suggestion_rounded_up: boolean;
+  estimated_purchase_cost: number;
+  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert';
+}
+
 const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate, selectedReasonFilter }) => {
-  const { data: menus, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenusList( // Updated hook
+  const { data: menus, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenus(
     format(startDate, "yyyy-MM-dd"),
     format(endDate, "yyyy-MM-dd")
   );
@@ -50,12 +62,12 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
     const insumoNeedsMap = new Map<string, number>();
 
     menus.forEach(menu => {
-      if (menu.date && isWithinInterval(parseISO(menu.date), { start: startDate, end: endDate })) { // Corrected property access
+      if (menu.menu_date && isWithinInterval(parseISO(menu.menu_date), { start: startDate, end: endDate })) {
         menu.menu_platos?.forEach(menuPlato => {
-          const receta = menuPlato.receta; // Corrected property access
-          if (receta) {
-            receta.plato_insumos?.forEach(platoInsumo => {
-              const insumo = platoInsumo.insumo; // Corrected property access
+          const plato = menuPlato.platos;
+          if (plato) {
+            plato.plato_insumos?.forEach(platoInsumo => {
+              const insumo = platoInsumo.insumos;
               if (insumo) {
                 const totalNeededBaseUnit = (platoInsumo.cantidad_necesaria * menuPlato.quantity_needed);
                 const totalNeededPurchaseUnit = totalNeededBaseUnit / insumo.conversion_factor;
@@ -81,7 +93,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
 
       const neededToCoverMenus = Math.max(0, quantityNeededForPeriodRaw - currentStock);
       const neededToReachMinStock = Math.max(0, minStockLevel - currentStock);
-
+      
       let purchaseSuggestionRaw = Math.max(neededToCoverMenus, neededToReachMinStock);
       let reason: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert' = 'menu_demand';
 
@@ -118,7 +130,6 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
           purchase_suggestion_rounded_up: purchaseSuggestionRoundedUp,
           estimated_purchase_cost: parseFloat(estimatedPurchaseCost.toFixed(2)),
           reason_for_purchase_suggestion: reason,
-          reasons: [], // Add missing 'reasons' property
         });
         overallEstimatedCost += estimatedPurchaseCost;
       }
@@ -208,7 +219,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
 
   return (
     <div className="space-y-8">
-      <PurchaseCostSummary totalEstimatedPurchaseCost={totalEstimatedPurchaseCost} isLoading={isLoading} />
+      <PurchaseCostSummary totalEstimatedPurchaseCost={totalEstimatedPurchaseCost} isLoading={isLoading} /> {/* Pass isLoading */}
 
       <Card className="w-full shadow-lg dark:bg-gray-800">
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-2">
@@ -232,7 +243,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
               selectedInsumoIds={selectedInsumoIds}
               handleCheckboxChange={handleCheckboxChange}
               handleOpenSupplierDetails={handleOpenSupplierDetails}
-              handleOpenIndividualPurchaseForm={handleOpenIndividualPurchaseForm as (insumo: import("/Users/growdesarrollo/dyad-apps/erpdeliciusfood/src/types").InsumoNeeded) => void}
+              handleOpenIndividualPurchaseForm={handleOpenIndividualPurchaseForm}
             />
           ) : (
             <div className="text-center py-6 text-gray-600 dark:text-gray-400">
@@ -267,9 +278,9 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
               prefilledInsumoId={selectedInsumoForIndividualPurchase.id}
               prefilledQuantity={selectedInsumoForIndividualPurchase.purchase_suggestion_rounded}
               prefilledUnitCost={selectedInsumoForIndividualPurchase.costo_unitario}
-              prefilledSupplierName={selectedInsumoForIndividualPurchase.proveedor_preferido?.name || ""}
-              prefilledSupplierPhone={selectedInsumoForIndividualPurchase.proveedor_preferido?.phone || ""}
-              prefilledSupplierAddress={selectedInsumoForIndividualPurchase.proveedor_preferido?.address || ""}
+              prefilledSupplierName={selectedInsumoForIndividualPurchase.supplier_name || ""}
+              prefilledSupplierPhone={selectedInsumoForIndividualPurchase.supplier_phone || ""}
+              prefilledSupplierAddress={selectedInsumoForIndividualPurchase.supplier_address || ""}
               onSuccess={handleCloseIndividualPurchaseForm}
               onCancel={handleCloseIndividualPurchaseForm}
             />

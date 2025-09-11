@@ -101,11 +101,11 @@ const UrgentPurchaseAlert: React.FC = () => {
             <TableBody>
               {pendingRequests.slice(0, 3).map((request: UrgentPurchaseRequest) => ( // Show top 3
                 <TableRow key={request.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
-                  <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{request.insumo?.nombre || "Insumo Desconocido"}</TableCell>
-                  <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">{request.quantity_requested.toFixed(2)} {request.insumo?.purchase_unit || "unidad"}</TableCell>
+                  <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{request.insumos?.nombre || "Insumo Desconocido"}</TableCell>
+                  <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">{request.quantity_requested.toFixed(2)} {request.insumos?.purchase_unit || "unidad"}</TableCell>
                   <TableCell className="text-base text-gray-700 dark:text-gray-300">{format(new Date(request.request_date), "PPP", { locale: es })}</TableCell>
                   <TableCell className="text-center text-base text-gray-700 dark:text-gray-300"> {/* NEW: Display insistence_count */}
-                    {request.insistence_count && request.insistence_count > 1 ? (
+                    {request.insistence_count > 1 ? (
                       <Badge variant="destructive" className="text-base px-2 py-1 flex items-center justify-center mx-auto w-fit">
                         <Repeat2 className="h-4 w-4 mr-1" /> {request.insistence_count}
                       </Badge>

@@ -5,7 +5,7 @@ import * as z from "zod";
 import { Button } from "@/components/ui/button";
 import { Form } from "@/components/ui/form";
 import { Insumo, InsumoFormValues } from "@/types";
-import { useCreateInsumo, useUpdateInsumo } from "@/hooks/useInsumos";
+import { useAddInsumo, useUpdateInsumo } from "@/hooks/useInsumos";
 import { Loader2 } from "lucide-react";
 import InsumoBasicDetailsFormSection from "./InsumoBasicDetailsFormSection";
 import InsumoStockAndCostFormSection from "./InsumoStockAndCostFormSection";
@@ -54,7 +54,7 @@ const formSchema = z.object({
 });
 
 interface InsumoFormProps {
-  initialData?: Insumo | InsumoFormValues | null; // Permite Insumo (con id) o InsumoFormValues (sin id)
+  initialData?: InsumoFormValues | null;
   onSuccess: (newInsumo: Insumo) => Promise<void> | void; // Adjusted type to accept Promise<void> and ensure newInsumo is always provided
   onCancel: () => void;
 }
@@ -90,7 +90,7 @@ const predefinedConversions: { [purchaseUnit: string]: { [baseUnit: string]: num
 };
 
 const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCancel }) => {
-  const addMutation = useCreateInsumo();
+  const addMutation = useAddInsumo();
   const updateMutation = useUpdateInsumo();
   const [isConversionFactorEditable, setIsConversionFactorEditable] = useState(true);
 
@@ -160,7 +160,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
 
   useEffect(() => {
     // Check if it's a new insumo being created (either completely new or pre-filled from search)
-    const isNewInsumoBeingCreated = !initialData || !(initialData as InsumoFormValues).id;
+    const isNewInsumoBeingCreated = !initialData || !(initialData as Insumo).id;
 
     if (isNewInsumoBeingCreated && purchaseUnit && baseUnit) {
       const suggestedFactor = predefinedConversions[purchaseUnit]?.[baseUnit];
@@ -177,16 +177,15 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         }
         setIsConversionFactorEditable(true);
       }
-    } else if (initialData && (initialData as InsumoFormValues).id) {
+    } else if (initialData && (initialData as Insumo).id) {
       // When editing an existing insumo, the conversion factor should always be editable by default.
       setIsConversionFactorEditable(true);
     }
   }, [purchaseUnit, baseUnit, form, initialData]);
 
   const onSubmit = async (values: InsumoFormValues) => {
-    // Verifica si initialData existe, tiene una propiedad 'id' y esa propiedad 'id' no es nula/indefinida
-    if (initialData && 'id' in initialData && initialData.id) {
-      const updatedInsumo = await updateMutation.mutateAsync({ id: initialData.id, updates: values });
+    if (initialData && (initialData as Insumo).id) {
+      const updatedInsumo = await updateMutation.mutateAsync({ id: (initialData as Insumo).id, insumo: values });
       onSuccess(updatedInsumo);
     } else {
       const newInsumo = await addMutation.mutateAsync(values);
@@ -226,7 +225,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
               disabled={isLoading}
             >
               {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-              {initialData && (initialData as InsumoFormValues).id ? "Guardar Cambios" : "Añadir Insumo"}
+              {initialData && (initialData as Insumo).id ? "Guardar Cambios" : "Añadir Insumo"}
             </Button>
           </div>
         </form>

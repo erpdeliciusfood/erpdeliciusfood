@@ -61,7 +61,7 @@ const RejectUrgentRequestDialog: React.FC<RejectUrgentRequestDialogProps> = ({
           rejection_reason: values.rejection_reason,
         },
       });
-      showSuccess(`Solicitud de compra urgente para ${urgentRequest.insumo?.nombre || "Insumo Desconocido"} rechazada exitosamente.`);
+      showSuccess(`Solicitud de compra urgente para ${urgentRequest.insumos?.nombre || "Insumo Desconocido"} rechazada exitosamente.`);
       onClose();
     } catch (error: any) {
       showError(`Error al rechazar la solicitud: ${error.message}`);
@@ -80,7 +80,7 @@ const RejectUrgentRequestDialog: React.FC<RejectUrgentRequestDialogProps> = ({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-2">
           <p className="text-base text-gray-700 dark:text-gray-300">
-            Por favor, proporciona un motivo claro para rechazar la solicitud de compra urgente de <span className="font-semibold">{urgentRequest.insumo?.nombre || "Insumo Desconocido"}</span>.
+            Por favor, proporciona un motivo claro para rechazar la solicitud de compra urgente de <span className="font-semibold">{urgentRequest.insumos?.nombre || "Insumo Desconocido"}</span>.
           </p>
 
           <FormField

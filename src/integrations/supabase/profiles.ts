@@ -43,23 +43,6 @@ export const updateProfile = async (userId: string, profile: ProfileFormValues):
   return data;
 };
 
-export const deleteUser = async (userId: string): Promise<{ message: string }> => {
-  const { data, error } = await supabase.functions.invoke('delete-user', {
-    body: { userIdToDelete: userId },
-  });
-
-  if (error) {
-    // If the function returns a specific error message, throw that.
-    const errorData = await error.context.json();
-    if (errorData && errorData.error) {
-      throw new Error(errorData.error);
-    }
-    throw new Error(error.message);
-  }
-
-  return data;
-};
-
 export const signOut = async (): Promise<void> => {
   const { error } = await supabase.auth.signOut();
   if (error) throw new Error(error.message);

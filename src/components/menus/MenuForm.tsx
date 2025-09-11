@@ -6,9 +6,8 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
 } from "@/components/ui/form";
-import { Menu, MenuFormValues } from "@/types";
-import { useCreateMenu } from "@/hooks/menus/useCreateMenu";
-import { useUpdateMenu } from "@/hooks/menus/useUpdateMenu";
+import { Menu, MenuFormValues } from "@/types"; // Removed Receta
+import { useAddMenu, useUpdateMenu } from "@/hooks/useMenus";
 import { useRecetas } from "@/hooks/useRecetas";
 import { useMealServices } from "@/hooks/useMealServices";
 import { useEventTypes } from "@/hooks/useEventTypes";
@@ -18,9 +17,11 @@ import PlatosPorServicioFormSection from "./PlatosPorServicioFormSection";
 import { formatISO } from "date-fns";
 
 const formSchema = z.object({
-  title: z.string().max(100, { // Removed .min(2) to make it optional
+  title: z.string().min(2, {
+    message: "El título debe tener al menos 2 caracteres.",
+  }).max(100, {
     message: "El título no debe exceder los 100 caracteres.",
-  }).nullable().optional(), // Made title optional and nullable
+  }),
   description: z.string().max(500, {
     message: "La descripción no debe exceder los 500 caracteres.",
   }).nullable(),
@@ -32,7 +33,7 @@ const formSchema = z.object({
   platos_por_servicio: z.array(
     z.object({
       meal_service_id: z.string().min(1, { message: "Debe seleccionar un servicio de comida." }),
-      plato_id: z.string().min(1, { message: "Debe seleccionar una receta." }), // Changed receta_id to plato_id
+      plato_id: z.string().min(1, { message: "Debe seleccionar una receta." }),
       dish_category: z.string().min(1, { message: "Debe seleccionar una categoría de receta." }),
       quantity_needed: z.coerce.number().min(1, {
         message: "La cantidad debe ser al menos 1.",
@@ -60,12 +61,12 @@ const formSchema = z.object({
   // Custom validation for duplicate plato_id, meal_service_id, and dish_category combinations
   const seenCombinations = new Set<string>();
   data.platos_por_servicio.forEach((platoServicio, index) => {
-    const combinationKey = `${platoServicio.meal_service_id}-${platoServicio.plato_id}-${platoServicio.dish_category}`; // Changed receta_id to plato_id
+    const combinationKey = `${platoServicio.meal_service_id}-${platoServicio.plato_id}-${platoServicio.dish_category}`;
     if (seenCombinations.has(combinationKey)) {
       ctx.addIssue({
         code: z.ZodIssueCode.custom,
         message: "Esta receta ya está asignada a este servicio y categoría. Por favor, selecciona una combinación única.",
-        path: [`platos_por_servicio.${index}.plato_id`], // Changed receta_id to plato_id
+        path: [`platos_por_servicio.${index}.plato_id`],
       });
     }
     seenCombinations.add(combinationKey);
@@ -80,8 +81,8 @@ interface MenuFormProps {
 }
 
 const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, preselectedDate }) => {
-  const addMutation = useCreateMenu(); // Updated hook
-  const updateMutation = useUpdateMenu(); // Updated hook
+  const addMutation = useAddMenu();
+  const updateMutation = useUpdateMenu();
 
   // Fetch all necessary data here
   const { data: availableRecetas, isLoading: isLoadingRecetas } = useRecetas();
@@ -96,7 +97,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       menu_type: preselectedDate ? "daily" : "event", // Dynamically set default menu_type
       menu_date: preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null,
       event_type_id: null,
-      platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }], // Changed receta_id to plato_id
+      platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
     },
   });
 
@@ -105,15 +106,15 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       form.reset({
         title: initialData.title,
         description: initialData.description || "",
-        menu_type: initialData.date ? "daily" : "event", // Corrected property access
-        menu_date: initialData.date || null, // Corrected property access
+        menu_type: initialData.menu_date ? "daily" : "event",
+        menu_date: initialData.menu_date || null,
         event_type_id: initialData.event_type_id || null,
         platos_por_servicio: initialData.menu_platos?.map(mp => ({
           meal_service_id: mp.meal_service_id,
-          plato_id: mp.plato_id, // Changed receta_id to plato_id
+          plato_id: mp.plato_id,
           dish_category: mp.dish_category,
           quantity_needed: mp.quantity_needed,
-        })) || [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }], // Changed receta_id to plato_id
+        })) || [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
       });
     } else {
       form.reset({
@@ -122,7 +123,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         menu_type: preselectedDate ? "daily" : "event", // Dynamically set default menu_type
         menu_date: preselectedDate ? formatISO(preselectedDate, { representation: 'date' }) : null,
         event_type_id: null,
-        platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }], // Changed receta_id to plato_id
+        platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
       });
     }
   }, [initialData, form, preselectedDate]);
@@ -134,7 +135,6 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       platos_por_servicio: values.platos_por_servicio,
       menu_date: values.menu_type === "daily" && values.menu_date ? values.menu_date : null,
       event_type_id: values.menu_type === "event" && values.event_type_id ? values.event_type_id : null,
-      menu_type: values.menu_type,
     };
 
     if (initialData) {
