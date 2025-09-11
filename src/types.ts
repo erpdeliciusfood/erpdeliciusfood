@@ -274,7 +274,7 @@ export interface UrgentPurchaseRequest {
   requested_by_user_id: string;
   notes: string | null;
   source_module: string;
-  fulfilled_purchase_record_id: string | null;
+  fulfilled_purchase_record_id: string | null; // NEW: Link to the purchase record that fulfilled this request
   created_at: string;
   insumos?: Insumo; // Optional: to fetch related insumo data
 }
@@ -286,4 +286,5 @@ export interface UrgentPurchaseRequestFormValues {
   notes: string | null;
   source_module?: string; // Default to 'warehouse'
   priority?: 'urgent' | 'high' | 'medium' | 'low'; // Default to 'urgent'
+  fulfilled_purchase_record_id?: string | null; // NEW: Allow updating this field
 }
