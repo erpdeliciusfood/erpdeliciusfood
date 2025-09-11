@@ -7,16 +7,16 @@ import { Calendar } from "@/components/ui/calendar";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { cn } from "@/lib/utils";
-import { useMenusList } from "@/hooks/useMenus"; // Updated import
+import { useMenus } from "@/hooks/useMenus";
 import DailyPrepOverview from "@/components/warehouse/DailyPrepOverview";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
-import StockDashboard from "@/components/warehouse/StockDashboard";
+import StockDashboard from "@/components/warehouse/StockDashboard"; // NEW: Import StockDashboard
 
 const WarehousePage: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<Date | undefined>(new Date());
 
   const formattedSelectedDate = selectedDate ? format(selectedDate, "yyyy-MM-dd") : undefined;
-  const { data: menusForSelectedDate, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenusList(formattedSelectedDate, formattedSelectedDate); // Updated hook
+  const { data: menusForSelectedDate, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenus(formattedSelectedDate, formattedSelectedDate);
 
   const handleDateSelect = (date: Date | undefined) => {
     setSelectedDate(date);
@@ -51,7 +51,7 @@ const WarehousePage: React.FC = () => {
       />
 
       <div className="mb-8">
-        <StockDashboard />
+        <StockDashboard /> {/* NEW: Render the StockDashboard here */}
       </div>
 
       <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4">

@@ -5,7 +5,7 @@ import { Calendar as CalendarIcon, PlusCircle, UtensilsCrossed } from "lucide-re
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useMenusList } from "@/hooks/useMenus"; // Updated import
+import { useMenus } from "@/hooks/useMenus";
 import { Menu } from "@/types";
 import { DayModifiers } from "react-day-picker";
 import DailyMenuList from "./DailyMenuList";
@@ -38,12 +38,12 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
   const formattedMonthStart = format(startOfMonth(currentMonth), "yyyy-MM-dd");
   const formattedMonthEnd = format(endOfMonth(currentMonth), "yyyy-MM-dd");
 
-  const { data: menusInMonth, isLoading, isError, error } = useMenusList(formattedMonthStart, formattedMonthEnd); // Updated hook
+  const { data: menusInMonth, isLoading, isError, error } = useMenus(formattedMonthStart, formattedMonthEnd);
 
   useEffect(() => {
     if (selectedDate && menusInMonth) {
       const menusForSelectedDay = menusInMonth.filter(menu =>
-        menu.date && isSameDay(parseISO(menu.date), selectedDate) // Corrected property access
+        menu.menu_date && isSameDay(parseISO(menu.menu_date), selectedDate)
       );
       setDailyMenus(menusForSelectedDay);
     } else {
@@ -69,7 +69,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
     }
 
     const existingDailyMenuForDate = menusInMonth.find(menu =>
-      menu.date && isSameDay(parseISO(menu.date), date) && !menu.event_type_id // Corrected property access
+      menu.menu_date && isSameDay(parseISO(menu.menu_date), date) && !menu.event_type_id // Check for daily menu (no event_type_id)
     );
 
     if (existingDailyMenuForDate) {
@@ -81,7 +81,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
   };
 
   const modifiers: DayModifiers = {
-    menus: menusInMonth?.map(menu => menu.date ? parseISO(menu.date) : undefined).filter(Boolean) as Date[], // Corrected property access
+    menus: menusInMonth?.map(menu => menu.menu_date ? parseISO(menu.menu_date) : undefined).filter(Boolean) as Date[],
     today: new Date(),
     selected: selectedDate ? [selectedDate] : [],
   };

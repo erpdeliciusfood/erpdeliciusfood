@@ -14,9 +14,9 @@ import { cn } from "@/lib/utils";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { DateRange } from "react-day-picker";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
-import PurchaseAnalysis from "@/components/purchase-planning/PurchaseAnalysis";
-import { InsumoNeeded } from "@/types";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import PurchaseAnalysis from "@/components/purchase-planning/PurchaseAnalysis"; // Updated import path
+import { InsumoNeeded } from "@/types"; // NEW: Import InsumoNeeded for filter type
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select components
 
 const Reports = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -24,9 +24,9 @@ const Reports = () => {
     to: endOfMonth(new Date()),
   });
   const [periodType, setPeriodType] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('monthly');
-  const [selectedReasonFilter, setSelectedReasonFilter] = useState<'all' | InsumoNeeded['reason_for_purchase_suggestion']>('all');
+  const [selectedReasonFilter, setSelectedReasonFilter] = useState<'all' | InsumoNeeded['reason_for_purchase_suggestion']>('all'); // NEW: State for reason filter
 
-  const { data: insumoData, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos(undefined, undefined, 1, 9999); // Fetch all insumos for counts
+  const { data: insumoData, isLoading: isLoadingInsumos, isError: isErrorInsumos, error: errorInsumos } = useInsumos();
 
   const handlePeriodChange = (period: 'daily' | 'weekly' | 'monthly' | 'custom') => {
     setPeriodType(period);
@@ -145,6 +145,7 @@ const Reports = () => {
             </Popover>
           )}
 
+          {/* NEW: Filter by Reason for Purchase Analysis */}
           <Select onValueChange={(value: 'all' | InsumoNeeded['reason_for_purchase_suggestion']) => setSelectedReasonFilter(value)} value={selectedReasonFilter}>
             <SelectTrigger className="w-full md:w-[200px] h-12 text-base">
               <SelectValue placeholder="Filtrar por motivo" />
@@ -164,7 +165,7 @@ const Reports = () => {
           <>
             <FinancialOverviewReport startDate={dateRange.from} endDate={dateRange.to} />
             <ConsumptionReport startDate={dateRange.from} endDate={dateRange.to} />
-            <PurchaseAnalysis startDate={dateRange.from} endDate={dateRange.to} selectedReasonFilter={selectedReasonFilter} />
+            <PurchaseAnalysis startDate={dateRange.from} endDate={dateRange.to} selectedReasonFilter={selectedReasonFilter} /> {/* Using the consolidated component */}
           </>
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">

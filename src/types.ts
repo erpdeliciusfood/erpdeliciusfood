@@ -1,378 +1,296 @@
-import { User } from "@supabase/supabase-js";
-
-export interface Profile {
-  id: string;
-  updated_at?: string;
-  username: string;
-  full_name?: string;
-  avatar_url?: string;
-  website?: string;
-  role: 'admin' | 'user';
-  first_name?: string; // Added
-  last_name?: string;  // Added
-}
-
-export interface Supplier {
-  id: string;
-  name: string;
-  contact_person?: string;
-  phone?: string;
-  email?: string;
-  address?: string;
-}
-
 export interface Insumo {
   id: string;
+  user_id: string;
   nombre: string;
-  base_unit: string; // Standardized from unidad_medida
+  base_unit: string;
   costo_unitario: number;
-  stock_quantity: number; // Standardized from stock_actual
-  min_stock_level: number; // Standardized from stock_minimo
-  category: string; // Standardized from categoria
-  proveedor_preferido_id?: string;
-  proveedor_preferido?: Supplier;
-
-  // Additional fields used in UI components, assuming they are either direct DB fields
-  // or derived/joined fields that are part of the Insumo object for UI convenience.
-  purchase_unit: string; // Often same as base_unit, but sometimes different for purchase
+  stock_quantity: number;
+  supplier_name: string | null;
+  supplier_phone: string | null;
+  supplier_address: string | null;
+  last_price_update: string | null;
+  purchase_unit: string;
   conversion_factor: number;
-  supplier_name?: string; // Derived from proveedor_preferido.name
-  supplier_phone?: string; // Derived from proveedor_preferido.phone
-  supplier_address?: string; // Derived from proveedor_preferido.address
-  pending_reception_quantity: number;
-  pending_delivery_quantity: number;
-  last_physical_count_quantity?: number;
-  last_physical_count_date?: string; // YYYY-MM-DD
-  discrepancy_quantity?: number;
+  min_stock_level: number | null;
+  category: string;
+  created_at: string;
+  pending_reception_quantity: number; // NEW: Stock comprado, pendiente de ingreso al almacén
+  pending_delivery_quantity: number; // NEW: Stock en proceso de compra
+  last_physical_count_quantity: number; // NEW: Último conteo físico
+  last_physical_count_date: string | null; // NEW: Fecha del último conteo físico
+  discrepancy_quantity: number; // NEW: Diferencia entre stock_quantity y last_physical_count_quantity
 }
 
-// Form values for Insumo
 export interface InsumoFormValues {
   nombre: string;
   base_unit: string;
   costo_unitario: number;
   stock_quantity: number;
-  min_stock_level: number;
-  category: string;
   purchase_unit: string;
   conversion_factor: number;
-  supplier_name?: string;
-  supplier_phone?: string;
-  supplier_address?: string;
-  pending_reception_quantity?: number;
-  pending_delivery_quantity?: number;
-  last_physical_count_quantity?: number;
-  last_physical_count_date?: string;
-  discrepancy_quantity?: number;
+  min_stock_level: number;
+  category: string;
+  supplier_name?: string | null;
+  supplier_phone?: string | null;
+  supplier_address?: string | null;
+  pending_reception_quantity?: number; // NEW: Optional for form, managed by system
+  pending_delivery_quantity?: number; // NEW: Optional for form, managed by system
+  last_physical_count_quantity?: number; // NEW: Optional for form, managed by system
+  last_physical_count_date?: string | null; // NEW: Optional for form, managed by system
+  discrepancy_quantity?: number; // NEW: Optional for form, managed by system
+}
+
+export interface Receta {
+  id: string;
+  user_id: string;
+  nombre: string;
+  descripcion: string | null;
+  costo_produccion: number;
+  created_at: string;
+  plato_insumos?: PlatoInsumo[];
+}
+
+export interface RecetaFormValues {
+  nombre: string;
+  descripcion: string | null;
+  insumos: { insumo_id: string; cantidad_necesaria: number }[];
 }
 
 export interface PlatoInsumo {
   id: string;
-  receta_id: string; // Changed from plato_id
+  plato_id: string;
   insumo_id: string;
   cantidad_necesaria: number;
-  insumo: Insumo; // Corrected from insumos
+  created_at: string;
+  insumos?: Insumo;
 }
 
-export interface Receta { // Renamed from Plato
+export interface ServiceReport {
   id: string;
-  nombre: string;
-  descripcion: string;
-  category: string; // Standardized from categoria
-  tiempo_preparacion: number;
-  costo_total: number;
-  plato_insumos: PlatoInsumo[];
+  user_id: string;
+  report_date: string;
+  meal_service_id: string;
+  tickets_issued: number;
+  meals_sold: number;
+  additional_services_revenue: number;
+  notes: string | null;
+  created_at: string;
+  meal_services?: MealService;
+  service_report_platos?: ServiceReportPlato[];
 }
 
-// Form values for Receta
-export interface RecetaFormValues {
-  nombre: string;
-  descripcion: string;
-  category: string;
-  tiempo_preparacion: number;
-  costo_total: number;
-  insumos: {
-    insumo_id: string;
-    cantidad_necesaria: number;
-  }[];
-}
-
-export interface EventType {
+export interface ServiceReportPlato {
   id: string;
-  name: string;
-  description?: string;
+  service_report_id: string;
+  plato_id: string;
+  quantity_sold: number;
+  created_at: string;
+  platos?: Receta; // Reference to Receta
+}
+
+export interface ServiceReportFormValues {
+  report_date: string;
+  meal_service_id: string;
+  tickets_issued: number;
+  meals_sold: number;
+  additional_services_revenue: number;
+  notes: string | null;
+  platos_vendidos: { plato_id: string; quantity_sold: number }[];
 }
 
 export interface MealService {
   id: string;
   name: string;
-  description?: string;
-  order_index: number; // Para ordenar los servicios de comida (ej. Desayuno, Almuerzo, Cena)
+  description: string | null;
+  created_at: string;
+}
+
+export interface EventType {
+  id: string;
+  user_id: string;
+  name: string;
+  description: string | null;
+  created_at: string;
+}
+
+export interface Menu {
+  id: string;
+  user_id: string;
+  title: string;
+  menu_date: string | null;
+  event_type_id: string | null;
+  description: string | null;
+  created_at: string;
+  event_types?: EventType;
+  menu_platos?: MenuPlato[];
 }
 
 export interface MenuPlato {
   id: string;
   menu_id: string;
-  meal_service_id: string; // Added, as per MenuFormValues structure
-  receta_id: string; // Changed from plato_id
-  dish_category: string; // Ej: "Entrada", "Plato de Fondo", "Postre"
-  quantity_needed: number;
-  receta: Receta; // Changed from plato
-}
-
-export interface Menu {
-  id: string;
-  date: string; // Formato 'YYYY-MM-DD'
+  plato_id: string;
   meal_service_id: string;
-  event_type_id?: string;
-  meal_service: MealService;
-  event_type?: EventType; // Corrected from event_types
-  menu_platos: MenuPlato[];
-  total_cost: number;
-  total_servings: number;
-
-  // Added based on errors
-  title: string;
-  description?: string;
+  dish_category: string;
+  quantity_needed: number;
+  created_at: string;
+  platos?: Receta; // Reference to Receta
+  meal_services?: MealService;
 }
 
-// Form values for Menu
 export interface MenuFormValues {
   title: string;
-  description?: string;
-  menu_type: 'daily' | 'event'; // 'daily' if menu_date is set, 'event' if event_type_id is set
-  menu_date?: string | null; // YYYY-MM-DD
-  event_type_id?: string | null;
+  menu_date: string | null;
+  event_type_id: string | null;
+  description: string | null;
   platos_por_servicio: {
     meal_service_id: string;
-    receta_id: string;
+    plato_id: string;
     dish_category: string;
     quantity_needed: number;
   }[];
 }
 
-export interface ServiceReportPlato { // Added
+export interface Profile {
   id: string;
-  service_report_id: string;
-  receta_id: string; // Changed from plato_id
-  quantity_sold: number;
-  receta: Receta; // Changed from plato
+  first_name: string | null;
+  last_name: string | null;
+  avatar_url: string | null;
+  updated_at: string | null;
+  role: 'user' | 'admin';
 }
 
-export interface ServiceReport {
-  id: string;
-  report_date: string; // YYYY-MM-DD
-  meal_service_id: string;
-  total_servings: number;
-  total_revenue: number;
-  notes?: string;
-  meal_service: MealService;
-  service_report_platos: ServiceReportPlato[]; // Added
-}
-
-// Form values for ServiceReport
-export interface ServiceReportFormValues {
-  report_date: string;
-  meal_service_id: string;
-  total_servings: number;
-  total_revenue: number;
-  notes?: string;
-  platos_vendidos: {
-    receta_id: string;
-    quantity_sold: number;
-  }[];
-}
-
-// PurchaseItem is now likely unused or for a different context if PurchaseRecord is single-item.
-// Keeping it defined for completeness, but it's not part of PurchaseRecord anymore.
-export interface PurchaseItem {
-  id: string;
-  purchase_record_id: string;
+// NEW: Interface for aggregated insumo needs in Warehouse module
+export interface AggregatedInsumoNeed {
   insumo_id: string;
-  quantity: number;
-  unit_price: number;
-  insumo: Insumo; // Relation to Insumo
-}
-
-export interface PurchaseRecord {
-  id: string;
-  // supplier_id: string; // Removed, assuming supplier_name_at_purchase is used
-  purchase_date: string; // YYYY-MM-DD
-  total_amount: number;
-  status: 'pending' | 'completed' | 'cancelled' | 'ordered' | 'received_by_company' | 'received_by_warehouse'; // Updated
-  notes?: string;
-  // supplier: Supplier; // Removed, assuming supplier_name_at_purchase is used
-  // purchase_items: PurchaseItem[]; // Removed, assuming single-item purchase records
-  received_date?: string; // YYYY-MM-DD
-  stock_quantity_updated: boolean; // New field
-
-  // Fields for single-item purchase records (as suggested by errors)
-  insumo_id: string;
-  insumo: Insumo; // Direct relation to Insumo
-  quantity_purchased: number;
-  quantity_received: number;
-  unit_cost_at_purchase: number;
-  supplier_name_at_purchase?: string;
-  supplier_phone_at_purchase?: string;
-  supplier_address_at_purchase?: string;
-  from_registered_supplier: boolean;
-}
-
-// Form values for PurchaseRecord (assuming a single item purchase for the form)
-export interface PurchaseRecordFormValues {
-  insumo_id: string;
-  purchase_date: string;
-  quantity_purchased: number;
-  quantity_received: number;
-  unit_cost_at_purchase: number;
-  total_amount: number;
-  supplier_name_at_purchase?: string;
-  supplier_phone_at_purchase?: string;
-  supplier_address_at_purchase?: string;
-  from_registered_supplier: boolean;
-  notes?: string;
-  status: 'pending' | 'completed' | 'cancelled' | 'ordered' | 'received_by_company' | 'received_by_warehouse';
-  received_date?: string;
-  stock_quantity_updated: boolean;
+  insumo_nombre: string;
+  base_unit: string;
+  purchase_unit: string;
+  conversion_factor: number;
+  current_stock_quantity: number;
+  total_needed_base_unit: number; // Added this line
+  total_needed_purchase_unit: number;
+  missing_quantity: number; // NEW: Quantity missing if stock is insufficient
 }
 
 export interface StockMovement {
   id: string;
-  insumo_id: string;
-  movement_type: 'entry' | 'exit' | 'adjustment' | 'purchase_in' | 'consumption_out' | 'adjustment_in' | 'adjustment_out' | 'daily_prep_out' | 'reception_in'; // Updated
-  quantity: number; // The quantity that changed
-  movement_date: string; // YYYY-MM-DD
-  notes?: string;
-  insumo: Insumo; // Corrected from insumos
   user_id: string;
-  user: User; // Relation to User (from Supabase)
-  created_at: string; // Added, common Supabase field
-  new_stock_quantity: number; // The stock after this movement
+  insumo_id: string;
+  movement_type: 'purchase_in' | 'consumption_out' | 'adjustment_in' | 'adjustment_out' | 'daily_prep_out' | 'reception_in'; // NEW: Added reception_in
+  quantity_change: number;
+  new_stock_quantity: number;
+  source_document_id: string | null;
+  menu_id?: string | null;
+  notes: string | null;
+  created_at: string;
+  insumos?: Insumo;
 }
 
-// Form values for StockMovement
 export interface StockMovementFormValues {
   insumo_id: string;
-  movement_type: 'entry' | 'exit' | 'adjustment' | 'purchase_in' | 'consumption_out' | 'adjustment_in' | 'adjustment_out' | 'daily_prep_out' | 'reception_in';
-  quantity: number;
-  movement_date: string;
-  notes?: string;
+  movement_type: 'purchase_in' | 'adjustment_in' | 'adjustment_out' | 'daily_prep_out' | 'reception_in'; // NEW: Added reception_in
+  quantity_change?: number;
+  total_purchase_amount?: number;
+  total_purchase_quantity?: number;
+  notes: string | null;
+  menu_id?: string | null;
 }
 
-export interface Warehouse {
-  id: string;
-  name: string;
-  location: string;
-  description?: string;
-}
-
-export interface UrgentPurchaseRequest {
-  id: string;
-  insumo_id: string;
-  quantity_requested: number; // Standardized from quantity
-  reason: string;
-  request_date: string; // YYYY-MM-DD
-  status: 'pending' | 'approved' | 'rejected' | 'purchased' | 'fulfilled'; // Updated
-  notes?: string;
-  insumo: Insumo; // Corrected from insumos
-  requested_by_user_id: string;
-  requested_by_user: User;
-  approved_by_user_id?: string;
-  approved_by_user?: User;
-
-  // Added based on errors
-  priority: 'high' | 'low' | 'urgent' | 'medium';
-  insistence_count?: number;
-  rejection_reason?: string;
-  fulfilled_purchase_record_id?: string;
-}
-
-// Form values for UrgentPurchaseRequest
-export interface UrgentPurchaseRequestFormValues {
-  insumo_id: string;
-  quantity_requested: number;
-  reason: string;
-  notes?: string | null;
-  priority: 'high' | 'low' | 'urgent' | 'medium';
-  status: 'pending' | 'approved' | 'rejected' | 'fulfilled'; // 'purchased' is an internal status, 'fulfilled' is for UI
-  rejection_reason?: string | null;
-  fulfilled_purchase_record_id?: string | null;
-}
-
-// NEW INTERFACES FOR MENU BREAKDOWN (updated platoId/platoNombre to recetaId/recetaNombre)
-export interface DishDetail {
-  recetaId: string; // Changed from platoId
-  recetaNombre: string; // Changed from platoNombre
-  quantityNeeded: number;
-}
-
-export interface DishCategoryBreakdown {
-  categoryName: string;
-  dishes: DishDetail[];
-}
-
-export interface MealServiceBreakdown {
-  serviceId: string;
-  serviceName: string;
-  serviceOrderIndex: number;
-  categories: DishCategoryBreakdown[];
-}
-
-export interface DailyMenuBreakdown {
-  date: string; // "YYYY-MM-DD"
-  mealServicesBreakdown: MealServiceBreakdown[];
-}
-
-// Other types that were missing
 export interface InsumoSupplierHistory {
   id: string;
   insumo_id: string;
-  supplier_id: string;
-  supplier_name: string;
-  change_date: string;
-  notes?: string;
+  old_supplier_name: string | null;
+  new_supplier_name: string | null;
+  old_supplier_phone: string | null;
+  new_supplier_phone: string | null;
+  old_supplier_address: string | null;
+  new_supplier_address: string | null;
+  changed_at: string;
 }
 
 export interface InsumoPriceHistory {
   id: string;
   insumo_id: string;
-  price: number;
-  change_date: string;
-  notes?: string;
+  old_costo_unitario: number;
+  new_costo_unitario: number;
+  changed_at: string;
 }
 
-export interface InsumoNeeded {
+export interface PurchaseRecord {
   id: string;
-  nombre: string;
-  base_unit: string;
-  costo_unitario: number;
-  stock_quantity: number;
-  min_stock_level: number;
-  category: string;
-  purchase_unit: string;
-  conversion_factor: number;
-  supplier_name?: string;
-  supplier_phone?: string;
-  supplier_address?: string;
+  user_id: string;
+  insumo_id: string;
+  purchase_date: string;
+  quantity_purchased: number;
+  quantity_received: number; // NEW: Track quantity received for partial receptions
+  unit_cost_at_purchase: number;
+  total_amount: number;
+  supplier_name_at_purchase: string | null;
+  supplier_phone_at_purchase: string | null;
+  supplier_address_at_purchase: string | null;
+  from_registered_supplier: boolean;
+  notes: string | null;
+  status: 'ordered' | 'received_by_company' | 'received_by_warehouse' | 'cancelled'; // NEW: Add status to PurchaseRecord
+  received_date: string | null; // NEW: Add received_date to PurchaseRecord
+  insumos?: Insumo; // NEW: Add insumos relationship
+}
+
+// NEW: Interface for the form values when creating/updating a PurchaseRecord
+export interface PurchaseRecordFormValues {
+  insumo_id: string;
+  purchase_date: string;
+  quantity_purchased: number;
+  quantity_received?: number; // NEW: Optional for form, will be managed by system/partial reception dialog
+  unit_cost_at_purchase: number;
+  total_amount: number;
+  supplier_name_at_purchase: string | null;
+  supplier_phone_at_purchase: string | null;
+  supplier_address_at_purchase: string | null;
+  from_registered_supplier: boolean;
+  notes: string | null;
+  status?: 'ordered' | 'received_by_company' | 'received_by_warehouse' | 'cancelled'; // NEW: Add status to form values
+  received_date?: string | null; // NEW: Add received_date to form values
+}
+
+// NEW: Interface for suggested insumos in PurchaseAnalysis
+export interface InsumoNeeded extends Insumo {
   quantity_needed_for_period_raw: number;
   quantity_needed_for_period_rounded: number;
   quantity_needed_for_period_rounded_up: boolean;
   current_stock: number;
   purchase_suggestion_raw: number;
   purchase_suggestion_rounded: number;
-  reasons: string[];
+  purchase_suggestion_rounded_up: boolean;
   estimated_purchase_cost: number;
+  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert';
 }
 
-export interface AggregatedInsumoNeed {
-  insumoId: string;
-  insumoNombre: string;
-  baseUnit: string;
-  currentStock: number;
-  minStockLevel: number;
-  quantityNeeded: number;
-  status: 'ok' | 'low_stock' | 'critical_stock' | 'over_stock';
-  purchaseUnit: string;
-  conversionFactor: number;
-  costoUnitario: number;
+// NEW: Interface for UrgentPurchaseRequest
+export interface UrgentPurchaseRequest {
+  id: string;
+  insumo_id: string;
+  quantity_requested: number;
+  request_date: string;
+  priority: 'urgent' | 'high' | 'medium' | 'low';
+  status: 'pending' | 'approved' | 'rejected' | 'fulfilled';
+  requested_by_user_id: string;
+  notes: string | null;
+  source_module: string;
+  fulfilled_purchase_record_id: string | null; // NEW: Link to the purchase record that fulfilled this request
+  created_at: string;
+  insistence_count: number; // NEW: Add insistence_count
+  rejection_reason: string | null; // NEW: Add rejection_reason
+  insumos?: Insumo; // Optional: to fetch related insumo data
+}
+
+// NEW: Interface for UrgentPurchaseRequest form values
+export interface UrgentPurchaseRequestFormValues {
+  insumo_id: string;
+  quantity_requested: number;
+  notes: string | null;
+  source_module?: string; // Default to 'warehouse'
+  priority?: 'urgent' | 'high' | 'medium' | 'low'; // Default to 'urgent'
+  fulfilled_purchase_record_id?: string | null; // NEW: Allow updating this field
+  insistence_count?: number; // NEW: Allow updating this field
+  rejection_reason?: string | null; // NEW: Allow updating this field
 }

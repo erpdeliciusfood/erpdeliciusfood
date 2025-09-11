@@ -1,5 +1,5 @@
 import React, { useMemo, useState, useEffect } from "react";
-import { useMenusList } from "@/hooks/useMenus"; // Updated import
+import { useMenus } from "@/hooks/useMenus";
 import { useInsumos } from "@/hooks/useInsumos";
 import { Loader2, ShoppingBag } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
@@ -34,7 +34,7 @@ interface InsumoNeeded extends Insumo {
 }
 
 const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate, selectedReasonFilter }) => {
-  const { data: menus, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenusList( // Updated hook
+  const { data: menus, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenus(
     format(startDate, "yyyy-MM-dd"),
     format(endDate, "yyyy-MM-dd")
   );
@@ -62,12 +62,12 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
     const insumoNeedsMap = new Map<string, number>();
 
     menus.forEach(menu => {
-      if (menu.date && isWithinInterval(parseISO(menu.date), { start: startDate, end: endDate })) { // Corrected property access
+      if (menu.menu_date && isWithinInterval(parseISO(menu.menu_date), { start: startDate, end: endDate })) {
         menu.menu_platos?.forEach(menuPlato => {
-          const receta = menuPlato.receta; // Corrected property access
-          if (receta) {
-            receta.plato_insumos?.forEach(platoInsumo => {
-              const insumo = platoInsumo.insumo; // Corrected property access
+          const plato = menuPlato.platos;
+          if (plato) {
+            plato.plato_insumos?.forEach(platoInsumo => {
+              const insumo = platoInsumo.insumos;
               if (insumo) {
                 const totalNeededBaseUnit = (platoInsumo.cantidad_necesaria * menuPlato.quantity_needed);
                 const totalNeededPurchaseUnit = totalNeededBaseUnit / insumo.conversion_factor;
@@ -93,7 +93,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
 
       const neededToCoverMenus = Math.max(0, quantityNeededForPeriodRaw - currentStock);
       const neededToReachMinStock = Math.max(0, minStockLevel - currentStock);
-
+      
       let purchaseSuggestionRaw = Math.max(neededToCoverMenus, neededToReachMinStock);
       let reason: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert' = 'menu_demand';
 
@@ -219,7 +219,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
 
   return (
     <div className="space-y-8">
-      <PurchaseCostSummary totalEstimatedPurchaseCost={totalEstimatedPurchaseCost} isLoading={isLoading} />
+      <PurchaseCostSummary totalEstimatedPurchaseCost={totalEstimatedPurchaseCost} isLoading={isLoading} /> {/* Pass isLoading */}
 
       <Card className="w-full shadow-lg dark:bg-gray-800">
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-2">
