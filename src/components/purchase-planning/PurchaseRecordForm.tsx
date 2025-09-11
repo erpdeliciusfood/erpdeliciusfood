@@ -48,7 +48,7 @@ interface PurchaseRecordFormProps {
   prefilledSupplierName?: string;
   prefilledSupplierPhone?: string;
   prefilledSupplierAddress?: string;
-  onSuccess: () => void;
+  onSuccess: (record?: PurchaseRecord) => void; // NEW: onSuccess can now receive the created/updated record
   onCancel: () => void;
 }
 
@@ -158,11 +158,12 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
 
   const onSubmit = async (values: PurchaseRecordFormValues) => {
     if (initialData) {
-      await updateMutation.mutateAsync({ id: initialData.id, record: values });
+      const updatedRecord = await updateMutation.mutateAsync({ id: initialData.id, record: values });
+      onSuccess(updatedRecord); // Pass the updated record
     } else {
-      await addMutation.mutateAsync(values);
+      const newRecord = await addMutation.mutateAsync(values);
+      onSuccess(newRecord); // Pass the new record
     }
-    onSuccess();
   };
 
   const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingInsumos;

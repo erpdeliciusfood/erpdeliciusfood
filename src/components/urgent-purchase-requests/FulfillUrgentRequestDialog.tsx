@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { UrgentPurchaseRequest } from "@/types";
+import { UrgentPurchaseRequest, PurchaseRecord } from "@/types"; // NEW: Import PurchaseRecord
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
 import { useUpdateUrgentPurchaseRequest } from "@/hooks/useUrgentPurchaseRequests";
 import { showSuccess, showError } from "@/utils/toast";
@@ -24,25 +24,22 @@ const FulfillUrgentRequestDialog: React.FC<FulfillUrgentRequestDialogProps> = ({
   const queryClient = useQueryClient();
   const updateUrgentRequestMutation = useUpdateUrgentPurchaseRequest();
 
-  const handlePurchaseRecordSuccess = async () => {
+  const handlePurchaseRecordSuccess = async (newPurchaseRecord?: PurchaseRecord) => { // NEW: Accept newPurchaseRecord
     try {
-      // After a purchase record is successfully created, update the urgent request status to 'fulfilled'
-      // and link the fulfilled_purchase_record_id.
-      // Note: The PurchaseRecordForm itself handles the creation of the purchase record.
-      // We need to get the ID of the newly created purchase record.
-      // For simplicity, we'll assume the purchase record is created and then just update the status here.
-      // A more robust solution would involve the PurchaseRecordForm returning the new record's ID.
-      // For now, we'll just mark it as fulfilled.
+      if (!newPurchaseRecord) {
+        throw new Error("No se pudo obtener el registro de compra creado.");
+      }
 
       await updateUrgentRequestMutation.mutateAsync({
         id: urgentRequest.id,
         request: {
           status: 'fulfilled',
-          // fulfilled_purchase_record_id: newPurchaseRecordId, // This would be set if PurchaseRecordForm returned the ID
+          fulfilled_purchase_record_id: newPurchaseRecord.id, // NEW: Link the new purchase record ID
         },
       });
-      showSuccess(`Solicitud urgente para ${urgentRequest.insumos?.nombre || "Insumo Desconocido"} marcada como cumplida.`);
+      showSuccess(`Solicitud urgente para ${urgentRequest.insumos?.nombre || "Insumo Desconocido"} marcada como cumplida y vinculada a la compra.`);
       queryClient.invalidateQueries({ queryKey: ["urgentPurchaseRequests"] });
+      queryClient.invalidateQueries({ queryKey: ["purchaseRecords"] }); // Invalidate purchase records to show the new one
       onClose();
     } catch (error: any) {
       showError(`Error al marcar la solicitud como cumplida: ${error.message}`);

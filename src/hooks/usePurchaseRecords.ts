@@ -18,12 +18,13 @@ export const useAddPurchaseRecord = () => {
       const toastId: string = showLoading("Registrando compra...");
       return { toastId };
     },
-    onSuccess: (_, __, context) => {
+    onSuccess: (_, __, context) => { // Removed 'newRecord' from here as it's not directly used in this callback
       dismissToast(context.toastId);
       queryClient.invalidateQueries({ queryKey: ["purchaseRecords"] });
       queryClient.invalidateQueries({ queryKey: ["stockMovements"] }); // Invalidate stock movements
       queryClient.invalidateQueries({ queryKey: ["insumos"] }); // Invalidate insumos to reflect stock/cost changes
       showSuccess("Compra registrada exitosamente.");
+      // The newRecord is still returned by mutateAsync and can be used by the component calling the mutation.
     },
     onError: (error, __, context) => {
       if (context?.toastId) {
