@@ -84,7 +84,7 @@ export const createMenu = async (menu: MenuFormValues): Promise<Menu> => {
     .insert({
       ...menuData,
       date: menu_type === 'daily' ? menu_date : null, // Use 'date' field
-      event_type_id: menu_type === 'event' ? menuData.event_type_id : null,
+      event_type_id: menu_type === 'event' ? menu.event_type_id : null, // Corrected access
     })
     .select()
     .single();
@@ -115,7 +115,7 @@ export const updateMenu = async (id: string, menu: MenuFormValues): Promise<Menu
     .update({
       ...menuData,
       date: menu_type === 'daily' ? menu_date : null, // Use 'date' field
-      event_type_id: menu_type === 'event' ? menuData.event_type_id : null,
+      event_type_id: menu_type === 'event' ? menu.event_type_id : null, // Corrected access
     })
     .eq("id", id)
     .select()
