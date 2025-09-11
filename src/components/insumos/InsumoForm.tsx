@@ -54,7 +54,7 @@ const formSchema = z.object({
 });
 
 interface InsumoFormProps {
-  initialData?: InsumoFormValues | null; // Revertido a InsumoFormValues
+  initialData?: Insumo | InsumoFormValues | null; // Permite Insumo (con id) o InsumoFormValues (sin id)
   onSuccess: (newInsumo: Insumo) => Promise<void> | void; // Adjusted type to accept Promise<void> and ensure newInsumo is always provided
   onCancel: () => void;
 }
@@ -184,7 +184,8 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
   }, [purchaseUnit, baseUnit, form, initialData]);
 
   const onSubmit = async (values: InsumoFormValues) => {
-    if (initialData && initialData.id) {
+    // Verifica si initialData existe, tiene una propiedad 'id' y esa propiedad 'id' no es nula/indefinida
+    if (initialData && 'id' in initialData && initialData.id) {
       const updatedInsumo = await updateMutation.mutateAsync({ id: initialData.id, updates: values });
       onSuccess(updatedInsumo);
     } else {
