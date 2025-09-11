@@ -240,7 +240,6 @@ export interface PurchaseRecordFormValues {
   notes?: string | null;
   status: 'pending' | 'completed' | 'cancelled' | 'ordered' | 'received_by_company' | 'received_by_warehouse';
   received_date?: string | null;
-  stock_quantity_updated: boolean;
 }
 
 export interface StockMovement {
