@@ -12,7 +12,7 @@ import { useEventTypes } from "@/hooks/useEventTypes";
 import { useServiceReports } from "@/hooks/useServiceReports";
 import { useStockMovements } from "@/hooks/useStockMovements";
 import LowStockAlerts from "@/components/insumos/LowStockAlerts";
-import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
 
 const Index = () => {
   const { user, session } = useSession();
@@ -41,6 +41,7 @@ const Index = () => {
           title={`¡Bienvenido, ${userName}!`}
           description="Gestiona tus operaciones de restaurante de forma eficiente."
           icon={LayoutDashboard}
+          hideLogo={true}
         />
 
         <div className="grid grid-cols-1 gap-6 mb-8">
@@ -229,7 +230,7 @@ const Index = () => {
           <Link to="/service-reports">
             <Card className="hover:shadow-xl transition-shadow duration-200 ease-in-out cursor-pointer h-full flex flex-col justify-between">
               <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-                <CardTitle className="text-2xl font-bold">Gestión de Reportes de Servicio</CardTitle>
+                <CardTitle className="text-2xl font-bold">Reportes de Servicio</CardTitle>
                 <FileText className="h-8 w-8 text-muted-foreground" />
               </CardHeader>
               <CardContent>
