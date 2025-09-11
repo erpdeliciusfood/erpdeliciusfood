@@ -17,12 +17,12 @@ const mapDbRecetaToReceta = (dbReceta: any): Receta => ({
     insumo: {
       id: pi.insumos.id,
       nombre: pi.insumos.nombre,
-      base_unit: pi.insumos.unidad_medida, // Map DB field
+      base_unit: pi.insumos.base_unit, // Map DB field
       costo_unitario: pi.insumos.costo_unitario,
-      stock_quantity: pi.insumos.stock_actual, // Map DB field
-      min_stock_level: pi.insumos.stock_minimo, // Map DB field
-      category: pi.insumos.categoria, // Map DB field
-      purchase_unit: pi.insumos.unidad_medida, // Assuming purchase_unit is same as base_unit
+      stock_quantity: pi.insumos.stock_quantity, // Map DB field
+      min_stock_level: pi.insumos.min_stock_level, // Map DB field
+      category: pi.insumos.category, // Map DB field
+      purchase_unit: pi.insumos.purchase_unit, // Assuming purchase_unit is same as base_unit
       conversion_factor: pi.insumos.conversion_factor || 1,
       pending_reception_quantity: pi.insumos.pending_reception_quantity || 0,
       pending_delivery_quantity: pi.insumos.pending_delivery_quantity || 0,
@@ -37,7 +37,7 @@ export const getRecetas = async (): Promise<Receta[]> => {
       *,
       plato_insumos (
         *,
-        insumos (id, nombre, unidad_medida, costo_unitario, stock_actual, stock_minimo, categoria, conversion_factor, pending_reception_quantity, pending_delivery_quantity)
+        insumos (id, nombre, base_unit, costo_unitario, stock_quantity, min_stock_level, category, conversion_factor, pending_reception_quantity, pending_delivery_quantity)
       )
     `)
     .order("nombre", { ascending: true });
@@ -52,7 +52,7 @@ export const getRecetaById = async (id: string): Promise<Receta> => {
       *,
       plato_insumos (
         *,
-        insumos (id, nombre, unidad_medida, costo_unitario, stock_actual, stock_minimo, categoria, conversion_factor, pending_reception_quantity, pending_delivery_quantity)
+        insumos (id, nombre, base_unit, costo_unitario, stock_quantity, min_stock_level, category, conversion_factor, pending_reception_quantity, pending_delivery_quantity)
       )
     `)
     .eq("id", id)
