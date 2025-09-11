@@ -295,3 +295,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
         </div>
       </form>
     </Form>
+  ); // NEW: Added missing closing parenthesis and semicolon
+};
+
+export default UrgentPurchaseRequestForm;
