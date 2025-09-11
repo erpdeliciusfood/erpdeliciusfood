@@ -54,7 +54,7 @@ const formSchema = z.object({
 });
 
 interface InsumoFormProps {
-  initialData?: InsumoFormValues | null;
+  initialData?: InsumoFormValues | null; // Revertido a InsumoFormValues
   onSuccess: (newInsumo: Insumo) => Promise<void> | void; // Adjusted type to accept Promise<void> and ensure newInsumo is always provided
   onCancel: () => void;
 }
@@ -160,7 +160,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
 
   useEffect(() => {
     // Check if it's a new insumo being created (either completely new or pre-filled from search)
-    const isNewInsumoBeingCreated = !initialData || !(initialData as Insumo).id;
+    const isNewInsumoBeingCreated = !initialData || !(initialData as InsumoFormValues).id;
 
     if (isNewInsumoBeingCreated && purchaseUnit && baseUnit) {
       const suggestedFactor = predefinedConversions[purchaseUnit]?.[baseUnit];
@@ -177,16 +177,16 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
         }
         setIsConversionFactorEditable(true);
       }
-    } else if (initialData && (initialData as Insumo).id) {
+    } else if (initialData && (initialData as InsumoFormValues).id) {
       // When editing an existing insumo, the conversion factor should always be editable by default.
       setIsConversionFactorEditable(true);
     }
   }, [purchaseUnit, baseUnit, form, initialData]);
 
   const onSubmit = async (values: InsumoFormValues) => {
-    if (initialData && (initialData as Insumo).id) {
-      await updateMutation.mutateAsync({ id: (initialData as Insumo).id, updates: values });
-      onSuccess(values as Insumo);
+    if (initialData && initialData.id) {
+      const updatedInsumo = await updateMutation.mutateAsync({ id: initialData.id, updates: values });
+      onSuccess(updatedInsumo);
     } else {
       const newInsumo = await addMutation.mutateAsync(values);
       onSuccess(newInsumo);
@@ -225,7 +225,7 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
               disabled={isLoading}
             >
               {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-              {initialData && (initialData as Insumo).id ? "Guardar Cambios" : "Añadir Insumo"}
+              {initialData && (initialData as InsumoFormValues).id ? "Guardar Cambios" : "Añadir Insumo"}
             </Button>
           </div>
         </form>
