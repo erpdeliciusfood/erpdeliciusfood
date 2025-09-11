@@ -41,8 +41,10 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
   const onSubmit = async (values: z.infer<typeof FormSchema>) => {
     try {
       await updateInsumoMutation.mutateAsync({
-        ...insumo, // Keep existing insumo data
-        proveedor_preferido_id: values.proveedor_preferido_id,
+        id: insumo.id,
+        updates: {
+          proveedor_preferido_id: values.proveedor_preferido_id,
+        },
       });
       onClose();
     } catch (error) {

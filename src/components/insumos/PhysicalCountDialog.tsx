@@ -60,33 +60,19 @@ const PhysicalCountDialog: React.FC<PhysicalCountDialogProps> = ({ insumo, onClo
 
   const onSubmit = async (values: z.infer<typeof physicalCountSchema>) => {
     try {
-      const updatedInsumoData: InsumoFormValues = {
-        nombre: insumo.nombre,
-        base_unit: insumo.base_unit,
-        costo_unitario: insumo.costo_unitario,
-        stock_quantity: insumo.stock_quantity, // Keep current stock_quantity
-        purchase_unit: insumo.purchase_unit,
-        conversion_factor: insumo.conversion_factor,
-        min_stock_level: insumo.min_stock_level ?? 0,
-        category: insumo.category,
-        // Las propiedades de proveedor ya no se actualizan directamente en Insumo
-        // supplier_name: insumo.supplier_name,
-        // supplier_phone: insumo.supplier_phone,
-        // supplier_address: insumo.supplier_address,
-        pending_reception_quantity: insumo.pending_reception_quantity,
-        pending_delivery_quantity: insumo.pending_delivery_quantity,
-        last_physical_count_quantity: values.last_physical_count_quantity,
-        last_physical_count_date: values.last_physical_count_date,
-        discrepancy_quantity: discrepancy, // Update discrepancy based on new count
-      };
-
       await updateInsumoMutation.mutateAsync({
         id: insumo.id,
-        insumo: updatedInsumoData,
+        updates: {
+          last_physical_count_quantity: values.last_physical_count_quantity,
+          last_physical_count_date: new Date().toISOString().split('T')[0],
+          discrepancy_quantity: discrepancy, // Update discrepancy based on new count
+          stock_quantity: values.last_physical_count_quantity, // Update stock to physical count
+        }
       });
       showSuccess("Conteo físico registrado exitosamente.");
       onClose();
-    } catch (error: any) {
+    } catch (error) {
+      console.error("Error updating physical count:", error);
       showError(`Error al registrar conteo físico: ${error.message}`);
     }
   };

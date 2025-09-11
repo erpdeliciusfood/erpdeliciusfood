@@ -76,26 +76,11 @@ export const createInsumo = async (insumo: InsumoFormValues): Promise<Insumo> =>
   return mapDbInsumoToInsumo(data);
 };
 
-export const updateInsumo = async (insumo: InsumoFormValues): Promise<Insumo> => {
-  if (!insumo.id) throw new Error("Insumo ID is required for update.");
+export const updateInsumo = async (id: string, updates: Partial<InsumoFormValues>): Promise<Insumo> => {
   const { data, error } = await supabase
     .from("insumos")
-    .update({
-      nombre: insumo.nombre,
-      base_unit: insumo.base_unit, // Map to DB field
-      costo_unitario: insumo.costo_unitario,
-      stock_quantity: insumo.stock_quantity, // Map to DB field
-      min_stock_level: insumo.min_stock_level, // Map to DB field
-      category: insumo.category, // Map to DB field
-      conversion_factor: insumo.conversion_factor,
-      proveedor_preferido_id: insumo.proveedor_preferido_id, // Use the new foreign key
-      pending_reception_quantity: insumo.pending_reception_quantity,
-      pending_delivery_quantity: insumo.pending_delivery_quantity,
-      last_physical_count_quantity: insumo.last_physical_count_quantity,
-      last_physical_count_date: insumo.last_physical_count_date,
-      discrepancy_quantity: insumo.discrepancy_quantity,
-    })
-    .eq("id", insumo.id)
+    .update(updates)
+    .eq("id", id)
     .select("*, proveedores(*)")
     .single();
   if (error) throw error;
