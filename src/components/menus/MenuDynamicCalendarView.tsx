@@ -159,9 +159,9 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
                 return (
                   <div
                     key={format(day, "yyyy-MM-dd")}
-                    className={`flex flex-col p-3 sm:p-4 rounded-lg border ${isToday ? "border-primary dark:border-primary-foreground bg-primary/10 dark:bg-primary-foreground/10" : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50"} min-h-[120px]`}
+                    className={`flex flex-col justify-between p-3 sm:p-4 rounded-lg border ${isToday ? "border-primary dark:border-primary-foreground bg-primary/10 dark:bg-primary-foreground/10" : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50"} min-h-[120px]`}
                   >
-                    <div className="flex-grow flex flex-col items-center justify-center">
+                    <div className="flex flex-col items-center text-center"> {/* Added text-center here */}
                       <p className={`text-base sm:text-lg font-semibold ${isToday ? "text-primary dark:text-primary-foreground" : "text-gray-800 dark:text-gray-200"}`}>
                         {format(day, "EEE", { locale: es })}
                       </p>
