@@ -1,7 +1,13 @@
 import React from "react";
 import { Menu, MenuPlato } from "@/types";
 import { Badge } from "@/components/ui/badge";
-import { XCircle } from "lucide-react"; // Only XCircle is needed for "Falta" indicators
+import { XCircle } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip"; // Import Tooltip components
 
 interface CalendarDayCellContentProps {
   menusForDay: Menu[];
@@ -70,8 +76,17 @@ const CalendarDayCellContent: React.FC<CalendarDayCellContentProps> = ({ menusFo
 
   return (
     <div className="absolute inset-0 p-1 overflow-hidden text-xs pointer-events-none">
-      {/* Completeness Indicator */}
-      <div className={`absolute top-1 right-1 h-2 w-2 rounded-full ${isDayComplete ? 'bg-green-500' : 'bg-red-500'}`} />
+      {/* Completeness Indicator with Tooltip */}
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <div className={`absolute top-1 right-1 h-2 w-2 rounded-full ${isDayComplete ? 'bg-green-500' : 'bg-red-500'}`} />
+          </TooltipTrigger>
+          <TooltipContent className="text-xs">
+            {isDayComplete ? "Menú del día completo" : "Menú del día incompleto"}
+          </TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       {MEAL_SERVICES_ORDER.map(expectedServiceName => {
         const lowerCaseExpectedServiceName = expectedServiceName.toLowerCase();
