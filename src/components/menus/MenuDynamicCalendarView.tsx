@@ -161,7 +161,7 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
                     key={format(day, "yyyy-MM-dd")}
                     className={`flex flex-col justify-between p-3 sm:p-4 rounded-lg border ${isToday ? "border-primary dark:border-primary-foreground bg-primary/10 dark:bg-primary-foreground/10" : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50"} min-h-[120px]`}
                   >
-                    <div className="flex flex-col items-center text-center"> {/* Added text-center here */}
+                    <div className="flex flex-col items-center text-center">
                       <p className={`text-base sm:text-lg font-semibold ${isToday ? "text-primary dark:text-primary-foreground" : "text-gray-800 dark:text-gray-200"}`}>
                         {format(day, "EEE", { locale: es })}
                       </p>
@@ -210,12 +210,13 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
                   const menusForDay = menusInView?.filter(menu =>
                     menu.menu_date && isSameDay(parseISO(menu.menu_date), date)
                   ) || [];
+                  const isSelectedDay = selectedDate && isSameDay(date, selectedDate);
                   return (
                     <div className="relative h-full w-full">
                       <div className="absolute top-1 left-1 text-xs font-semibold z-10">
                         {format(date, "d")}
                       </div>
-                      <CalendarDayCellContent menusForDay={menusForDay} />
+                      <CalendarDayCellContent menusForDay={menusForDay} isSelected={isSelectedDay} />
                     </div>
                   );
                 },
