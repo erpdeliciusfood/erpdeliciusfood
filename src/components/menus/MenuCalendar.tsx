@@ -11,7 +11,6 @@ import { DayModifiers } from "react-day-picker";
 import DailyMenuList from "./DailyMenuList";
 import MenuFormSheet from "./MenuFormSheet";
 import { showError } from "@/utils/toast"; // Import showError
-import CalendarDayCellContent from "./CalendarDayCellContent"; // Import the new component
 
 interface MenuCalendarProps {
   onAddMenu: (date: Date) => void;
@@ -69,8 +68,11 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
       return;
     }
 
+    // Format the selected date to a YYYY-MM-DD string for consistent comparison
+    const formattedSelectedDate = format(date, "yyyy-MM-dd");
+
     const existingDailyMenuForDate = menusInMonth.find(menu =>
-      menu.menu_date && isSameDay(parseISO(menu.menu_date), date) && !menu.event_type_id
+      menu.menu_date && menu.menu_date === formattedSelectedDate && !menu.event_type_id // Compare strings directly
     );
 
     if (existingDailyMenuForDate) {
@@ -133,25 +135,10 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
             modifiers={modifiers}
             modifiersClassNames={modifiersClassNames}
             className="rounded-md border shadow"
-            components={{
-              Day: ({ date }) => { // Removed 'children' from destructuring
-                const menusForDay = menusInMonth?.filter(menu =>
-                  menu.menu_date && isSameDay(parseISO(menu.menu_date), date)
-                ) || [];
-                return (
-                  <div className="relative h-full w-full">
-                    <div className="absolute top-1 left-1 text-xs font-semibold z-10">
-                      {format(date, "d")} {/* Render day number using format */}
-                    </div>
-                    <CalendarDayCellContent menusForDay={menusForDay} />
-                  </div>
-                );
-              },
-            }}
           />
           <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600 dark:text-gray-400">
             <div className="flex items-center">
-              <span className="h-4 w-4 rounded-full bg-blue-500 dark:bg-blue-400 mr-2 border border-blue-300 dark:border-blue-700"></span>
+              <span className="h-4 w-4 rounded-full bg-blue-200 dark:bg-blue-800 mr-2 border border-blue-300 dark:border-blue-700"></span>
               Días con Menús
             </div>
             <div className="flex items-center">
@@ -184,11 +171,11 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
               Menús para el {format(selectedDate, "PPP", { locale: es })}
             </CardTitle>
             <Button
-              onClick={() => handleAddMenuForSelectedDate(selectedDate || new Date())}
+              onClick={() => handleAddMenuForSelectedDate(selectedDate || new Date())} // Use the new handler
               className="px-4 py-2 text-base bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
             >
-              <PlusCircle className="h-4 w-4 md:mr-2" />
-              <span className="hidden md:inline">Añadir Menú</span>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Añadir Menú
             </Button>
           </CardHeader>
           <CardContent>

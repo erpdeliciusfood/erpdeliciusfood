@@ -294,25 +294,3 @@ export interface UrgentPurchaseRequestFormValues {
   insistence_count?: number; // NEW: Allow updating this field
   rejection_reason?: string | null; // NEW: Allow updating this field
 }
-
-// NEW: Define las categorías estructuradas por tipo de servicio
-export const MEAL_SERVICE_DISH_CATEGORIES_MAP: { [key: string]: string[] } = {
-  "Desayuno": ["Sándwich", "Bebida Caliente", "Refresco", "Infusión", "Otros"],
-  "Almuerzo Regular": ["Entrada", "Plato de Fondo", "Sopa", "Postre", "Refresco", "Infusión", "Otros"],
-  "Almuerzo Dieta Saludable": ["Sopa Saludable", "Ensalada Saludable", "Postre Saludable", "Refresco", "Infusión", "Otros"],
-  "Almuerzo Dieta Blanda": ["Sopa", "Plato de Fondo Sancochado", "Postre", "Otros"],
-  "Cena": ["Plato de Fondo", "Bebida Caliente", "Refresco", "Infusión", "Otros"],
-  "Merienda": ["Sopa", "Sándwich", "Bebida Caliente", "Refresco", "Infusión", "Otros"],
-  // Fallback para servicios no definidos explícitamente o categorías generales
-  "Default": ["Desayuno / Merienda", "Entrada", "Sopa / Crema", "Ensalada Fría", "Ensalada Caliente", "Plato de Fondo - Carnes", "Plato de Fondo - Aves", "Plato de Fondo - Pescados y Mariscos", "Plato de Fondo - Pastas y Arroces", "Plato de Fondo - Vegetariano / Vegano", "Acompañamiento / Guarnición", "Postre", "Bebida", "Dieta Blanda", "Otra Opción", "Otros"],
-};
-
-// NEW: Define el orden de visualización de los servicios de comida
-export const MEAL_SERVICE_ORDER = [
-  "Desayuno",
-  "Almuerzo Regular",
-  "Almuerzo Dieta Saludable",
-  "Almuerzo Dieta Blanda",
-  "Cena",
-  "Merienda",
-];

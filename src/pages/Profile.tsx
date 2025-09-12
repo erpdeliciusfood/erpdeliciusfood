@@ -5,7 +5,7 @@ import { MadeWithDyad } from "@/components/made-with-dyad";
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
-import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const Profile = () => {
   const { user } = useSession();
@@ -27,7 +27,6 @@ const Profile = () => {
             title="Mi Perfil"
             description="Actualiza tu información personal y gestiona tu cuenta."
             icon={UserCircle2}
-            hideLogo={true}
           />
           <Button
             variant="outline"

@@ -54,7 +54,6 @@ const PurchaseRecords = () => {
         title="Gestión de Registros de Compra"
         description="Consulta y administra el historial de tus compras de insumos."
         icon={ShoppingBag}
-        hideLogo={true} 
       />
       <div className="flex justify-end items-center mb-6"> {/* Adjusted layout for buttons */}
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

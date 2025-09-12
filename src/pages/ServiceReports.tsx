@@ -54,7 +54,6 @@ const ServiceReports = () => {
         title="Gestión de Reportes de Servicio"
         description="Registra y consulta los detalles de cada servicio de comida."
         icon={FileText}
-        hideLogo={true} 
       />
       <div className="flex justify-end items-center mb-6"> {/* Adjusted layout for buttons */}
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

@@ -48,7 +48,6 @@ const UserManagement = () => {
         title="Gestión de Usuarios"
         description="Administra los roles de los usuarios de tu aplicación."
         icon={Users}
-        hideLogo={true} 
       />
 
       <div className="flex-grow">

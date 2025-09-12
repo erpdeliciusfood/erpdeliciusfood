@@ -54,7 +54,6 @@ const EventTypes = () => {
         title="Gestión de Tipos de Evento"
         description="Define y organiza los diferentes tipos de eventos."
         icon={CalendarDays}
-        hideLogo={true} 
       />
       <div className="flex justify-end items-center mb-6"> {/* Adjusted layout for buttons */}
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
@@ -84,7 +83,7 @@ const EventTypes = () => {
 
       <div className="flex-grow">
         {eventTypes && eventTypes.length > 0 ? (
-          <EventTypeList eventTypes={eventTypes} onEdit={handleEditClick} onAddClick={handleAddClick} /> 
+          <EventTypeList eventTypes={eventTypes} onEdit={handleEditClick} onAddClick={handleAddClick} /> /* NEW: Pass onAddClick */
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">
             <CalendarDays className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
