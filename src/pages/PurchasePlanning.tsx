@@ -16,6 +16,7 @@ import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { InsumoNeeded } from "@/types";
 import UrgentPurchaseAlert from "@/components/purchase-planning/UrgentPurchaseAlert";
+import GenerateQuebradoDialog from "@/components/purchase-planning/GenerateQuebradoDialog";
 
 const PurchasePlanning = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -25,6 +26,7 @@ const PurchasePlanning = () => {
   const [periodType, setPeriodType] = useState<'daily' | 'weekly' | 'monthly' | 'custom'>('monthly');
   const [isRegisterPurchaseFormOpen, setIsRegisterPurchaseFormOpen] = useState(false);
   const [selectedReasonFilter, setSelectedReasonFilter] = useState<'all' | InsumoNeeded['reason_for_purchase_suggestion']>('all');
+  const [isGenerateQuebradoDialogOpen, setIsGenerateQuebradoDialogOpen] = useState(false);
 
   const handlePeriodChange = (period: 'daily' | 'weekly' | 'monthly' | 'custom') => {
     setPeriodType(period);
@@ -64,33 +66,61 @@ const PurchasePlanning = () => {
         title="Planificación de Compras"
         description="Analiza las necesidades de insumos según tus menús y stock."
         icon={ShoppingBag}
+        hideLogo={true}
       />
 
       {/* NEW: Action and Filter Bar */}
       <div className="flex flex-col md:flex-row items-start md:items-center justify-between mb-8 gap-4">
-        {/* Left side: Primary Action Button */}
-        <Dialog open={isRegisterPurchaseFormOpen} onOpenChange={setIsRegisterPurchaseFormOpen}>
-          <DialogTrigger asChild>
-            <Button
-              onClick={() => setIsRegisterPurchaseFormOpen(true)}
-              className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
-            >
-              <PlusCircle className="mr-3 h-6 w-6" />
-              Registrar Nueva Compra
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+        {/* Left side: Primary Action Buttons */}
+        <div className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto">
+          <Dialog open={isRegisterPurchaseFormOpen} onOpenChange={setIsRegisterPurchaseFormOpen}>
+            <DialogTrigger asChild>
+              <Button
+                onClick={() => setIsRegisterPurchaseFormOpen(true)}
+                className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
+              >
+                <PlusCircle className="mr-3 h-6 w-6" />
                 Registrar Nueva Compra
-              </DialogTitle>
-            </DialogHeader>
-            <PurchaseRecordForm
-              onSuccess={handleRegisterPurchaseFormClose}
-              onCancel={handleRegisterPurchaseFormClose}
-            />
-          </DialogContent>
-        </Dialog>
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-xl p-6 max-h-[90vh] overflow-y-auto">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  Registrar Nueva Compra
+                </DialogTitle>
+              </DialogHeader>
+              <PurchaseRecordForm
+                onSuccess={handleRegisterPurchaseFormClose}
+                onCancel={handleRegisterPurchaseFormClose}
+              />
+            </DialogContent>
+          </Dialog>
+
+          {/* NUEVO: Botón Generar Quebrado */}
+          <Dialog open={isGenerateQuebradoDialogOpen} onOpenChange={setIsGenerateQuebradoDialogOpen}>
+            <DialogTrigger asChild>
+              <Button
+                onClick={() => setIsGenerateQuebradoDialogOpen(true)}
+                className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
+              >
+                <ShoppingBag className="mr-3 h-6 w-6" />
+                Generar Quebrado
+              </Button>
+            </DialogTrigger>
+            <DialogContent className="sm:max-w-[425px] md:max-w-lg p-6">
+              <DialogHeader>
+                <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
+                  Generar Quebrado de Menús
+                </DialogTitle>
+              </DialogHeader>
+              <GenerateQuebradoDialog
+                startDate={dateRange.from}
+                endDate={dateRange.to}
+                onClose={() => setIsGenerateQuebradoDialogOpen(false)}
+              />
+            </DialogContent>
+          </Dialog>
+        </div>
 
         {/* Right side: Filters */}
         <div className="flex flex-col sm:flex-row gap-4 w-full md:w-auto">
