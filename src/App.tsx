@@ -22,6 +22,7 @@ import UrgentPurchaseRequests from "./pages/UrgentPurchaseRequests";
 import { SessionContextProvider, useSession } from "./contexts/SessionContext";
 import MainLayout from "./components/layout/MainLayout";
 import { ThemeProvider } from "./contexts/ThemeProvider";
+import { SpeedInsights } from "@vercel/speed-insights/react"; // NEW: Import SpeedInsights
 
 const queryClient = new QueryClient();
 
@@ -79,6 +80,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
+    <SpeedInsights /> {/* NEW: Render SpeedInsights component */}
   </QueryClientProvider>
 );
 
