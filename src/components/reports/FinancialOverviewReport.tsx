@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { useServiceReports } from "@/hooks/useServiceReports";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, TrendingDown, LineChart as LineChartIcon } from "lucide-react";
-import { format, isWithinInterval, parseISO, eachDayOfInterval } from "date-fns";
+import { format, isWithinInterval, eachDayOfInterval } from "date-fns";
 import { es } from "date-fns/locale";
 import { ServiceReport } from "@/types";
 import {
@@ -47,7 +47,7 @@ const FinancialOverviewReport: React.FC<FinancialOverviewReportProps> = ({ start
     });
 
     serviceReports.forEach((report: ServiceReport) => {
-      const reportDate = parseISO(report.report_date);
+      const reportDate = new Date(report.report_date);
       if (isWithinInterval(reportDate, { start: startDate, end: endDate })) {
         const formattedReportDate = format(reportDate, "yyyy-MM-dd");
         const currentDayData = dailyDataMap.get(formattedReportDate) || { cogs: 0 };
@@ -67,7 +67,7 @@ const FinancialOverviewReport: React.FC<FinancialOverviewReportProps> = ({ start
     const processedChartData: DailyCostData[] = Array.from(dailyDataMap.entries())
       .sort(([dateA], [dateB]) => dateA.localeCompare(dateB))
       .map(([date, data]) => ({
-        date: format(parseISO(date), "dd MMM", { locale: es }),
+        date: format(new Date(date), "dd MMM", { locale: es }),
         cogs: parseFloat(data.cogs.toFixed(2)),
       }));
 
@@ -91,7 +91,7 @@ const FinancialOverviewReport: React.FC<FinancialOverviewReportProps> = ({ start
       <div className="text-center py-10 text-red-600 dark:text-red-400">
         <h1 className="text-2xl font-bold mb-4">Error al cargar datos</h1>
         <p className="text-lg">No se pudieron cargar los reportes de servicio: {error?.message}</p>
-      </div>
+        </div>
     );
   }
 

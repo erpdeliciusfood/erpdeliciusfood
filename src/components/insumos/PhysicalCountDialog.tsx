@@ -15,7 +15,7 @@ import * as z from "zod";
 import { Insumo, InsumoFormValues } from "@/types";
 import { useUpdateInsumo } from "@/hooks/useInsumos";
 import { Loader2, CalendarIcon, AlertCircle } from "lucide-react";
-import { format, formatISO } from "date-fns";
+import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -172,7 +172,7 @@ const PhysicalCountDialog: React.FC<PhysicalCountDialogProps> = ({ insumo, onClo
                   <Calendar
                     mode="single"
                     selected={field.value ? new Date(field.value) : undefined}
-                    onSelect={(date) => field.onChange(date ? formatISO(date, { representation: 'date' }) : null)}
+                    onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : null)}
                     disabled={(date) =>
                       date > new Date() || date < new Date("1900-01-01") || isUpdating
                     }

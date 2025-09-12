@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { format, startOfMonth, endOfMonth, isSameDay, parseISO } from "date-fns";
+import { format, startOfMonth, endOfMonth, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, PlusCircle, UtensilsCrossed } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
@@ -43,7 +43,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
   useEffect(() => {
     if (selectedDate && menusInMonth) {
       const menusForSelectedDay = menusInMonth.filter(menu =>
-        menu.menu_date && isSameDay(parseISO(menu.menu_date), selectedDate)
+        menu.menu_date && isSameDay(new Date(menu.menu_date), selectedDate)
       );
       setDailyMenus(menusForSelectedDay);
     } else {
@@ -84,7 +84,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
   };
 
   const modifiers: DayModifiers = {
-    menus: menusInMonth?.map(menu => menu.menu_date ? parseISO(menu.menu_date) : undefined).filter(Boolean) as Date[],
+    menus: menusInMonth?.map(menu => menu.menu_date ? new Date(menu.menu_date) : undefined).filter(Boolean) as Date[],
     today: new Date(),
     selected: selectedDate ? [selectedDate] : [],
   };
@@ -171,7 +171,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
               Menús para el {format(selectedDate, "PPP", { locale: es })}
             </CardTitle>
             <Button
-              onClick={() => handleAddMenuForSelectedDate(selectedDate || new Date())} // Use the new handler
+              onClick={() => handleAddMenuForSelectedDate(selectedDate || new Date())}
               className="px-4 py-2 text-base bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
             >
               <PlusCircle className="mr-2 h-4 w-4" />

@@ -2,7 +2,7 @@ import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, PlusCircle, CheckCircle2, Loader2 } from "lucide-react";
-import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay, parseISO } from "date-fns";
+import { format, startOfWeek, endOfWeek, eachDayOfInterval, isSameDay } from "date-fns";
 import { es } from "date-fns/locale";
 import { useMenus } from "@/hooks/useMenus";
 import { Menu } from "@/types";
@@ -68,7 +68,7 @@ const WeeklyMenuOverview: React.FC<WeeklyMenuOverviewProps> = ({ onAddMenu }) =>
       <CardContent>
         <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4"> {/* Adjusted grid columns for responsiveness */}
           {daysOfWeek.map((day) => {
-            const hasMenu = menusInWeek?.some((menu: Menu) => menu.menu_date && isSameDay(parseISO(menu.menu_date), day));
+            const hasMenu = menusInWeek?.some((menu: Menu) => menu.menu_date && isSameDay(new Date(menu.menu_date), day));
             const isToday = isSameDay(day, today);
             return (
               <div
