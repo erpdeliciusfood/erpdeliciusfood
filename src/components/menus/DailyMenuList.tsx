@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, UtensilsCrossed, CalendarDays, ChevronDown, CheckCircle2 } from "lucide-react";
-import { Menu, MenuPlato } from "@/types";
+import { Menu, MenuPlato, MEAL_SERVICE_DISH_CATEGORIES_MAP, MEAL_SERVICE_ORDER } from "@/types"; // Imported MEAL_SERVICE_DISH_CATEGORIES_MAP and MEAL_SERVICE_ORDER
 import { useDeleteMenu } from "@/hooks/useMenus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -21,27 +21,6 @@ interface DailyMenuListProps {
   onEdit: (menu: Menu) => void;
 }
 
-// Define las categorías estructuradas por tipo de servicio para la visualización
-const STRUCTURED_DISH_CATEGORIES_DISPLAY: { [key: string]: string[] } = {
-  "Desayuno": ["Sándwich", "Bebida Caliente", "Refresco", "Infusión", "Otros"],
-  "Almuerzo Regular": ["Entrada", "Plato de Fondo", "Sopa", "Postre", "Refresco", "Infusión", "Otros"],
-  "Almuerzo Dieta Saludable": ["Sopa Saludable", "Ensalada Saludable", "Postre Saludable", "Refresco", "Infusión", "Otros"],
-  "Almuerzo Dieta Blanda": ["Sopa", "Plato de Fondo Sancochado", "Postre", "Otros"],
-  "Cena": ["Plato de Fondo", "Bebida Caliente", "Refresco", "Infusión", "Otros"],
-  "Merienda": ["Sopa", "Sándwich", "Bebida Caliente", "Refresco", "Infusión", "Otros"],
-  "Default": ["Desayuno / Merienda", "Entrada", "Sopa / Crema", "Ensalada Fría", "Ensalada Caliente", "Plato de Fondo - Carnes", "Plato de Fondo - Aves", "Plato de Fondo - Pescados y Mariscos", "Plato de Fondo - Pastas y Arroces", "Plato de Fondo - Vegetariano / Vegano", "Acompañamiento / Guarnición", "Postre", "Bebida", "Dieta Blanda", "Otra Opción", "Otros"],
-};
-
-const MEAL_SERVICE_DISPLAY_ORDER = [
-  "Desayuno",
-  "Almuerzo Regular",
-  "Almuerzo Dieta Saludable",
-  "Almuerzo Dieta Blanda",
-  "Cena",
-  "Merienda",
-];
-
-
 const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
   const deleteMutation = useDeleteMenu();
   const { data: _availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
@@ -49,8 +28,6 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
   };
-
-  // const MEAL_SERVICES_ORDER = ["desayuno", "almuerzo", "cena", "merienda"]; // Standard meal services to check and order by
 
   if (menus.length === 0) {
     return (
@@ -76,13 +53,13 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
         <TableBody>
           {menus.map((menu) => {
             const mealServiceStatus: { [key: string]: boolean } = {};
-            MEAL_SERVICE_DISPLAY_ORDER.forEach(type => {
+            MEAL_SERVICE_ORDER.forEach(type => { // Use MEAL_SERVICE_ORDER
               mealServiceStatus[type] = false; // Initialize all to false
             });
 
             menu.menu_platos?.forEach(mp => {
               const serviceName = mp.meal_services?.name;
-              if (serviceName && MEAL_SERVICE_DISPLAY_ORDER.includes(serviceName)) {
+              if (serviceName && MEAL_SERVICE_ORDER.includes(serviceName)) { // Use MEAL_SERVICE_ORDER
                 mealServiceStatus[serviceName] = true;
               }
             });
@@ -90,7 +67,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
             // Group platos by meal service and then by dish category for detailed display
             const platosGroupedByServiceAndCategory = menu.menu_platos?.reduce((acc, mp) => {
               const serviceName = mp.meal_services?.name || "Sin Servicio";
-              const dishCategory = mp.dish_category || "Sin Categoría"; // NEW: Use dish_category
+              const dishCategory = mp.dish_category || "Sin Categoría";
               if (!acc[serviceName]) {
                 acc[serviceName] = {};
               }
@@ -123,7 +100,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                       <span className="text-sm text-gray-500">Cargando...</span>
                     ) : (
                       <div className="flex flex-wrap gap-1">
-                        {MEAL_SERVICE_DISPLAY_ORDER.map(type => (
+                        {MEAL_SERVICE_ORDER.map(type => ( // Use MEAL_SERVICE_ORDER
                           <Badge
                             key={type}
                             variant={mealServiceStatus[type] ? "default" : "secondary"}
@@ -186,43 +163,39 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                           </AccordionTrigger>
                           <AccordionContent className="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
                             <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Detalles de Recetas:</h4> {/* Changed text */}
-                            {Object.entries(platosGroupedByServiceAndCategory || {})
-                              .sort(([serviceA], [serviceB]) => {
-                                // Sort services by predefined order
-                                const indexA = MEAL_SERVICE_DISPLAY_ORDER.indexOf(serviceA);
-                                const indexB = MEAL_SERVICE_DISPLAY_ORDER.indexOf(serviceB);
-                                if (indexA === -1) return 1; // Unknown services last
-                                if (indexB === -1) return -1;
-                                return indexA - indexB;
-                              })
-                              .map(([serviceName, dishCategories]) => (
-                                <div key={serviceName} className="mb-4 last:mb-0">
-                                  <h5 className="text-md font-bold text-gray-800 dark:text-gray-200 mb-2 capitalize">{serviceName}</h5>
-                                  {Object.entries(dishCategories)
-                                    .sort(([categoryA], [categoryB]) => {
-                                      // Sort dish categories by predefined order for the current service
-                                      const serviceCategories = STRUCTURED_DISH_CATEGORIES_DISPLAY[serviceName] || STRUCTURED_DISH_CATEGORIES_DISPLAY["Default"];
-                                      const indexA = serviceCategories.indexOf(categoryA);
-                                      const indexB = serviceCategories.indexOf(categoryB);
-                                      if (indexA === -1) return 1; // Unknown categories last
-                                      if (indexB === -1) return -1;
-                                      return indexA - indexB;
-                                    })
-                                    .map(([dishCategory, platos]) => (
-                                      <div key={dishCategory} className="ml-4 mb-2 last:mb-0">
-                                        <h6 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 capitalize">{dishCategory}:</h6>
-                                        <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
-                                          {platos?.map((mp, idx) => (
-                                            <li key={idx} className="text-base">
-                                              <span className="font-medium text-gray-800 dark:text-gray-200">{mp.platos?.nombre || "Receta Desconocida"}</span> {/* Changed text */}
-                                              {" "} (Cantidad: {mp.quantity_needed})
-                                            </li>
-                                          ))}
-                                        </ul>
-                                      </div>
-                                    ))}
-                                </div>
-                              ))}
+                            {MEAL_SERVICE_ORDER // Iterate through the defined order of meal services
+                              .filter(serviceName => platosGroupedByServiceAndCategory?.[serviceName]) // Only show services present in this menu
+                              .map((serviceName) => {
+                                const dishCategories = platosGroupedByServiceAndCategory?.[serviceName];
+                                const expectedCategories = MEAL_SERVICE_DISH_CATEGORIES_MAP[serviceName] || MEAL_SERVICE_DISH_CATEGORIES_MAP["Default"];
+
+                                return (
+                                  <div key={serviceName} className="mb-4 last:mb-0">
+                                    <h5 className="text-md font-bold text-gray-800 dark:text-gray-200 mb-2 capitalize">{serviceName}</h5>
+                                    {expectedCategories // Iterate through all expected categories for this service
+                                      .map((expectedCategory) => {
+                                        const platosInThisCategory = dishCategories?.[expectedCategory] || [];
+                                        return (
+                                          <div key={expectedCategory} className="ml-4 mb-2 last:mb-0">
+                                            <h6 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 capitalize">{expectedCategory}:</h6>
+                                            {platosInThisCategory.length > 0 ? (
+                                              <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
+                                                {platosInThisCategory.map((mp, idx) => (
+                                                  <li key={idx} className="text-base">
+                                                    <span className="font-medium text-gray-800 dark:text-gray-200">{mp.platos?.nombre || "Receta Desconocida"}</span>
+                                                    {" "} (Cantidad: {mp.quantity_needed})
+                                                  </li>
+                                                ))}
+                                              </ul>
+                                            ) : (
+                                              <p className="text-sm italic text-gray-500 dark:text-gray-400">No hay recetas asignadas a esta categoría.</p>
+                                            )}
+                                          </div>
+                                        );
+                                      })}
+                                  </div>
+                                );
+                              })}
                           </AccordionContent>
                         </AccordionItem>
                       </Accordion>
