@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 import { useServiceReports } from "@/hooks/useServiceReports";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Package } from "lucide-react";
-import { format, isWithinInterval } from "date-fns";
+import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { ServiceReport } from "@/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -29,7 +29,7 @@ const ConsumptionReport: React.FC<ConsumptionReportProps> = ({ startDate, endDat
     const consumptionMap = new Map<string, InsumoConsumption>();
 
     serviceReports.forEach((report: ServiceReport) => {
-      const reportDate = new Date(report.report_date);
+      const reportDate = parseISO(report.report_date);
       if (isWithinInterval(reportDate, { start: startDate, end: endDate })) {
         report.service_report_platos?.forEach(srp => {
           const receta = srp.platos; // Changed plato to receta

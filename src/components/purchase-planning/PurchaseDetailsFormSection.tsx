@@ -19,7 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, formatISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Insumo, PurchaseRecordFormValues } from "@/types";
 import { CalendarIcon } from "lucide-react";
@@ -102,7 +102,7 @@ const PurchaseDetailsFormSection: React.FC<PurchaseDetailsFormSectionProps> = ({
                 <Calendar
                   mode="single"
                   selected={field.value ? new Date(field.value) : undefined}
-                  onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : null)}
+                  onSelect={(date) => field.onChange(date ? formatISO(date, { representation: 'date' }) : null)}
                   disabled={(date) =>
                     date > new Date() || date < new Date("1900-01-01") || isLoading
                   }

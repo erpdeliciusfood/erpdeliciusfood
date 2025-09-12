@@ -1,13 +1,11 @@
 import { useState } from "react";
-import { Button } from "@/components/ui/button";
-import { Loader2, BookText, AlertTriangle } from "lucide-react"; // Added AlertTriangle icon
+import { Loader2, BookText } from "lucide-react";
 import { useMenus } from "@/hooks/useMenus";
 import MenuCalendar from "@/components/menus/MenuCalendar";
 import WeeklyMenuOverview from "@/components/menus/WeeklyMenuOverview";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Menu } from "@/types";
-import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
-import { Link } from "react-router-dom"; // Import Link for navigation
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
 
 const Menus = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -53,17 +51,6 @@ const Menus = () => {
         description="Planifica y organiza tus menús diarios y para eventos especiales. Selecciona una fecha en el calendario para ver o añadir menús."
         icon={BookText}
       />
-
-      <div className="flex justify-end items-center mb-6 gap-4">
-        <Link to="/menus/quebrado-calendar">
-          <Button
-            className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-red-600 hover:bg-red-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
-          >
-            <AlertTriangle className="mr-3 h-6 w-6" />
-            QUEBRADO
-          </Button>
-        </Link>
-      </div>
 
       <div className="mb-8">
         <WeeklyMenuOverview onAddMenu={handleAddMenu} />

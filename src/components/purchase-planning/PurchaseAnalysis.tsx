@@ -2,7 +2,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { useMenus } from "@/hooks/useMenus";
 import { useInsumos } from "@/hooks/useInsumos";
 import { Loader2, ShoppingBag } from "lucide-react";
-import { format, isWithinInterval } from "date-fns";
+import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Insumo } from "@/types";
@@ -62,7 +62,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
     const insumoNeedsMap = new Map<string, number>();
 
     menus.forEach(menu => {
-      if (menu.menu_date && isWithinInterval(new Date(menu.menu_date), { start: startDate, end: endDate })) {
+      if (menu.menu_date && isWithinInterval(parseISO(menu.menu_date), { start: startDate, end: endDate })) {
         menu.menu_platos?.forEach(menuPlato => {
           const plato = menuPlato.platos;
           if (plato) {

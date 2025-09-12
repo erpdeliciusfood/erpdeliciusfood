@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { format, startOfMonth, endOfMonth, isSameDay } from "date-fns";
+import { format, startOfMonth, endOfMonth, isSameDay, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, PlusCircle, UtensilsCrossed } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
@@ -7,18 +7,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useMenus } from "@/hooks/useMenus";
 import { Menu } from "@/types";
-import { DayModifiers, DayProps } from "react-day-picker";
+import { DayModifiers } from "react-day-picker";
 import DailyMenuList from "./DailyMenuList";
 import MenuFormSheet from "./MenuFormSheet";
-import { showError } from "@/utils/toast";
-import CalendarDayCellContent from "./CalendarDayCellContent"; // Default DayComponent
-
-// NEW: Define props interface for the custom DayComponent
-interface DayComponentProps {
-  date: Date;
-  menusForDay: Menu[];
-  [key: string]: any; // Allow arbitrary props to be passed
-}
+import { showError } from "@/utils/toast"; // Import showError
 
 interface MenuCalendarProps {
   onAddMenu: (date: Date) => void;
@@ -28,8 +20,6 @@ interface MenuCalendarProps {
   editingMenu: Menu | null;
   selectedDate: Date | undefined;
   setSelectedDate: (date: Date | undefined) => void;
-  DayComponent?: React.ComponentType<DayComponentProps>; // NEW: Optional custom DayComponent
-  dayComponentProps?: Record<string, any>; // NEW: Props to pass to the custom DayComponent
 }
 
 const MenuCalendar: React.FC<MenuCalendarProps> = ({
@@ -40,11 +30,10 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
   editingMenu,
   selectedDate,
   setSelectedDate,
-  DayComponent = CalendarDayCellContent, // Default to existing content
-  dayComponentProps = {}, // Default to empty object
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [dailyMenus, setDailyMenus] = useState<Menu[]>([]);
+  // Removed isDailyMenuDialogOpen state as it's no longer needed
 
   const formattedMonthStart = format(startOfMonth(currentMonth), "yyyy-MM-dd");
   const formattedMonthEnd = format(endOfMonth(currentMonth), "yyyy-MM-dd");
@@ -54,7 +43,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
   useEffect(() => {
     if (selectedDate && menusInMonth) {
       const menusForSelectedDay = menusInMonth.filter(menu =>
-        menu.menu_date && isSameDay(new Date(menu.menu_date), selectedDate)
+        menu.menu_date && isSameDay(parseISO(menu.menu_date), selectedDate)
       );
       setDailyMenus(menusForSelectedDay);
     } else {
@@ -64,35 +53,38 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
 
   const handleDayClick = (date: Date | undefined) => {
     setSelectedDate(date);
+    // No need to open a dialog, the list will appear if selectedDate is set
   };
 
   const handleMonthChange = (month: Date) => {
     setCurrentMonth(month);
-    setSelectedDate(undefined);
+    setSelectedDate(undefined); // Clear selected date when month changes
   };
 
+  // NEW: Function to handle adding a menu, checking for existing daily menus
   const handleAddMenuForSelectedDate = (date: Date) => {
     if (!menusInMonth) {
       showError("Cargando menús, por favor espera.");
       return;
     }
 
+    // Format the selected date to a YYYY-MM-DD string for consistent comparison
     const formattedSelectedDate = format(date, "yyyy-MM-dd");
 
     const existingDailyMenuForDate = menusInMonth.find(menu =>
-      menu.menu_date && menu.menu_date === formattedSelectedDate && !menu.event_type_id
+      menu.menu_date && menu.menu_date === formattedSelectedDate && !menu.event_type_id // Compare strings directly
     );
 
     if (existingDailyMenuForDate) {
       showError(`Ya existe un menú diario para el ${format(date, "PPP", { locale: es })}. Por favor, edita el menú existente.`);
-      onEditMenu(existingDailyMenuForDate);
+      onEditMenu(existingDailyMenuForDate); // Open form to edit the existing daily menu
     } else {
-      onAddMenu(date);
+      onAddMenu(date); // Proceed to add new menu
     }
   };
 
   const modifiers: DayModifiers = {
-    menus: menusInMonth?.map(menu => menu.menu_date ? new Date(menu.menu_date) : undefined).filter(Boolean) as Date[],
+    menus: menusInMonth?.map(menu => menu.menu_date ? parseISO(menu.menu_date) : undefined).filter(Boolean) as Date[],
     today: new Date(),
     selected: selectedDate ? [selectedDate] : [],
   };
@@ -101,24 +93,6 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
     menus: "bg-blue-200 text-blue-900 dark:bg-blue-800 dark:text-blue-100 rounded-full",
     today: "bg-primary text-primary-foreground rounded-full",
     selected: "bg-green-500 text-white dark:bg-green-700 dark:text-white rounded-full",
-  };
-
-  // Custom Day component to render content inside cells
-  const CustomDay = (props: DayProps) => {
-    const dayDate = props.date;
-    const menusForThisDay = menusInMonth?.filter(menu =>
-      menu.menu_date && isSameDay(new Date(menu.menu_date), dayDate)
-    ) || [];
-
-    return (
-      <div className="relative h-full w-full">
-        <div className={props.wrapperProps.className}>
-          {props.wrapperProps.children}
-        </div>
-        {/* Render the passed DayComponent with its specific props */}
-        <DayComponent date={dayDate} menusForDay={menusForThisDay} {...dayComponentProps} />
-      </div>
-    );
   };
 
   if (isLoading) {
@@ -161,7 +135,6 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
             modifiers={modifiers}
             modifiersClassNames={modifiersClassNames}
             className="rounded-md border shadow"
-            components={{ Day: CustomDay }}
           />
           <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600 dark:text-gray-400">
             <div className="flex items-center">
@@ -198,7 +171,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
               Menús para el {format(selectedDate, "PPP", { locale: es })}
             </CardTitle>
             <Button
-              onClick={() => handleAddMenuForSelectedDate(selectedDate || new Date())}
+              onClick={() => handleAddMenuForSelectedDate(selectedDate || new Date())} // Use the new handler
               className="px-4 py-2 text-base bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
             >
               <PlusCircle className="mr-2 h-4 w-4" />
