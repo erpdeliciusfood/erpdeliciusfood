@@ -64,6 +64,7 @@ const PurchasePlanning = () => {
         title="Planificación de Compras"
         description="Analiza las necesidades de insumos según tus menús y stock."
         icon={ShoppingBag}
+        hideLogo={true} {/* NEW: Hide logo for pages within MainLayout */}
       />
 
       {/* NEW: Action and Filter Bar */}

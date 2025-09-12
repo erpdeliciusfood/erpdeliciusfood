@@ -27,6 +27,7 @@ const Profile = () => {
             title="Mi Perfil"
             description="Actualiza tu información personal y gestiona tu cuenta."
             icon={UserCircle2}
+            hideLogo={true} {/* NEW: Hide logo for pages within MainLayout */}
           />
           <Button
             variant="outline"

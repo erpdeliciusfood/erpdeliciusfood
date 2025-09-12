@@ -42,7 +42,7 @@ const Index = () => {
           title={`¡Bienvenido, ${userName}!`}
           description="Gestiona tus operaciones de restaurante de forma eficiente."
           icon={LayoutDashboard}
-          hideLogo={true}
+          hideLogo={true} {/* NEW: Hide logo for pages within MainLayout */}
         />
 
         <div className="grid grid-cols-1 gap-6 mb-8">

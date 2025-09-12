@@ -34,7 +34,7 @@ const StockMovements = () => {
     return (
       <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900 text-red-600 dark:text-red-400">
         <h1 className="text-4xl font-bold mb-4">Error</h1>
-        <p className="text-xl">No se pudieron cargar los movimientos de stock: {error?.message}</p>
+        <p className className="text-xl">No se pudieron cargar los movimientos de stock: {error?.message}</p>
       </div>
     );
   }
@@ -45,6 +45,7 @@ const StockMovements = () => {
         title="Gestión de Movimientos de Stock"
         description="Registra entradas y salidas manuales de inventario."
         icon={Package}
+        hideLogo={true} {/* NEW: Hide logo for pages within MainLayout */}
       />
       <div className="flex justify-end items-center mb-6"> {/* Adjusted layout for buttons */}
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

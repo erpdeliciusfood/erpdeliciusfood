@@ -31,9 +31,8 @@ import {
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
-import NavLinkButton from "./NavLinkButton";
+// Removed NavLinkButton as it's for desktop nav, now in Sidebar
 import MobileNavLinkButton from "./MobileNavLinkButton";
-// import { cn } from '@/lib/utils'; // Eliminada la importación no utilizada
 
 const Header: React.FC = () => {
   const { session } = useSession();
@@ -55,7 +54,9 @@ const Header: React.FC = () => {
     navigate(-1);
   };
 
-  const navLinks = [
+  // Define navLinks here for the mobile menu only
+  const mobileNavLinks = [
+    { to: "/", icon: Home, label: "Inicio" },
     { to: "/insumos", icon: Utensils, label: "Insumos" },
     { to: "/recetas", icon: ChefHat, label: "Recetas" },
     { to: "/event-types", icon: CalendarDays, label: "Tipos Evento" },
@@ -76,13 +77,12 @@ const Header: React.FC = () => {
   return (
     <header className="bg-primary dark:bg-primary-foreground text-primary-foreground dark:text-primary p-4 shadow-md border-b border-primary-foreground/10 dark:border-primary/10">
       <div className="container mx-auto flex justify-between items-center">
-        {/* Logo and Home Button */}
-        <Link to="/" className="flex items-center group">
+        {/* Logo and Home Button (only for mobile, desktop logo is in sidebar) */}
+        <Link to="/" className="flex items-center group md:hidden"> {/* Hidden on desktop */}
           <img src="/logo-erp.png" alt="App Logo" className="h-12 w-auto mr-3 transition-transform duration-200 group-hover:scale-105" />
         </Link>
-
-        {/* Desktop Navigation */}
-        <nav className="hidden md:flex items-center space-x-2 lg:space-x-4">
+        {/* Desktop header content (empty or minimal) */}
+        <div className="hidden md:flex flex-grow justify-end items-center">
           {location.pathname !== "/" && (
             <Button
               variant="ghost"
@@ -93,27 +93,14 @@ const Header: React.FC = () => {
               Volver
             </Button>
           )}
-          {navLinks.map((link) => (
-            <NavLinkButton key={link.to} to={link.to} icon={link.icon} label={link.label} />
-          ))}
-          {userRole === 'admin' && (
-            <NavLinkButton to="/user-management" icon={Users} label="Usuarios" />
-          )}
-          <NavLinkButton to="/profile" icon={UserCircle2} label="Perfil" />
-          <Button
-            variant="ghost"
-            onClick={handleSignOut}
-            className="text-primary-foreground dark:text-primary hover:bg-red-500/20 dark:hover:bg-red-500/20 px-4 py-2 text-base h-10"
-          >
-            <LogOut className="mr-2 h-5 w-5" />
-            Cerrar Sesión
-          </Button>
-          <ModeToggle />
-        </nav>
+          {/* ModeToggle is now in the sidebar for desktop */}
+          {/* <ModeToggle /> */}
+        </div>
+
 
         {/* Mobile Navigation (Hamburger Menu) */}
         <div className="md:hidden flex items-center space-x-2">
-          <ModeToggle />
+          <ModeToggle /> {/* Keep ModeToggle in mobile header */}
           <Sheet open={isSheetOpen} onOpenChange={setIsSheetOpen}>
             <SheetTrigger asChild>
               <Button variant="ghost" size="icon" className="h-10 w-10">
@@ -139,8 +126,7 @@ const Header: React.FC = () => {
                     Volver
                   </Button>
                 )}
-                <MobileNavLinkButton to="/" icon={Home} label="Inicio" onClick={() => setIsSheetOpen(false)} />
-                {navLinks.map((link) => (
+                {mobileNavLinks.map((link) => (
                   <MobileNavLinkButton key={link.to} to={link.to} icon={link.icon} label={link.label} onClick={() => setIsSheetOpen(false)} />
                 ))}
                 {userRole === 'admin' && (

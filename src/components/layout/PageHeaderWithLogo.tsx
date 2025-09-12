@@ -5,7 +5,7 @@ interface PageHeaderWithLogoProps {
   title: string;
   description?: string;
   icon?: LucideIcon; // Optional icon for the page title
-  hideLogo?: boolean; // NEW: Optional prop to hide the logo
+  hideLogo?: boolean; // Optional prop to hide the logo
 }
 
 const PageHeaderWithLogo: React.FC<PageHeaderWithLogoProps> = ({ title, description, icon: Icon, hideLogo = false }) => {
