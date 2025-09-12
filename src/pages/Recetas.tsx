@@ -54,7 +54,7 @@ const Recetas = () => {
         title="Gestión de Recetas"
         description="Crea y administra tus recetas con los insumos disponibles."
         icon={ChefHat}
-        hideLogo={true}
+        hideLogo={true} 
       />
       <div className="flex justify-end items-center mb-6"> {/* Adjusted layout for buttons */}
         <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>

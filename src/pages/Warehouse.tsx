@@ -55,7 +55,7 @@ const WarehousePage: React.FC = () => {
         title="Gestión de Almacén (Preparación Diaria)"
         description="Selecciona una fecha para ver los menús planificados y gestionar la salida de insumos para la preparación diaria."
         icon={Warehouse}
-        hideLogo={true}
+        hideLogo={true} 
       />
 
       <div className="mb-8">
