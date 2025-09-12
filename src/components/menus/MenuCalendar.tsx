@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { format, startOfMonth, endOfMonth, isSameDay, parse } from "date-fns";
+import { format, startOfMonth, endOfMonth, isSameDay, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, PlusCircle, UtensilsCrossed } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
@@ -10,9 +10,7 @@ import { Menu } from "@/types";
 import { DayModifiers } from "react-day-picker";
 import DailyMenuList from "./DailyMenuList";
 import MenuFormSheet from "./MenuFormSheet";
-import { showError } from "@/utils/toast";
-import CalendarDayCellContent from "./CalendarDayCellContent";
-import { Loader2 } from "lucide-react";
+import { showError } from "@/utils/toast"; // Import showError
 
 interface MenuCalendarProps {
   onAddMenu: (date: Date) => void;
@@ -35,6 +33,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [dailyMenus, setDailyMenus] = useState<Menu[]>([]);
+  // Removed isDailyMenuDialogOpen state as it's no longer needed
 
   const formattedMonthStart = format(startOfMonth(currentMonth), "yyyy-MM-dd");
   const formattedMonthEnd = format(endOfMonth(currentMonth), "yyyy-MM-dd");
@@ -44,7 +43,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
   useEffect(() => {
     if (selectedDate && menusInMonth) {
       const menusForSelectedDay = menusInMonth.filter(menu =>
-        menu.menu_date && isSameDay(parse(menu.menu_date, 'yyyy-MM-dd', new Date()), selectedDate)
+        menu.menu_date && isSameDay(parseISO(menu.menu_date), selectedDate)
       );
       setDailyMenus(menusForSelectedDay);
     } else {
@@ -54,33 +53,38 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
 
   const handleDayClick = (date: Date | undefined) => {
     setSelectedDate(date);
+    // No need to open a dialog, the list will appear if selectedDate is set
   };
 
   const handleMonthChange = (month: Date) => {
     setCurrentMonth(month);
-    setSelectedDate(undefined);
+    setSelectedDate(undefined); // Clear selected date when month changes
   };
 
+  // NEW: Function to handle adding a menu, checking for existing daily menus
   const handleAddMenuForSelectedDate = (date: Date) => {
     if (!menusInMonth) {
       showError("Cargando menús, por favor espera.");
       return;
     }
 
+    // Format the selected date to a YYYY-MM-DD string for consistent comparison
+    const formattedSelectedDate = format(date, "yyyy-MM-dd");
+
     const existingDailyMenuForDate = menusInMonth.find(menu =>
-      menu.menu_date && isSameDay(parse(menu.menu_date, 'yyyy-MM-dd', new Date()), date) && !menu.event_type_id
+      menu.menu_date && menu.menu_date === formattedSelectedDate && !menu.event_type_id // Compare strings directly
     );
 
     if (existingDailyMenuForDate) {
       showError(`Ya existe un menú diario para el ${format(date, "PPP", { locale: es })}. Por favor, edita el menú existente.`);
-      onEditMenu(existingDailyMenuForDate);
+      onEditMenu(existingDailyMenuForDate); // Open form to edit the existing daily menu
     } else {
-      onAddMenu(date);
+      onAddMenu(date); // Proceed to add new menu
     }
   };
 
   const modifiers: DayModifiers = {
-    menus: menusInMonth?.map(menu => menu.menu_date ? parse(menu.menu_date, 'yyyy-MM-dd', new Date()) : undefined).filter(Boolean) as Date[],
+    menus: menusInMonth?.map(menu => menu.menu_date ? parseISO(menu.menu_date) : undefined).filter(Boolean) as Date[],
     today: new Date(),
     selected: selectedDate ? [selectedDate] : [],
   };
@@ -93,9 +97,9 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
 
   if (isLoading) {
     return (
-      <div className="flex flex-col items-center justify-center min-h-screen bg-gray-100 dark:bg-gray-900">
-        <Loader2 className="h-12 w-12 animate-spin text-primary dark:text-primary-foreground" />
-        <p className="mt-4 text-lg text-gray-700 dark:text-gray-300">Cargando calendario de menús...</p>
+      <div className="flex flex-col items-center justify-center py-10">
+        <UtensilsCrossed className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600 animate-pulse" />
+        <p className="text-xl text-gray-600 dark:text-gray-400">Cargando calendario de menús...</p>
       </div>
     );
   }
@@ -131,26 +135,10 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
             modifiers={modifiers}
             modifiersClassNames={modifiersClassNames}
             className="rounded-md border shadow"
-            components={{
-              Day: ({ date }) => {
-                const menusForDay = menusInMonth?.filter(menu =>
-                  menu.menu_date && isSameDay(parse(menu.menu_date, 'yyyy-MM-dd', new Date()), date)
-                ) || [];
-                const isSelectedDay = selectedDate && isSameDay(date, selectedDate); // Determine if the day is selected
-                return (
-                  <div className="relative h-full w-full">
-                    <div className="absolute top-1 left-1 text-xs font-semibold z-10">
-                      {format(date, "d")}
-                    </div>
-                    <CalendarDayCellContent menusForDay={menusForDay} isSelected={isSelectedDay} />
-                  </div>
-                );
-              },
-            }}
           />
           <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600 dark:text-gray-400">
             <div className="flex items-center">
-              <span className="h-4 w-4 rounded-full bg-blue-500 dark:bg-blue-400 mr-2 border border-blue-300 dark:border-blue-700"></span>
+              <span className="h-4 w-4 rounded-full bg-blue-200 dark:bg-blue-800 mr-2 border border-blue-300 dark:border-blue-700"></span>
               Días con Menús
             </div>
             <div className="flex items-center">
@@ -183,11 +171,11 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
               Menús para el {format(selectedDate, "PPP", { locale: es })}
             </CardTitle>
             <Button
-              onClick={() => handleAddMenuForSelectedDate(selectedDate || new Date())}
+              onClick={() => handleAddMenuForSelectedDate(selectedDate || new Date())} // Use the new handler
               className="px-4 py-2 text-base bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
             >
-              <PlusCircle className="h-4 w-4 md:mr-2" />
-              <span className="hidden md:inline">Añadir Menú</span>
+              <PlusCircle className="mr-2 h-4 w-4" />
+              Añadir Menú
             </Button>
           </CardHeader>
           <CardContent>
