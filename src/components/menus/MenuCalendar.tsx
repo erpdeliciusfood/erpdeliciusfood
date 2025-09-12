@@ -7,11 +7,18 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useMenus } from "@/hooks/useMenus";
 import { Menu } from "@/types";
-import { DayModifiers, DayProps } from "react-day-picker"; // Import DayProps
+import { DayModifiers, DayProps } from "react-day-picker";
 import DailyMenuList from "./DailyMenuList";
 import MenuFormSheet from "./MenuFormSheet";
-import { showError } from "@/utils/toast"; // Import showError
-import CalendarDayCellContent from "./CalendarDayCellContent"; // NEW: Import CalendarDayCellContent
+import { showError } from "@/utils/toast";
+import CalendarDayCellContent from "./CalendarDayCellContent"; // Default DayComponent
+
+// NEW: Define props interface for the custom DayComponent
+interface DayComponentProps {
+  date: Date;
+  menusForDay: Menu[];
+  [key: string]: any; // Allow arbitrary props to be passed
+}
 
 interface MenuCalendarProps {
   onAddMenu: (date: Date) => void;
@@ -21,6 +28,8 @@ interface MenuCalendarProps {
   editingMenu: Menu | null;
   selectedDate: Date | undefined;
   setSelectedDate: (date: Date | undefined) => void;
+  DayComponent?: React.ComponentType<DayComponentProps>; // NEW: Optional custom DayComponent
+  dayComponentProps?: Record<string, any>; // NEW: Props to pass to the custom DayComponent
 }
 
 const MenuCalendar: React.FC<MenuCalendarProps> = ({
@@ -31,10 +40,11 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
   editingMenu,
   selectedDate,
   setSelectedDate,
+  DayComponent = CalendarDayCellContent, // Default to existing content
+  dayComponentProps = {}, // Default to empty object
 }) => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [dailyMenus, setDailyMenus] = useState<Menu[]>([]);
-  // Removed isDailyMenuDialogOpen state as it's no longer needed
 
   const formattedMonthStart = format(startOfMonth(currentMonth), "yyyy-MM-dd");
   const formattedMonthEnd = format(endOfMonth(currentMonth), "yyyy-MM-dd");
@@ -54,33 +64,30 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
 
   const handleDayClick = (date: Date | undefined) => {
     setSelectedDate(date);
-    // No need to open a dialog, the list will appear if selectedDate is set
   };
 
   const handleMonthChange = (month: Date) => {
     setCurrentMonth(month);
-    setSelectedDate(undefined); // Clear selected date when month changes
+    setSelectedDate(undefined);
   };
 
-  // NEW: Function to handle adding a menu, checking for existing daily menus
   const handleAddMenuForSelectedDate = (date: Date) => {
     if (!menusInMonth) {
       showError("Cargando menús, por favor espera.");
       return;
     }
 
-    // Format the selected date to a YYYY-MM-DD string for consistent comparison
     const formattedSelectedDate = format(date, "yyyy-MM-dd");
 
     const existingDailyMenuForDate = menusInMonth.find(menu =>
-      menu.menu_date && menu.menu_date === formattedSelectedDate && !menu.event_type_id // Compare strings directly
+      menu.menu_date && menu.menu_date === formattedSelectedDate && !menu.event_type_id
     );
 
     if (existingDailyMenuForDate) {
       showError(`Ya existe un menú diario para el ${format(date, "PPP", { locale: es })}. Por favor, edita el menú existente.`);
-      onEditMenu(existingDailyMenuForDate); // Open form to edit the existing daily menu
+      onEditMenu(existingDailyMenuForDate);
     } else {
-      onAddMenu(date); // Proceed to add new menu
+      onAddMenu(date);
     }
   };
 
@@ -96,7 +103,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
     selected: "bg-green-500 text-white dark:bg-green-700 dark:text-white rounded-full",
   };
 
-  // NEW: Custom Day component to render content inside cells
+  // Custom Day component to render content inside cells
   const CustomDay = (props: DayProps) => {
     const dayDate = props.date;
     const menusForThisDay = menusInMonth?.filter(menu =>
@@ -104,11 +111,12 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
     ) || [];
 
     return (
-      <div className="relative h-full w-full"> {/* Ensure relative positioning for absolute children */}
-        <div className={props.className}>
-          {props.children} {/* This renders the day number */}
+      <div className="relative h-full w-full">
+        <div className={props.wrapperProps.className}>
+          {props.wrapperProps.children}
         </div>
-        <CalendarDayCellContent menusForDay={menusForThisDay} />
+        {/* Render the passed DayComponent with its specific props */}
+        <DayComponent date={dayDate} menusForDay={menusForThisDay} {...dayComponentProps} />
       </div>
     );
   };
