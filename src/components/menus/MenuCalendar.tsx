@@ -190,8 +190,8 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
               onClick={() => handleAddMenuForSelectedDate(selectedDate || new Date())} // Use the new handler
               className="px-4 py-2 text-base bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
             >
-              <PlusCircle className="mr-2 h-4 w-4" />
-              Añadir Menú
+              <PlusCircle className="h-4 w-4 md:mr-2" />
+              <span className="hidden md:inline">Añadir Menú</span>
             </Button>
           </CardHeader>
           <CardContent>
