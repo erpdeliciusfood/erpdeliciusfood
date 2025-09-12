@@ -19,10 +19,11 @@ import StockMovements from "./pages/StockMovements";
 import PurchaseRecords from "./pages/PurchaseRecords";
 import WarehousePage from "./pages/Warehouse";
 import UrgentPurchaseRequests from "./pages/UrgentPurchaseRequests";
+import QuebradoCalendar from "./pages/QuebradoCalendar"; // NEW: Import QuebradoCalendar
 import { SessionContextProvider, useSession } from "./contexts/SessionContext";
 import MainLayout from "./components/layout/MainLayout";
 import { ThemeProvider } from "./contexts/ThemeProvider";
-import { SpeedInsights } from "@vercel/speed-insights/react"; // NEW: Import SpeedInsights
+import { SpeedInsights } from "@vercel/speed-insights/react";
 
 const queryClient = new QueryClient();
 
@@ -53,6 +54,7 @@ const AppRoutes = () => (
     <Route path="/recetas" element={<ProtectedRoute><Recetas /></ProtectedRoute>} />
     <Route path="/event-types" element={<ProtectedRoute><EventTypes /></ProtectedRoute>} />
     <Route path="/menus" element={<ProtectedRoute><Menus /></ProtectedRoute>} />
+    <Route path="/menus/quebrado-calendar" element={<ProtectedRoute><QuebradoCalendar /></ProtectedRoute>} /> {/* NEW: Quebrado Calendar Route */}
     <Route path="/service-reports" element={<ProtectedRoute><ServiceReports /></ProtectedRoute>} />
     <Route path="/reports" element={<ProtectedRoute><Reports /></ProtectedRoute>} />
     <Route path="/user-management" element={<ProtectedRoute><UserManagement /></ProtectedRoute>} />
@@ -80,7 +82,7 @@ const App = () => (
         </BrowserRouter>
       </TooltipProvider>
     </ThemeProvider>
-    <SpeedInsights /> {/* NEW: Render SpeedInsights component */}
+    <SpeedInsights />
   </QueryClientProvider>
 );
 

@@ -60,6 +60,7 @@ const Header: React.FC = () => {
     { to: "/recetas", icon: ChefHat, label: "Recetas" },
     { to: "/event-types", icon: CalendarDays, label: "Tipos Evento" },
     { to: "/menus", icon: BookText, label: "Menús" },
+    { to: "/menus/quebrado-calendar", icon: AlertCircle, label: "Quebrado" }, // NEW: Quebrado Calendar Link
     { to: "/service-reports", icon: FileText, label: "Reportes Servicio" },
     { to: "/purchase-planning", icon: ShoppingBag, label: "Planificación Compras" },
     { to: "/purchase-records", icon: ReceiptText, label: "Registros Compra" },
