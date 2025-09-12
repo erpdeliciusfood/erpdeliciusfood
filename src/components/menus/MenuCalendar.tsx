@@ -43,8 +43,9 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
 
   useEffect(() => {
     if (selectedDate && menusInMonth) {
+      const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd"); // Format selectedDate to string
       const menusForSelectedDay = menusInMonth.filter(menu =>
-        menu.menu_date && isSameDay(parseISO(menu.menu_date), selectedDate)
+        menu.menu_date && menu.menu_date === formattedSelectedDate // Compare strings directly
       );
       setDailyMenus(menusForSelectedDay);
     } else {
@@ -187,7 +188,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
               Menús para el {format(selectedDate, "PPP", { locale: es })}
             </CardTitle>
             <Button
-              onClick={() => handleAddMenuForSelectedDate(selectedDate || new Date())} // Use the new handler
+              onClick={() => handleAddMenuForSelectedDate(selectedDate || new Date())}
               className="px-4 py-2 text-base bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
             >
               <PlusCircle className="h-4 w-4 md:mr-2" />

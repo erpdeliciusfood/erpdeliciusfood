@@ -84,7 +84,7 @@ const Reports = () => {
         title="Reportes y Análisis"
         description="Visualiza el estado de tu inventario, consumo y finanzas."
         icon={BarChart3}
-        hideLogo={true} {/* NEW: Hide logo for pages within MainLayout */}
+        hideLogo={true}
       />
 
       <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4">
