@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useMemo } from "react";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO } from "date-fns";
+import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parse } from "date-fns"; // MODIFICADO: Importar 'parse'
 import { es } from "date-fns/locale";
 import { Calendar as CalendarIcon, PlusCircle, List, UtensilsCrossed } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -33,10 +33,9 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
   onAddMenu,
   onEditMenu,
 }) => {
-  const [viewMode, setViewMode] = useState<'week' | 'month'>('week'); // Por defecto, vista semanal
-  const [currentMonth, setCurrentMonth] = useState(new Date()); // Para la navegación en la vista mensual
+  const [viewMode, setViewMode] = useState<'week' | 'month'>('week');
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
-  // Determina el rango de fechas para la consulta de menús según el modo de vista
   const dateRange = useMemo(() => {
     const today = new Date();
     if (viewMode === 'week') {
@@ -44,7 +43,7 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
         from: startOfWeek(today, { locale: es }),
         to: endOfWeek(today, { locale: es }),
       };
-    } else { // 'month'
+    } else {
       return {
         from: startOfMonth(currentMonth),
         to: endOfMonth(currentMonth),
@@ -62,7 +61,7 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
   useEffect(() => {
     if (selectedDate && menusInView) {
       const menusForSelectedDay = menusInView.filter(menu =>
-        menu.menu_date && isSameDay(parseISO(menu.menu_date), selectedDate)
+        menu.menu_date && isSameDay(parse(menu.menu_date, 'yyyy-MM-dd', new Date()), selectedDate) // MODIFICADO: Usar parse
       );
       setDailyMenus(menusForSelectedDay);
     } else {
@@ -76,7 +75,7 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
 
   const handleMonthChange = (month: Date) => {
     setCurrentMonth(month);
-    setSelectedDate(undefined); // Limpiar la fecha seleccionada al cambiar de mes
+    setSelectedDate(undefined);
   };
 
   const handleAddMenuForSelectedDate = (date: Date) => {
@@ -86,7 +85,7 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
     }
 
     const existingDailyMenuForDate = menusInView.find(menu =>
-      menu.menu_date && isSameDay(parseISO(menu.menu_date), date) && !menu.event_type_id
+      menu.menu_date && isSameDay(parse(menu.menu_date, 'yyyy-MM-dd', new Date()), date) && !menu.event_type_id // MODIFICADO: Usar parse
     );
 
     if (existingDailyMenuForDate) {
@@ -98,7 +97,7 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
   };
 
   const modifiers: DayModifiers = {
-    menus: menusInView?.map(menu => menu.menu_date ? parseISO(menu.menu_date) : undefined).filter(Boolean) as Date[],
+    menus: menusInView?.map(menu => menu.menu_date ? parse(menu.menu_date, 'yyyy-MM-dd', new Date()) : undefined).filter(Boolean) as Date[], // MODIFICADO: Usar parse
     today: new Date(),
     selected: selectedDate ? [selectedDate] : [],
   };
@@ -139,7 +138,7 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
           </CardTitle>
           <ToggleGroup type="single" value={viewMode} onValueChange={(value: 'week' | 'month') => {
             if (value) setViewMode(value);
-            setSelectedDate(undefined); // Limpiar la fecha seleccionada al cambiar de vista
+            setSelectedDate(undefined);
           }} className="w-full md:w-auto justify-end">
             <ToggleGroupItem value="week" aria-label="Vista Semanal" className="h-10 px-3 text-base">
               Semana
@@ -153,7 +152,7 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
           {viewMode === 'week' ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-7 gap-4">
               {daysToDisplay.map((day) => {
-                const hasMenu = menusInView?.some((menu: Menu) => menu.menu_date && isSameDay(parseISO(menu.menu_date), day));
+                const hasMenu = menusInView?.some((menu: Menu) => menu.menu_date && isSameDay(parse(menu.menu_date, 'yyyy-MM-dd', new Date()), day)); // MODIFICADO: Usar parse
                 const isToday = isSameDay(day, new Date());
                 return (
                   <div
@@ -207,7 +206,7 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
               components={{
                 Day: ({ date }) => {
                   const menusForDay = menusInView?.filter(menu =>
-                    menu.menu_date && isSameDay(parseISO(menu.menu_date), date)
+                    menu.menu_date && isSameDay(parse(menu.menu_date, 'yyyy-MM-dd', new Date()), date) // MODIFICADO: Usar parse
                   ) || [];
                   const isSelectedDay = selectedDate && isSameDay(date, selectedDate);
                   return (
