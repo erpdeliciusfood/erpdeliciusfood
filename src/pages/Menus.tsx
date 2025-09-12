@@ -33,7 +33,7 @@ const Menus = () => {
         title="Gestión de Menús"
         description="Planifica y organiza tus menús diarios y para eventos especiales. Alterna entre la vista semanal y mensual."
         icon={BookText}
-        hideLogo={true} {/* NEW: Hide logo for pages within MainLayout */}
+        hideLogo={true} 
       />
 
       {/* El nuevo componente dinámico reemplaza tanto WeeklyMenuOverview como MenuCalendar */}

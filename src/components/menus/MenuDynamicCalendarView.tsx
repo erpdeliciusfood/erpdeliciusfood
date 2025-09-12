@@ -61,9 +61,8 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
 
   useEffect(() => {
     if (selectedDate && menusInView) {
-      const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd"); // Formatear selectedDate a string
       const menusForSelectedDay = menusInView.filter(menu =>
-        menu.menu_date && menu.menu_date === formattedSelectedDate // Comparar strings directamente
+        menu.menu_date && isSameDay(parseISO(menu.menu_date), selectedDate)
       );
       setDailyMenus(menusForSelectedDay);
     } else {
@@ -86,9 +85,8 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
       return;
     }
 
-    const formattedSelectedDate = format(date, "yyyy-MM-dd");
     const existingDailyMenuForDate = menusInView.find(menu =>
-      menu.menu_date && menu.menu_date === formattedSelectedDate && !menu.event_type_id
+      menu.menu_date && isSameDay(parseISO(menu.menu_date), date) && !menu.event_type_id
     );
 
     if (existingDailyMenuForDate) {

@@ -58,7 +58,7 @@ const UrgentPurchaseRequests = () => {
         title="Gestión de Solicitudes de Compra Urgente"
         description="Revisa y gestiona las solicitudes de insumos con stock bajo."
         icon={AlertCircle}
-        hideLogo={true} {/* NEW: Hide logo for pages within MainLayout */}
+        hideLogo={true} 
       />
 
       <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4"> {/* Adjusted layout for buttons and filter */}

@@ -45,7 +45,7 @@ const StockMovements = () => {
         title="Gestión de Movimientos de Stock"
         description="Registra entradas y salidas manuales de inventario."
         icon={Package}
-        hideLogo={true} {/* NEW: Hide logo for pages within MainLayout */}
+        hideLogo={true} 
       />
       <div className="flex justify-end items-center mb-6"> {/* Adjusted layout for buttons */}
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>

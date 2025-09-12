@@ -103,7 +103,7 @@ const Insumos = () => {
         title="Gestión de Insumos"
         description="Administra tus ingredientes, unidades de medida y costos."
         icon={Utensils}
-        hideLogo={true} {/* NEW: Hide logo for pages within MainLayout */}
+        hideLogo={true} 
       />
 
       <div className="flex flex-col md:flex-row justify-end items-center mb-6 gap-4">

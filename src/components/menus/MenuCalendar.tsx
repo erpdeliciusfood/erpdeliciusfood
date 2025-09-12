@@ -43,9 +43,8 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
 
   useEffect(() => {
     if (selectedDate && menusInMonth) {
-      const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd"); // Format selectedDate to string
       const menusForSelectedDay = menusInMonth.filter(menu =>
-        menu.menu_date && menu.menu_date === formattedSelectedDate // Compare strings directly
+        menu.menu_date && isSameDay(parseISO(menu.menu_date), selectedDate)
       );
       setDailyMenus(menusForSelectedDay);
     } else {
@@ -70,11 +69,8 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
       return;
     }
 
-    // Format the selected date to a YYYY-MM-DD string for consistent comparison
-    const formattedSelectedDate = format(date, "yyyy-MM-dd");
-
     const existingDailyMenuForDate = menusInMonth.find(menu =>
-      menu.menu_date && menu.menu_date === formattedSelectedDate && !menu.event_type_id // Compare strings directly
+      menu.menu_date && isSameDay(parseISO(menu.menu_date), date) && !menu.event_type_id
     );
 
     if (existingDailyMenuForDate) {
@@ -155,7 +151,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
           />
           <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600 dark:text-gray-400">
             <div className="flex items-center">
-              <span className="h-4 w-4 rounded-full bg-blue-200 dark:bg-blue-800 mr-2 border border-blue-300 dark:border-blue-700"></span>
+              <span className="h-4 w-4 rounded-full bg-blue-500 dark:bg-blue-400 mr-2 border border-blue-300 dark:border-blue-700"></span>
               Días con Menús
             </div>
             <div className="flex items-center">
