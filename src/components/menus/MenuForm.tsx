@@ -162,7 +162,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
           <PlatosPorServicioFormSection
             isLoading={isLoading}
             availablePlatos={availableRecetas}
-            availableMealServices={availableMealServices}
+            availableMealServices={availableMealServices} // Pass availableMealServices
           />
 
           <div className="flex justify-end space-x-4 pt-4">
