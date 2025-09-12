@@ -1,6 +1,7 @@
 import React from "react";
 import { Menu, MenuPlato } from "@/types";
 import { Badge } from "@/components/ui/badge";
+import { CheckCircle, AlertCircle } from "lucide-react"; // Importar iconos
 
 interface CalendarDayCellContentProps {
   menusForDay: Menu[];
@@ -18,17 +19,21 @@ const CalendarDayCellContent: React.FC<CalendarDayCellContentProps> = ({ menusFo
 
   // Group menu_platos by meal service and then by dish_category for lunch
   const groupedByMealService: { [key: string]: { [category: string]: MenuPlato[] } | MenuPlato[] } = {};
+  const presentServices: Set<string> = new Set();
+  const presentLunchCategories: Set<string> = new Set();
 
   menusForDay.forEach(menu => {
     menu.menu_platos?.forEach(mp => {
       const serviceName = mp.meal_services?.name || "Otros";
       const lowerCaseServiceName = serviceName.toLowerCase();
+      presentServices.add(lowerCaseServiceName);
 
       if (lowerCaseServiceName === "almuerzo") {
         if (!groupedByMealService[serviceName] || !Array.isArray(groupedByMealService[serviceName])) {
           groupedByMealService[serviceName] = {}; // Initialize as an object for categories
         }
         const category = mp.dish_category || "Plato de Fondo"; // Default category if not set
+        presentLunchCategories.add(category);
         if (!(groupedByMealService[serviceName] as { [category: string]: MenuPlato[] })[category]) {
           (groupedByMealService[serviceName] as { [category: string]: MenuPlato[] })[category] = [];
         }
@@ -42,6 +47,25 @@ const CalendarDayCellContent: React.FC<CalendarDayCellContentProps> = ({ menusFo
     });
   });
 
+  // Check for completeness
+  let isDayComplete = true;
+  const expectedServices = ["desayuno", "almuerzo", "cena", "merienda"];
+  for (const service of expectedServices) {
+    if (!presentServices.has(service)) {
+      isDayComplete = false;
+      break;
+    }
+  }
+
+  if (isDayComplete && presentServices.has("almuerzo")) {
+    for (const category of LUNCH_CATEGORIES_ORDER) {
+      if (!presentLunchCategories.has(category)) {
+        isDayComplete = false;
+        break;
+      }
+    }
+  }
+
   // Sort meal services by predefined order
   const sortedMealServices = Object.keys(groupedByMealService).sort((a, b) => {
     const indexA = MEAL_SERVICES_ORDER.indexOf(a.toLowerCase());
@@ -53,6 +77,15 @@ const CalendarDayCellContent: React.FC<CalendarDayCellContentProps> = ({ menusFo
 
   return (
     <div className="absolute inset-0 p-1 overflow-hidden text-xs pointer-events-none">
+      {/* Indicador de completitud */}
+      <div className="absolute top-1 right-1">
+        {isDayComplete ? (
+          <CheckCircle className="h-3 w-3 text-green-500" />
+        ) : (
+          <AlertCircle className="h-3 w-3 text-red-500" />
+        )}
+      </div>
+
       {sortedMealServices.map(serviceName => (
         <div key={serviceName} className="mb-0.5 last:mb-0">
           <Badge variant="secondary" className="h-auto px-1 py-0.5 text-[0.6rem] font-medium capitalize bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200">
