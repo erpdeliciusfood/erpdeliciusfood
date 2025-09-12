@@ -7,10 +7,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { useMenus } from "@/hooks/useMenus";
 import { Menu } from "@/types";
-import { DayModifiers } from "react-day-picker";
+import { DayModifiers, DayProps } from "react-day-picker"; // Import DayProps
 import DailyMenuList from "./DailyMenuList";
 import MenuFormSheet from "./MenuFormSheet";
 import { showError } from "@/utils/toast"; // Import showError
+import CalendarDayCellContent from "./CalendarDayCellContent"; // NEW: Import CalendarDayCellContent
 
 interface MenuCalendarProps {
   onAddMenu: (date: Date) => void;
@@ -95,6 +96,23 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
     selected: "bg-green-500 text-white dark:bg-green-700 dark:text-white rounded-full",
   };
 
+  // NEW: Custom Day component to render content inside cells
+  const CustomDay = (props: DayProps) => {
+    const dayDate = props.date;
+    const menusForThisDay = menusInMonth?.filter(menu =>
+      menu.menu_date && isSameDay(new Date(menu.menu_date), dayDate)
+    ) || [];
+
+    return (
+      <div className="relative h-full w-full"> {/* Ensure relative positioning for absolute children */}
+        <div className={props.className}>
+          {props.children} {/* This renders the day number */}
+        </div>
+        <CalendarDayCellContent menusForDay={menusForThisDay} />
+      </div>
+    );
+  };
+
   if (isLoading) {
     return (
       <div className="flex flex-col items-center justify-center py-10">
@@ -135,6 +153,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
             modifiers={modifiers}
             modifiersClassNames={modifiersClassNames}
             className="rounded-md border shadow"
+            components={{ Day: CustomDay }}
           />
           <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600 dark:text-gray-400">
             <div className="flex items-center">
