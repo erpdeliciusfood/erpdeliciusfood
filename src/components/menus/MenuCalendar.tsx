@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
-import { format, startOfMonth, endOfMonth, isSameDay, parse } from "date-fns"; // MODIFICADO: Importar 'parse'
+import { format, startOfMonth, endOfMonth, isSameDay, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Calendar as CalendarIcon, PlusCircle, UtensilsCrossed, Loader2 } from "lucide-react"; // Importar Loader2 para el estado de carga
+import { Calendar as CalendarIcon, PlusCircle, UtensilsCrossed } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -10,8 +10,7 @@ import { Menu } from "@/types";
 import { DayModifiers } from "react-day-picker";
 import DailyMenuList from "./DailyMenuList";
 import MenuFormSheet from "./MenuFormSheet";
-import { showError } from "@/utils/toast";
-import CalendarDayCellContent from "./CalendarDayCellContent"; // MODIFICADO: Importar CalendarDayCellContent
+import { showError } from "@/utils/toast"; // Import showError
 
 interface MenuCalendarProps {
   onAddMenu: (date: Date) => void;
@@ -136,22 +135,6 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
             modifiers={modifiers}
             modifiersClassNames={modifiersClassNames}
             className="rounded-md border shadow"
-            components={{
-              Day: ({ date }) => {
-                const menusForDay = menusInMonth?.filter(menu =>
-                  menu.menu_date && isSameDay(parse(menu.menu_date, 'yyyy-MM-dd', new Date()), date) // MODIFICADO: Usar parse
-                ) || [];
-                const isSelectedDay = selectedDate && isSameDay(date, selectedDate);
-                return (
-                  <div className="relative h-full w-full">
-                    <div className="absolute top-1 left-1 text-xs font-semibold z-10">
-                      {format(date, "d")}
-                    </div>
-                    <CalendarDayCellContent menusForDay={menusForDay} isSelected={isSelectedDay} />
-                  </div>
-                );
-              },
-            }}
           />
           <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600 dark:text-gray-400">
             <div className="flex items-center">
