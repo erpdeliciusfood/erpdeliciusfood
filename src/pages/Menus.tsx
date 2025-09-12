@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, BookText } from "lucide-react";
+import { BookText } from "lucide-react";
 import MenuDynamicCalendarView from "@/components/menus/MenuDynamicCalendarView"; // NEW: Import the new component
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Menu } from "@/types";

@@ -159,20 +159,22 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
                 return (
                   <div
                     key={format(day, "yyyy-MM-dd")}
-                    className={`flex flex-col items-center justify-between p-3 sm:p-4 rounded-lg border ${isToday ? "border-primary dark:border-primary-foreground bg-primary/10 dark:bg-primary-foreground/10" : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50"} h-32 sm:h-36`}
+                    className={`flex flex-col p-3 sm:p-4 rounded-lg border ${isToday ? "border-primary dark:border-primary-foreground bg-primary/10 dark:bg-primary-foreground/10" : "border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-700/50"} min-h-[120px]`}
                   >
-                    <p className={`text-base sm:text-lg font-semibold ${isToday ? "text-primary dark:text-primary-foreground" : "text-gray-800 dark:text-gray-200"}`}>
-                      {format(day, "EEE", { locale: es })}
-                    </p>
-                    <p className={`text-xl sm:text-2xl font-bold ${isToday ? "text-primary dark:text-primary-foreground" : "text-gray-900 dark:text-gray-100"}`}>
-                      {format(day, "dd")}
-                    </p>
+                    <div className="flex-grow flex flex-col items-center justify-center">
+                      <p className={`text-base sm:text-lg font-semibold ${isToday ? "text-primary dark:text-primary-foreground" : "text-gray-800 dark:text-gray-200"}`}>
+                        {format(day, "EEE", { locale: es })}
+                      </p>
+                      <p className={`text-xl sm:text-2xl font-bold ${isToday ? "text-primary dark:text-primary-foreground" : "text-gray-900 dark:text-gray-100"}`}>
+                        {format(day, "dd")}
+                      </p>
+                    </div>
                     {hasMenu ? (
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => handleDayClick(day)}
-                        className="mt-2 text-sm sm:text-base h-8 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white dark:bg-blue-700 dark:hover:bg-blue-800"
+                        className="mt-2 text-sm sm:text-base h-8 px-3 py-1 bg-blue-500 hover:bg-blue-600 text-white dark:bg-blue-700 dark:hover:bg-blue-800 w-full"
                       >
                         <List className="h-4 w-4 mr-1" />
                         Ver Menús
@@ -182,7 +184,7 @@ const MenuDynamicCalendarView: React.FC<MenuDynamicCalendarViewProps> = ({
                         variant="outline"
                         size="sm"
                         onClick={() => handleAddMenuForSelectedDate(day)}
-                        className="mt-2 text-sm sm:text-base h-8 px-3 py-1 bg-green-500 hover:bg-green-600 text-white dark:bg-green-700 dark:hover:bg-green-800"
+                        className="mt-2 text-sm sm:text-base h-8 px-3 py-1 bg-green-500 hover:bg-green-600 text-white dark:bg-green-700 dark:hover:bg-green-800 w-full"
                       >
                         <PlusCircle className="h-4 w-4 mr-1" />
                         Añadir
