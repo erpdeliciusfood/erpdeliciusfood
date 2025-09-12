@@ -42,9 +42,9 @@ const CalendarDayCellContent: React.FC<CalendarDayCellContentProps> = ({ menusFo
 
   return (
     <div className="absolute inset-0 p-1 overflow-hidden text-xs pointer-events-none">
-      {MEAL_SERVICES_ORDER.map(expectedServiceName => {
+      {MEAL_SERVICES_ORDER.map(expectedServiceName => { // Iterate over all expected services
         const lowerCaseExpectedServiceName = expectedServiceName.toLowerCase();
-        const serviceData = groupedByMealService[expectedServiceName]; // This might be undefined or an object/array
+        const serviceData = groupedByMealService[expectedServiceName];
 
         return (
           <div key={expectedServiceName} className="mb-0.5 last:mb-0">
@@ -54,57 +54,55 @@ const CalendarDayCellContent: React.FC<CalendarDayCellContentProps> = ({ menusFo
             >
               {expectedServiceName}
             </Badge>
-            {serviceData ? (
-              lowerCaseExpectedServiceName === "almuerzo" ? (
-                // Handle lunch categories
-                LUNCH_CATEGORIES_ORDER.map(expectedLunchCategory => {
-                  const lunchCategoryData = (serviceData as { [category: string]: MenuPlato[] })[expectedLunchCategory];
-                  return (
-                    <div key={expectedLunchCategory} className="ml-2 mt-0.5">
-                      <span className={`text-[0.6rem] font-semibold ${lunchCategoryData && lunchCategoryData.length > 0 ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400 dark:text-gray-600'}`}>
-                        {expectedLunchCategory}:
-                      </span>
-                      <ul className="list-none p-0 m-0 space-y-0.5 mt-0.5">
-                        {lunchCategoryData && lunchCategoryData.length > 0 ? (
-                          lunchCategoryData.slice(0, 1).map((mp, index) => (
-                            <li key={index} className="text-[0.6rem] text-gray-700 dark:text-gray-300 leading-tight truncate">
-                              • {mp.platos?.nombre || "Plato Desconocido"}
-                            </li>
-                          ))
-                        ) : (
-                          <li className="text-[0.6rem] text-gray-500 dark:text-gray-500 leading-tight italic">
-                            (Falta)
+            {lowerCaseExpectedServiceName === "almuerzo" ? (
+              // Handle lunch categories
+              LUNCH_CATEGORIES_ORDER.map(expectedLunchCategory => {
+                const lunchCategoryData = serviceData && !Array.isArray(serviceData) ? (serviceData as { [category: string]: MenuPlato[] })[expectedLunchCategory] : undefined;
+                return (
+                  <div key={expectedLunchCategory} className="ml-2 mt-0.5">
+                    <span className={`text-[0.6rem] font-semibold ${lunchCategoryData && lunchCategoryData.length > 0 ? 'text-gray-600 dark:text-gray-400' : 'text-gray-400 dark:text-gray-600'}`}>
+                      {expectedLunchCategory}:
+                    </span>
+                    <ul className="list-none p-0 m-0 space-y-0.5 mt-0.5">
+                      {lunchCategoryData && lunchCategoryData.length > 0 ? (
+                        lunchCategoryData.slice(0, 1).map((mp, index) => (
+                          <li key={index} className="text-[0.6rem] text-gray-700 dark:text-gray-300 leading-tight truncate">
+                            • {mp.platos?.nombre || "Plato Desconocido"}
                           </li>
-                        )}
-                        {lunchCategoryData && lunchCategoryData.length > 1 && (
-                          <li className="text-[0.6rem] text-gray-500 dark:text-gray-400 leading-tight">
-                            ...
-                          </li>
-                        )}
-                      </ul>
-                    </div>
-                  );
-                })
-              ) : (
-                // Handle other services (non-lunch)
-                <ul className="list-none p-0 m-0 space-y-0.5 mt-0.5">
-                  {(serviceData as MenuPlato[]).slice(0, 2).map((mp, index) => (
+                        ))
+                      ) : (
+                        <li className="text-[0.6rem] text-gray-500 dark:text-gray-500 leading-tight italic">
+                          (Falta)
+                        </li>
+                      )}
+                      {lunchCategoryData && lunchCategoryData.length > 1 && (
+                        <li className="text-[0.6rem] text-gray-500 dark:text-gray-400 leading-tight">
+                          ...
+                        </li>
+                      )}
+                    </ul>
+                  </div>
+                );
+              })
+            ) : (
+              // Handle other services (non-lunch)
+              <ul className="list-none p-0 m-0 space-y-0.5 mt-0.5">
+                {serviceData && Array.isArray(serviceData) && serviceData.length > 0 ? (
+                  (serviceData as MenuPlato[]).slice(0, 2).map((mp, index) => (
                     <li key={index} className="text-[0.6rem] text-gray-700 dark:text-gray-300 leading-tight truncate">
                       • {mp.platos?.nombre || "Plato Desconocido"}
                     </li>
-                  ))}
-                  {(serviceData as MenuPlato[]).length > 2 && (
-                    <li className="text-[0.6rem] text-gray-500 dark:text-gray-400 leading-tight">
-                      ...
-                    </li>
-                  )}
-                </ul>
-              )
-            ) : (
-              <ul className="list-none p-0 m-0 space-y-0.5 mt-0.5">
-                <li className="text-[0.6rem] text-gray-500 dark:text-gray-500 leading-tight italic">
-                  (Falta diseño)
-                </li>
+                  ))
+                ) : (
+                  <li className="text-[0.6rem] text-gray-500 dark:text-gray-500 leading-tight italic">
+                    (Falta diseño)
+                  </li>
+                )}
+                {serviceData && Array.isArray(serviceData) && (serviceData as MenuPlato[]).length > 2 && (
+                  <li className="text-[0.6rem] text-gray-500 dark:text-gray-400 leading-tight">
+                    ...
+                  </li>
+                )}
               </ul>
             )}
           </div>

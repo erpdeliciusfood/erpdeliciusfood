@@ -11,6 +11,7 @@ import { DayModifiers } from "react-day-picker";
 import DailyMenuList from "./DailyMenuList";
 import MenuFormSheet from "./MenuFormSheet";
 import { showError } from "@/utils/toast"; // Import showError
+import CalendarDayCellContent from "./CalendarDayCellContent"; // Import the new component
 
 interface MenuCalendarProps {
   onAddMenu: (date: Date) => void;
@@ -135,6 +136,21 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
             modifiers={modifiers}
             modifiersClassNames={modifiersClassNames}
             className="rounded-md border shadow"
+            components={{
+              Day: ({ date }) => { // Removed 'children' from destructuring
+                const menusForDay = menusInMonth?.filter(menu =>
+                  menu.menu_date && isSameDay(parseISO(menu.menu_date), date)
+                ) || [];
+                return (
+                  <div className="relative h-full w-full">
+                    <div className="absolute top-1 left-1 text-xs font-semibold z-10">
+                      {format(date, "d")} {/* Render day number using format */}
+                    </div>
+                    <CalendarDayCellContent menusForDay={menusForDay} />
+                  </div>
+                );
+              },
+            }}
           />
           <div className="mt-4 flex flex-wrap justify-center gap-4 text-sm text-gray-600 dark:text-gray-400">
             <div className="flex items-center">
