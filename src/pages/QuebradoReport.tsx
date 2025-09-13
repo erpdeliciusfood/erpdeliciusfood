@@ -4,7 +4,7 @@ import { Loader2, Utensils, FileText, CalendarCheck, ListCollapse } from "lucide
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { generateQuebradoReport } from "@/integrations/supabase/quebrado";
-import { showError } from "@/utils/toast";
+import { showError, showSuccess } from "@/utils/toast";
 import { QuebradoReportData } from "@/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -96,7 +96,7 @@ const QuebradoReport: React.FC = () => {
       if (activeTab === "consolidado" && reportData.consolidatedInsumos.length > 0) {
         const filename = `reporte_quebrado_consolidado_${startDate}_${endDate}.csv`;
         exportToCsv(reportData.consolidatedInsumos, filename);
-        showError("Reporte consolidado exportado a CSV."); // Using showError for now, should be showSuccess
+        showSuccess("Reporte consolidado exportado a CSV."); // Corrected to showSuccess
       } else if (activeTab === "agenda" && reportData.quebradoData.length > 0) {
         // Flatten the complex agenda data for CSV export
         const flattenedData = reportData.quebradoData.flatMap(day =>
@@ -118,7 +118,7 @@ const QuebradoReport: React.FC = () => {
         if (flattenedData.length > 0) {
           const filename = `reporte_quebrado_agenda_${startDate}_${endDate}.csv`;
           exportToCsv(flattenedData, filename);
-          showError("Reporte de agenda exportado a CSV."); // Using showError for now, should be showSuccess
+          showSuccess("Reporte de agenda exportado a CSV."); // Corrected to showSuccess
         } else {
           showError("No hay datos en la vista de agenda para exportar.");
         }
