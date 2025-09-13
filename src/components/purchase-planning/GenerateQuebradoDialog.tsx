@@ -17,13 +17,12 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { showSuccess, showError, showLoading, dismissToast } from '@/utils/toast';
-import { generateQuebradoReport } from '@/integrations/supabase/quebrado'; // NUEVO: Importar la función de la integración
 
 interface GenerateQuebradoDialogProps {
   startDate?: Date;
   endDate?: Date;
   onClose: () => void;
-  defaultDinerCount?: number; // NUEVO: Propiedad para la cantidad de comensales por defecto
+  defaultDinerCount?: number;
 }
 
 const formSchema = z.object({
@@ -87,7 +86,7 @@ const GenerateQuebradoDialog: React.FC<GenerateQuebradoDialogProps> = ({ startDa
           name="dinerCount"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Cantidad de Comensales</FormLabel>
+              <FormLabel>Cantidad de Comensales (Opcional)</FormLabel>
               <FormControl>
                 <Input
                   type="number"

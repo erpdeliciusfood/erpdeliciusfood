@@ -78,16 +78,15 @@ const QuebradoReport: React.FC = () => {
   const queryParams = new URLSearchParams(location.search);
   const startDate = queryParams.get("startDate");
   const endDate = queryParams.get("endDate");
-  const dinerCount = queryParams.get("dinerCount");
 
-  const formattedStartDate = startDate ? format(new Date(startDate), "PPP", { locale: es }) : "N/A";
-  const formattedEndDate = endDate ? format(new Date(endDate), "PPP", { locale: es }) : "N/A";
+  const formattedStartDate = startDate ? format(new Date(startDate + 'T00:00:00'), "PPP", { locale: es }) : "N/A";
+  const formattedEndDate = endDate ? format(new Date(endDate + 'T00:00:00'), "PPP", { locale: es }) : "N/A";
 
   return (
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
       <PageHeaderWithLogo
         title="Reporte de Quebrado de Menús"
-        description={`Resumen de insumos necesarios para ${dinerCount} comensales del ${formattedStartDate} al ${formattedEndDate}.`}
+        description={`Resumen de insumos necesarios del ${formattedStartDate} al ${formattedEndDate}.`}
         icon={Utensils}
       />
 

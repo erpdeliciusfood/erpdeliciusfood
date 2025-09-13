@@ -47,14 +47,14 @@ serve(async (req: Request) => {
   try {
     const { startDate, endDate, dinerCount } = await req.json();
 
-    if (!startDate || !endDate || !dinerCount) {
-      return new Response(JSON.stringify({ error: 'Missing startDate, endDate, or dinerCount' }), {
+    if (!startDate || !endDate) {
+      return new Response(JSON.stringify({ error: 'Missing startDate or endDate' }), {
         status: 400,
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       });
     }
 
-    console.log(`Generating quebrado report for user ${user.id} from ${startDate} to ${endDate} for ${dinerCount} diners.`);
+    console.log(`Generating quebrado report for user ${user.id} from ${startDate} to ${endDate}.`);
 
     // Use supabaseAdmin to bypass RLS for fetching all necessary data
     const supabaseAdmin = createClient(
@@ -131,7 +131,7 @@ serve(async (req: Request) => {
       const menuDate = menu.menu_date;
       if (!menuDate) return; // Skip if no menu_date
 
-      const dayOfWeek = new Date(menuDate).toLocaleDateString('es-ES', { weekday: 'long' });
+      const dayOfWeek = new Date(menuDate + 'T00:00:00').toLocaleDateString('es-ES', { weekday: 'long', timeZone: 'UTC' });
 
       let dayEntry = quebradoData.find(entry => entry.date === menuDate);
       if (!dayEntry) {
@@ -202,10 +202,9 @@ serve(async (req: Request) => {
 
 
     const responseBody = {
-      message: `Quebrado de menús generado para ${dinerCount} comensales.`,
+      message: `Quebrado de menús generado exitosamente.`,
       quebradoData,
       consolidatedInsumos,
-      // downloadUrl: 'https://example.com/quebrado_report.pdf' // Example download URL
     };
 
     return new Response(JSON.stringify(responseBody), {
