@@ -2,7 +2,7 @@ import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { Loader2, Utensils, FileText, CalendarCheck, ListCollapse } from "lucide-react";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
-import { MadeWithDyad } from "@/components/made-with-dyad";
+import { MadeWithDyad } = "@/components/made-with-dyad";
 import { generateQuebradoReport } from "@/integrations/supabase/quebrado";
 import { showError, showSuccess } from "@/utils/toast";
 import { QuebradoReportData } from "@/types";
@@ -38,7 +38,7 @@ const QuebradoReport: React.FC = () => {
       try {
         setIsLoading(true);
         setIsError(false);
-        const data = await generateQuebradoReport(startDate, endDate);
+        const data = await generateQuebradoReport(startDate, endDate); // MODIFICADO: Eliminado el tercer argumento
         setReportData(data);
       } catch (err: any) {
         setIsError(true);

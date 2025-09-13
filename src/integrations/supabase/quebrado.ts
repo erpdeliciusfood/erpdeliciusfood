@@ -4,7 +4,7 @@ import { QuebradoReportData } from "@/types"; // NUEVO: Importar QuebradoReportD
 export const generateQuebradoReport = async (
   startDate: string,
   endDate: string,
-  dinerCount: number
+  dinerCount: number = 1 // MODIFICADO: dinerCount ahora es opcional con un valor predeterminado de 1
 ): Promise<QuebradoReportData> => { // MODIFICADO: Tipo de retorno
   const { data, error } = await supabase.functions.invoke('generate-quebrado', {
     body: { startDate, endDate, dinerCount },
