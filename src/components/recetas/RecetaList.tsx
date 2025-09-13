@@ -12,6 +12,7 @@ import { Edit, Trash2, UtensilsCrossed } from "lucide-react";
 import { Receta } from "@/types"; // Changed type import
 import { useDeleteReceta } from "@/hooks/useRecetas"; // Changed hook import
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
+import { Badge } from "@/components/ui/badge"; // NEW: Import Badge
 
 interface RecetaListProps {
   recetas: Receta[]; // Changed type
@@ -55,6 +56,7 @@ const RecetaList: React.FC<RecetaListProps> = ({ recetas, onEdit }) => {
         <TableHeader className="bg-gray-50 dark:bg-gray-700">
           <TableRow>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[200px]">Nombre</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Categoría</TableHead> {/* NEW: Category column */}
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[300px]">Descripción</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Costo Producción (S/)</TableHead>
             <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Acciones</TableHead>
@@ -66,6 +68,9 @@ const RecetaList: React.FC<RecetaListProps> = ({ recetas, onEdit }) => {
             return (
               <TableRow key={receta.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
                 <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[200px]">{receta.nombre}</TableCell>
+                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[150px]"> {/* NEW: Display category */}
+                  <Badge variant="secondary" className="text-sm">{receta.category}</Badge>
+                </TableCell>
                 <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[300px]">{receta.descripcion || "N/A"}</TableCell>
                 <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[180px]">S/ {productionCost.toFixed(2)}</TableCell>
                 <TableCell className="flex justify-center space-x-2 py-3 px-6 min-w-[150px]">
