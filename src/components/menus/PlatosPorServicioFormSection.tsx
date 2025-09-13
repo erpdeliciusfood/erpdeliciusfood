@@ -18,7 +18,8 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MealService, MenuFormValues, Receta, MEAL_SERVICES_ORDER } from "@/types"; // Changed Plato to Receta
+import { MealService, MenuFormValues, Receta, MEAL_SERVICES_ORDER, RECETA_CATEGORIES } from "@/types"; // Changed Plato to Receta, imported RECETA_CATEGORIES
+import SearchableRecetaSelect from "./SearchableRecetaSelect"; // NEW: Import SearchableRecetaSelect
 
 interface PlatosPorServicioFormSectionProps {
   isLoading: boolean;
@@ -26,7 +27,7 @@ interface PlatosPorServicioFormSectionProps {
   availableMealServices: MealService[] | undefined;
 }
 
-const DISH_CATEGORIES = [
+const DISH_CATEGORIES = [ // Renamed to avoid conflict with RECETA_CATEGORIES, but keeping for dish_category field
   "Desayuno / Merienda",
   "Entrada",
   "Sopa / Crema",
@@ -54,12 +55,6 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
     control: form.control,
     name: "platos_por_servicio",
   });
-
-  const platoPlaceholder = () => {
-    if (isLoading) return "Cargando recetas..."; // Changed text
-    if (!availablePlatos || availablePlatos.length === 0) return "No hay recetas disponibles"; // Changed text
-    return "Selecciona una receta"; // Changed text
-  };
 
   const mealServicePlaceholder = () => {
     if (isLoading) return "Cargando servicios...";
@@ -118,24 +113,12 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
               render={({ field: platoField }) => (
                 <FormItem className="flex-grow w-full md:w-1/3">
                   <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Receta</FormLabel> {/* Changed text */}
-                  <Select
-                    onValueChange={platoField.onChange}
-                    defaultValue={platoField.value}
+                  <SearchableRecetaSelect // NEW: Use SearchableRecetaSelect
+                    value={platoField.value}
+                    onChange={platoField.onChange}
                     disabled={isLoading || !availablePlatos || availablePlatos.length === 0}
-                  >
-                    <FormControl>
-                      <SelectTrigger className="h-12 text-base">
-                        <SelectValue placeholder={platoPlaceholder()} />
-                      </SelectTrigger>
-                    </FormControl>
-                    <SelectContent>
-                      {availablePlatos?.map((receta: Receta) => ( // Changed type
-                        <SelectItem key={receta.id} value={receta.id}>
-                          {receta.nombre}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                    availableRecetas={availablePlatos}
+                  />
                   <FormMessage />
                 </FormItem>
               )}

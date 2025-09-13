@@ -46,6 +46,7 @@ export interface Receta {
   nombre: string;
   descripcion: string | null;
   costo_produccion: number;
+  category: string; // NEW: Add category to Receta
   created_at: string;
   plato_insumos?: PlatoInsumo[];
 }
@@ -53,6 +54,7 @@ export interface Receta {
 export interface RecetaFormValues {
   nombre: string;
   descripcion: string | null;
+  category: string; // NEW: Add category to RecetaFormValues
   insumos: { insumo_id: string; cantidad_necesaria: number }[];
 }
 
@@ -302,4 +304,26 @@ export const MEAL_SERVICES_ORDER = [
   "Almuerzo Dieta Blanda",
   "Cena",
   "Merienda",
+];
+
+export const RECETA_CATEGORIES = [
+  "SOPA",
+  "SANDWICH",
+  "BEBIDAS CALIENTES",
+  "REFRESCO",
+  "INFUSIONES",
+  "TE",
+  "CAFE",
+  "ENTRADA",
+  "PLATO DE FONDO",
+  "POSTRE",
+  "ENSALADA SALUDABLE",
+  "SOPA SALUDABLE",
+  "POSTRE SALUDABLE",
+  "SOPA DIETA BLANDA",
+  "PLATO DE FONDO DIETA BLANDA", // Added for clarity
+  "SANCOCHADO",
+  "FRUTA",
+  "ENSALADA",
+  "OTROS" // General category for anything not listed
 ];

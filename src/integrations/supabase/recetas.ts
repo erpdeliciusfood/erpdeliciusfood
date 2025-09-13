@@ -52,7 +52,7 @@ export const getRecetaById = async (id: string): Promise<Receta | null> => { // 
 };
 
 export const createReceta = async (recetaData: RecetaFormValues): Promise<Receta> => { // Changed function name and type
-  const { nombre, descripcion, insumos } = recetaData;
+  const { nombre, descripcion, category, insumos } = recetaData; // NEW: Destructure category
 
   // Get authenticated user ID
   const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -61,10 +61,10 @@ export const createReceta = async (recetaData: RecetaFormValues): Promise<Receta
   // Calculate production cost
   const { costo_produccion } = await calculateRecetaCosts(insumos); // Changed function name
 
-  // Insert the main plato with calculated costs and user_id
+  // Insert the main plato with calculated costs, user_id, and category
   const { data: newReceta, error: platoError } = await supabase // Changed variable name
     .from("platos") // Keep table name as 'platos' in DB
-    .insert({ nombre, descripcion, costo_produccion, user_id: user.id })
+    .insert({ nombre, descripcion, category, costo_produccion, user_id: user.id }) // NEW: Include category
     .select()
     .single();
 
@@ -101,15 +101,15 @@ export const createReceta = async (recetaData: RecetaFormValues): Promise<Receta
 };
 
 export const updateReceta = async (id: string, recetaData: RecetaFormValues): Promise<Receta> => { // Changed function name and type
-  const { nombre, descripcion, insumos } = recetaData;
+  const { nombre, descripcion, category, insumos } = recetaData; // NEW: Destructure category
 
   // Calculate production cost
   const { costo_produccion } = await calculateRecetaCosts(insumos); // Changed function name
 
-  // Update the main plato with calculated costs
+  // Update the main plato with calculated costs and category
   const { data: updatedReceta, error: platoError } = await supabase // Changed variable name
     .from("platos") // Keep table name as 'platos' in DB
-    .update({ nombre, descripcion, costo_produccion })
+    .update({ nombre, descripcion, category, costo_produccion }) // NEW: Include category
     .eq("id", id)
     .select()
     .single();

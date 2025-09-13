@@ -14,13 +14,14 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Receta, RecetaFormValues, Insumo, InsumoFormValues } from "@/types"; // Import InsumoFormValues
+import { Receta, RecetaFormValues, Insumo, InsumoFormValues, RECETA_CATEGORIES } from "@/types"; // Import RECETA_CATEGORIES
 import { useAddReceta, useUpdateReceta } from "@/hooks/useRecetas";
 import { useInsumos } from "@/hooks/useInsumos";
 import { Loader2, PlusCircle, Trash2, Edit } from "lucide-react"; // Added Edit icon
 import SearchableInsumoSelect from "./SearchableInsumoSelect";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import InsumoForm from "@/components/insumos/InsumoForm"; // Import InsumoForm
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // Import Select
 
 const formSchema = z.object({
   nombre: z.string().min(2, {
@@ -31,6 +32,9 @@ const formSchema = z.object({
   descripcion: z.string().max(500, {
     message: "La descripción no debe exceder los 500 caracteres.",
   }).nullable(),
+  category: z.string().min(1, { // NEW: Category field
+    message: "Debe seleccionar una categoría para la receta.",
+  }),
   insumos: z.array(
     z.object({
       insumo_id: z.string().min(1, { message: "Debe seleccionar un insumo." }),
@@ -65,6 +69,7 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
     defaultValues: {
       nombre: "",
       descripcion: "",
+      category: "PLATO DE FONDO", // NEW: Default category
       insumos: [{ insumo_id: "", cantidad_necesaria: 0 }],
     },
   });
@@ -79,6 +84,7 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
       form.reset({
         nombre: initialData.nombre,
         descripcion: initialData.descripcion || "",
+        category: initialData.category || "PLATO DE FONDO", // NEW: Set initial category
         insumos: initialData.plato_insumos?.map(pi => ({
           insumo_id: pi.insumo_id,
           cantidad_necesaria: pi.cantidad_necesaria,
@@ -88,6 +94,7 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
       form.reset({
         nombre: "",
         descripcion: "",
+        category: "PLATO DE FONDO", // NEW: Default category
         insumos: [{ insumo_id: "", cantidad_necesaria: 0 }],
       });
     }
@@ -175,6 +182,30 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
                     disabled={isLoading}
                   />
                 </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name="category"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Categoría de la Receta</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value || ""} disabled={isLoading}>
+                  <FormControl>
+                    <SelectTrigger className="h-12 text-base">
+                      <SelectValue placeholder="Selecciona una categoría" />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {RECETA_CATEGORIES.map((category) => (
+                      <SelectItem key={category} value={category}>
+                        {category}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
                 <FormMessage />
               </FormItem>
             )}
