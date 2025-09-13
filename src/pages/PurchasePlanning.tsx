@@ -17,7 +17,6 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { InsumoNeeded } from "@/types";
 import UrgentPurchaseAlert from "@/components/purchase-planning/UrgentPurchaseAlert";
 import GenerateQuebradoDialog from "@/components/purchase-planning/GenerateQuebradoDialog";
-import { useMenus } from "@/hooks/useMenus";
 
 const PurchasePlanning = () => {
   const [dateRange, setDateRange] = useState<DateRange>({
@@ -28,23 +27,6 @@ const PurchasePlanning = () => {
   const [isRegisterPurchaseFormOpen, setIsRegisterPurchaseFormOpen] = useState(false);
   const [selectedReasonFilter, setSelectedReasonFilter] = useState<'all' | InsumoNeeded['reason_for_purchase_suggestion']>('all');
   const [isGenerateQuebradoDialogOpen, setIsGenerateQuebradoDialogOpen] = useState(false);
-
-  // NUEVO: Obtener menús para el rango de fechas seleccionado
-  const formattedStartDate = dateRange.from ? format(dateRange.from, "yyyy-MM-dd") : undefined;
-  const formattedEndDate = dateRange.to ? format(dateRange.to, "yyyy-MM-dd") : undefined;
-  const { data: menusForPeriod } = useMenus(formattedStartDate, formattedEndDate);
-
-  // NUEVO: Calcular la cantidad de comensales por defecto para el diálogo de Quebrado
-  const defaultDinerCount = useMemo(() => {
-    if (menusForPeriod && menusForPeriod.length > 0) {
-      const totalRaciones = menusForPeriod.reduce((sum, menu) => {
-        return sum + (menu.menu_platos?.reduce((platoSum, mp) => platoSum + (mp.quantity_needed || 0), 0) || 0);
-      }, 0);
-      // Si hay menús, el defaultDinerCount es la suma de todas las raciones por servicio
-      return totalRaciones > 0 ? totalRaciones : 1;
-    }
-    return 1; // Valor por defecto si no hay menús
-  }, [menusForPeriod]);
 
   const handlePeriodChange = (period: 'daily' | 'weekly' | 'monthly' | 'custom') => {
     setPeriodType(period);
@@ -135,7 +117,6 @@ const PurchasePlanning = () => {
                 startDate={dateRange.from}
                 endDate={dateRange.to}
                 onClose={() => setIsGenerateQuebradoDialogOpen(false)}
-                defaultDinerCount={defaultDinerCount} // NUEVO: Pasar la cantidad de comensales por defecto
               />
             </DialogContent>
           </Dialog>

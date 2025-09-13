@@ -45,7 +45,7 @@ serve(async (req: Request) => {
   }
 
   try {
-    const { startDate, endDate, dinerCount } = await req.json();
+    const { startDate, endDate } = await req.json();
 
     if (!startDate || !endDate) {
       return new Response(JSON.stringify({ error: 'Missing startDate or endDate' }), {

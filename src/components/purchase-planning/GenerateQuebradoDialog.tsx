@@ -1,49 +1,22 @@
 import React, { useState } from 'react';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { Loader2, FileText } from 'lucide-react';
-import { useNavigate } from 'react-router-dom'; // NUEVO: Importar useNavigate
+import { useNavigate } from 'react-router-dom';
 
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import {
-  Form,
-  FormControl,
-  FormField,
-  FormItem,
-  FormLabel,
-  FormMessage,
-} from '@/components/ui/form';
 import { showSuccess, showError, showLoading, dismissToast } from '@/utils/toast';
 
 interface GenerateQuebradoDialogProps {
   startDate?: Date;
   endDate?: Date;
   onClose: () => void;
-  defaultDinerCount?: number;
 }
 
-const formSchema = z.object({
-  dinerCount: z.preprocess(
-    (val) => Number(val),
-    z.number().min(1, 'La cantidad de comensales debe ser al menos 1').int('La cantidad de comensales debe ser un número entero')
-  ),
-});
-
-const GenerateQuebradoDialog: React.FC<GenerateQuebradoDialogProps> = ({ startDate, endDate, onClose, defaultDinerCount = 1 }) => {
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      dinerCount: defaultDinerCount,
-    },
-  });
-
+const GenerateQuebradoDialog: React.FC<GenerateQuebradoDialogProps> = ({ startDate, endDate, onClose }) => {
   const [isGenerating, setIsGenerating] = useState(false);
-  const navigate = useNavigate(); // NUEVO: Inicializar useNavigate
+  const navigate = useNavigate();
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const handleGenerate = async () => {
     if (!startDate || !endDate) {
       showError('Por favor, selecciona un rango de fechas válido en la planificación de compras.');
       return;
@@ -56,13 +29,12 @@ const GenerateQuebradoDialog: React.FC<GenerateQuebradoDialogProps> = ({ startDa
       const formattedStartDate = format(startDate, 'yyyy-MM-dd');
       const formattedEndDate = format(endDate, 'yyyy-MM-dd');
 
-      // En lugar de llamar a la Edge Function directamente aquí, navegamos a la nueva página
-      // La nueva página se encargará de llamar a la Edge Function
-      navigate(`/quebrado-report?startDate=${formattedStartDate}&endDate=${formattedEndDate}&dinerCount=${values.dinerCount}`);
+      // Navegar a la página del reporte sin el conteo de comensales
+      navigate(`/quebrado-report?startDate=${formattedStartDate}&endDate=${formattedEndDate}`);
 
       dismissToast(toastId);
       showSuccess('Navegando al reporte de Quebrado...');
-      onClose(); // Cerrar el diálogo después de navegar
+      onClose();
     } catch (error: any) {
       dismissToast(toastId);
       showError(`Error al generar quebrado: ${error.message}`);
@@ -72,49 +44,32 @@ const GenerateQuebradoDialog: React.FC<GenerateQuebradoDialogProps> = ({ startDa
   };
 
   return (
-    <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <p className="text-sm text-muted-foreground">
-          Se generará un reporte de quebrado de menús para el período seleccionado:{" "}
-          <span className="font-semibold">
-            {startDate && endDate ? `${format(startDate, 'dd/MM/yyyy')} - ${format(endDate, 'dd/MM/yyyy')}` : 'N/A'}
-          </span>
-        </p>
+    <div className="space-y-4">
+      <p className="text-sm text-muted-foreground">
+        Se generará un reporte de quebrado de menús para el período seleccionado:{" "}
+        <span className="font-semibold">
+          {startDate && endDate ? `${format(startDate, 'dd/MM/yyyy')} - ${format(endDate, 'dd/MM/yyyy')}` : 'N/A'}
+        </span>
+        .
+      </p>
+      <p className="text-sm text-muted-foreground">
+        El cálculo se basará en las raciones planificadas para cada plato en los menús del período.
+      </p>
 
-        <FormField
-          control={form.control}
-          name="dinerCount"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Cantidad de Comensales (Opcional)</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="Ej: 100"
-                  {...field}
-                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : '')}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+      <div className="flex justify-end gap-2 pt-4">
+        <Button type="button" variant="outline" onClick={onClose} disabled={isGenerating}>
+          Cancelar
+        </Button>
+        <Button onClick={handleGenerate} disabled={isGenerating}>
+          {isGenerating ? (
+            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+          ) : (
+            <FileText className="mr-2 h-4 w-4" />
           )}
-        />
-
-        <div className="flex justify-end gap-2">
-          <Button type="button" variant="outline" onClick={onClose} disabled={isGenerating}>
-            Cancelar
-          </Button>
-          <Button type="submit" disabled={isGenerating}>
-            {isGenerating ? (
-              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-            ) : (
-              <FileText className="mr-2 h-4 w-4" />
-            )}
-            Generar Reporte
-          </Button>
-        </div>
-      </form>
-    </Form>
+          Generar Reporte
+        </Button>
+      </div>
+    </div>
   );
 };
 

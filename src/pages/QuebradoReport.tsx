@@ -27,9 +27,8 @@ const QuebradoReport: React.FC = () => {
     const queryParams = new URLSearchParams(location.search);
     const startDate = queryParams.get("startDate");
     const endDate = queryParams.get("endDate");
-    const dinerCount = queryParams.get("dinerCount");
 
-    if (!startDate || !endDate || !dinerCount) {
+    if (!startDate || !endDate) {
       showError("Faltan parámetros para generar el reporte de Quebrado.");
       navigate("/purchase-planning");
       return;
@@ -39,7 +38,7 @@ const QuebradoReport: React.FC = () => {
       try {
         setIsLoading(true);
         setIsError(false);
-        const data = await generateQuebradoReport(startDate, endDate, parseInt(dinerCount));
+        const data = await generateQuebradoReport(startDate, endDate);
         setReportData(data);
       } catch (err: any) {
         setIsError(true);
