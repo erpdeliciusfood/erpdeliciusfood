@@ -11,7 +11,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
+import * as z from "zod"; // Corregido: de '*s z' a '* as z'
 import { Insumo, InsumoFormValues } from "@/types";
 import { useUpdateInsumo } from "@/hooks/useInsumos";
 import { Loader2, CalendarIcon, AlertCircle } from "lucide-react";
@@ -21,7 +21,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { showSuccess, showError } from "@/utils/toast";
-import { FormField, FormItem, FormMessage } from "@/components/ui/form"; // NEW: Import FormField, FormItem, FormMessage
+import { FormField, FormItem, FormMessage } from "@/components/ui/form";
 
 const physicalCountSchema = z.object({
   last_physical_count_quantity: z.coerce.number().min(0, {
@@ -177,7 +177,7 @@ const PhysicalCountDialog: React.FC<PhysicalCountDialogProps> = ({ insumo, onClo
                       date > new Date() || date < new Date("1900-01-01") || isUpdating
                     }
                     initialFocus
-                    locale={es}
+                    locale={es} // Added locale={es}
                   />
                 </PopoverContent>
               </Popover>

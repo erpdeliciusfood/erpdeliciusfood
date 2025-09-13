@@ -150,6 +150,7 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({
                       selected={field.value ? new Date(field.value) : undefined}
                       onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : null)}
                       initialFocus
+                      locale={es} // Added locale={es}
                     />
                   </PopoverContent>
                 </Popover>

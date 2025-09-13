@@ -153,7 +153,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
                       date > new Date() || date < new Date("1900-01-01") || isLoading
                     }
                     initialFocus
-                    locale={es}
+                    locale={es} // Added locale={es}
                   />
                 </PopoverContent>
               </Popover>
