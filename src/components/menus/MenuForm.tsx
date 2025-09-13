@@ -25,7 +25,7 @@ const formSchema = z.object({
   description: z.string().max(500, {
     message: "La descripción no debe exceder los 500 caracteres.",
   }).nullable(),
-  menu_type: z.enum(["daily", "event"], {
+  menu_type: z.enum(["daily", "event"], { // NEW: menu_type field
     required_error: "Debe seleccionar un tipo de menú.",
   }),
   menu_date: z.string().nullable(),
@@ -87,12 +87,12 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
   const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
   const { data: availableEventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
 
-  const form = useForm<MenuFormValues & { menu_type: "daily" | "event" }>({
+  const form = useForm<MenuFormValues>({ // Changed type to MenuFormValues
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       description: "",
-      menu_type: preselectedDate ? "daily" : "event",
+      menu_type: preselectedDate ? "daily" : "event", // NEW: Set default menu_type
       menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null,
       event_type_id: null,
       platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
@@ -104,7 +104,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       form.reset({
         title: initialData.title,
         description: initialData.description || "",
-        menu_type: initialData.menu_date ? "daily" : "event",
+        menu_type: initialData.menu_type, // NEW: Set initial menu_type
         menu_date: initialData.menu_date || null,
         event_type_id: initialData.event_type_id || null,
         platos_por_servicio: initialData.menu_platos?.map(mp => ({
@@ -118,7 +118,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       form.reset({
         title: "",
         description: "",
-        menu_type: preselectedDate ? "daily" : "event",
+        menu_type: preselectedDate ? "daily" : "event", // NEW: Set default menu_type
         menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null,
         event_type_id: null,
         platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
@@ -126,13 +126,14 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
     }
   }, [initialData, form, preselectedDate]);
 
-  const onSubmit = async (values: MenuFormValues & { menu_type: "daily" | "event" }) => {
+  const onSubmit = async (values: MenuFormValues) => { // Changed type to MenuFormValues
     const submitValues: MenuFormValues = {
       title: values.title,
       description: values.description,
       platos_por_servicio: values.platos_por_servicio,
-      menu_date: values.menu_type === "daily" && values.menu_date ? values.menu_date : null,
-      event_type_id: values.menu_type === "event" && values.event_type_id ? values.event_type_id : null,
+      menu_type: values.menu_type, // NEW: Include menu_type
+      menu_date: values.menu_type === "daily" ? values.menu_date : null,
+      event_type_id: values.menu_type === "event" ? values.event_type_id : null,
     };
 
     if (initialData) {
@@ -151,8 +152,6 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-2">
           <MenuDetailsFormSection
             isLoading={isLoading}
-            preselectedDate={preselectedDate}
-            initialData={initialData}
             availableEventTypes={availableEventTypes}
           />
 

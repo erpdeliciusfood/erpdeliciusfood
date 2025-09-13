@@ -123,6 +123,7 @@ export interface Menu {
   event_type_id: string | null;
   description: string | null;
   created_at: string;
+  menu_type: 'daily' | 'event'; // NEW: Add menu_type
   event_types?: EventType;
   menu_platos?: MenuPlato[];
 }
@@ -144,6 +145,7 @@ export interface MenuFormValues {
   menu_date: string | null;
   event_type_id: string | null;
   description: string | null;
+  menu_type: 'daily' | 'event'; // NEW: Add menu_type to form values
   platos_por_servicio: {
     meal_service_id: string;
     plato_id: string;
