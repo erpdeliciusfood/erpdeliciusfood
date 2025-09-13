@@ -23,7 +23,12 @@ export interface Insumo {
 
 export interface InsumoFormValues {
   nombre: string;
-  base_unit: string;
+<think>**Streamlining Category Definitions**
+
+I'm currently working to improve category handling within the application. I noticed that the `DISH_CATEGORIES` constant is defined locally within `PlatosPorServicioFormSection.tsx`. To improve consistency, I'm moving it to `src/types.ts` alongside `RECETA_CATEGORIES`, and I'll update the component to import from this centralized location. I also identified and will remove an unused import in `MenuForm.tsx`, which further refines the codebase.
+
+
+</think>  base_unit: string;
   costo_unitario: number;
   stock_quantity: number;
   purchase_unit: string;
@@ -326,4 +331,22 @@ export const RECETA_CATEGORIES = [
   "FRUTA",
   "ENSALADA",
   "OTROS" // General category for anything not listed
+];
+
+export const DISH_CATEGORIES = [ // NEW: Centralized DISH_CATEGORIES
+  "Desayuno / Merienda",
+  "Entrada",
+  "Sopa / Crema",
+  "Ensalada Fría",
+  "Ensalada Caliente",
+  "Plato de Fondo - Carnes",
+  "Plato de Fondo - Aves",
+  "Plato de Fondo - Pescados y Mariscos",
+  "Plato de Fondo - Pastas y Arroces",
+  "Plato de Fondo - Vegetariano / Vegano",
+  "Acompañamiento / Guarnición",
+  "Postre",
+  "Bebida",
+  "Dieta Blanda",
+  "Otra Opción",
 ];

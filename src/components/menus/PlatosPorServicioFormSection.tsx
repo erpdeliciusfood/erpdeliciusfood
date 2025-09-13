@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MealService, MenuFormValues, Receta, MEAL_SERVICES_ORDER, RECETA_CATEGORIES } from "@/types"; // Changed Plato to Receta, imported RECETA_CATEGORIES
+import { MealService, MenuFormValues, Receta, MEAL_SERVICES_ORDER, DISH_CATEGORIES } from "@/types"; // Changed Plato to Receta, imported DISH_CATEGORIES
 import SearchableRecetaSelect from "./SearchableRecetaSelect"; // NEW: Import SearchableRecetaSelect
 
 interface PlatosPorServicioFormSectionProps {
@@ -26,24 +26,6 @@ interface PlatosPorServicioFormSectionProps {
   availablePlatos: Receta[] | undefined; // Changed type
   availableMealServices: MealService[] | undefined;
 }
-
-const DISH_CATEGORIES = [ // Renamed to avoid conflict with RECETA_CATEGORIES, but keeping for dish_category field
-  "Desayuno / Merienda",
-  "Entrada",
-  "Sopa / Crema",
-  "Ensalada Fría",
-  "Ensalada Caliente",
-  "Plato de Fondo - Carnes",
-  "Plato de Fondo - Aves",
-  "Plato de Fondo - Pescados y Mariscos",
-  "Plato de Fondo - Pastas y Arroces",
-  "Plato de Fondo - Vegetariano / Vegano",
-  "Acompañamiento / Guarnición",
-  "Postre",
-  "Bebida",
-  "Dieta Blanda",
-  "Otra Opción",
-];
 
 const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> = ({
   isLoading,
