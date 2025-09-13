@@ -123,6 +123,7 @@ export interface Menu {
   created_at: string;
   event_types?: EventType;
   menu_platos?: MenuPlato[];
+  diner_count: number; // NUEVO: Cantidad de comensales para el menú
 }
 
 export interface MenuPlato {
@@ -148,6 +149,7 @@ export interface MenuFormValues {
     dish_category: string;
     quantity_needed: number;
   }[];
+  diner_count: number; // NUEVO: Cantidad de comensales para el menú
 }
 
 export interface Profile {

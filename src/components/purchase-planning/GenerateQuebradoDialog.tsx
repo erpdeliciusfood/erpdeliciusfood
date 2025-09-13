@@ -22,6 +22,7 @@ interface GenerateQuebradoDialogProps {
   startDate?: Date;
   endDate?: Date;
   onClose: () => void;
+  defaultDinerCount?: number; // NUEVO: Propiedad para la cantidad de comensales por defecto
 }
 
 const formSchema = z.object({
@@ -31,11 +32,11 @@ const formSchema = z.object({
   ),
 });
 
-const GenerateQuebradoDialog: React.FC<GenerateQuebradoDialogProps> = ({ startDate, endDate, onClose }) => {
+const GenerateQuebradoDialog: React.FC<GenerateQuebradoDialogProps> = ({ startDate, endDate, onClose, defaultDinerCount = 1 }) => {
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
-      dinerCount: 1,
+      dinerCount: defaultDinerCount,
     },
   });
 

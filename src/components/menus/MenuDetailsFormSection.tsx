@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 import { useFormContext } from "react-hook-form";
-import { format } from "date-fns"; // Removed formatISO
+import { format, parse } from "date-fns"; // MODIFICADO: Añadir 'parse'
 import { es } from "date-fns/locale";
 import { CalendarIcon } from "lucide-react";
 import {
@@ -25,31 +25,43 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 import { EventType, MenuFormValues, Menu } from "@/types";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 
 interface MenuDetailsFormSectionProps {
   isLoading: boolean;
   preselectedDate?: Date;
   initialData?: Menu | null;
-  availableEventTypes: EventType[] | undefined;
+  availableEventTypes?: EventType[];
 }
 
-const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoading, preselectedDate, initialData, availableEventTypes }) => {
-  const form = useFormContext<MenuFormValues & { menu_type: "daily" | "event" }>();
-
-  const menuType = form.watch("menu_type");
-  const menuDate = form.watch("menu_date");
+const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({
+  isLoading,
+  preselectedDate,
+  initialData,
+  availableEventTypes,
+}) => {
+  const { control, watch, setValue } = useFormContext<MenuFormValues & { menu_type: "daily" | "event" }>();
+  const menuType = watch("menu_type");
+  const menuDate = watch("menu_date");
 
   // Effect for auto-titling daily menus
   useEffect(() => {
     if (menuType === "daily" && menuDate) {
       const formattedDate = format(new Date(menuDate), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: es });
       // Only update if the title is different to prevent unnecessary re-renders
-      if (form.getValues("title") !== formattedDate) {
-        form.setValue("title", formattedDate, { shouldValidate: true });
+      if (watch("title") !== formattedDate) {
+        setValue("title", formattedDate, { shouldValidate: true });
       }
     }
     // No action for 'event' type here, as its title is manually managed.
-  }, [menuType, menuDate, form]);
+  }, [menuType, menuDate, setValue, watch]);
+
+  useEffect(() => {
+    if (preselectedDate && !initialData) {
+      setValue("menu_type", "daily");
+      setValue("menu_date", format(preselectedDate, "yyyy-MM-dd"));
+    }
+  }, [preselectedDate, initialData, setValue]);
 
   const eventTypePlaceholder = () => {
     if (isLoading) return "Cargando tipos de evento...";
@@ -58,176 +70,170 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({ isLoadi
   };
 
   return (
-    <>
-      <FormField
-        control={form.control}
-        name="title"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Título del Menú</FormLabel>
-            <FormControl>
-              <Input
-                placeholder="Ej. Menú Coffee Break"
-                {...field}
-                className="h-12 text-base"
-                disabled={isLoading || menuType === "daily"} // Disable title input for daily menus
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-      <FormField
-        control={form.control}
-        name="description"
-        render={({ field }) => (
-          <FormItem>
-            <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Descripción (Opcional)</FormLabel>
-            <FormControl>
-              <Textarea
-                placeholder="Una breve descripción del menú..."
-                {...field}
-                value={field.value || ""}
-                className="min-h-[80px] text-base"
-                disabled={isLoading}
-              />
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      <FormField
-        control={form.control}
-        name="menu_type"
-        render={({ field }) => (
-          <FormItem className="space-y-3">
-            <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Tipo de Menú</FormLabel>
-            <FormControl>
-              <RadioGroup
-                onValueChange={(value) => {
-                  field.onChange(value);
-                  if (value === "daily") {
-                    form.setValue("event_type_id", null); // Clear event type ID
-                    // Determine the correct date to set:
-                    // If editing an existing daily menu, use its original date.
-                    // If creating a new daily menu, use the preselectedDate from the calendar.
-                    const dateToSet = initialData?.menu_date && initialData.menu_date !== null
-                      ? initialData.menu_date // Use existing menu's date
-                      : (preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null); // Use format
-                    form.setValue("menu_date", dateToSet);
-                    // Auto-generate title if it's a new menu or if the title is currently empty
-                    if (!initialData || !form.getValues("title")) {
-                      if (dateToSet) {
-                        const newTitle = format(new Date(dateToSet), "EEEE, dd 'de' MMMM 'de' yyyy", { locale: es });
-                        form.setValue("title", newTitle, { shouldValidate: true });
-                      }
-                    }
-                  } else { // value === "event"
-                    form.setValue("menu_date", null); // Clear menu date
-                    // Do NOT clear title here. It should be manually entered for event menus.
-                  }
-                }}
-                defaultValue={field.value}
-                className="flex flex-col space-y-1"
-                disabled={isLoading}
-              >
-                <FormItem className="flex items-center space-x-3 space-y-0">
-                  <FormControl>
-                    <RadioGroupItem value="daily" />
-                  </FormControl>
-                  <FormLabel className="font-normal">Menú Diario</FormLabel>
-                </FormItem>
-                <FormItem className="flex items-center space-x-3 space-y-0">
-                  <FormControl>
-                    <RadioGroupItem value="event" />
-                  </FormControl>
-                  <FormLabel className="font-normal">Menú de Evento</FormLabel>
-                </FormItem>
-              </RadioGroup>
-            </FormControl>
-            <FormMessage />
-          </FormItem>
-        )}
-      />
-
-      {menuType === "daily" && (
+    <Card className="p-4 shadow-sm">
+      <CardHeader className="px-0 pt-0">
+        <CardTitle className="text-xl font-semibold">Detalles del Menú</CardTitle>
+      </CardHeader>
+      <CardContent className="px-0 pb-0 space-y-4">
         <FormField
-          control={form.control}
-          name="menu_date"
-          render={({ field }) => (
-            <FormItem className="flex flex-col">
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Fecha del Menú</FormLabel>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <FormControl>
-                    <Button
-                      variant={"outline"}
-                      className={cn(
-                        "w-full pl-3 text-left font-normal h-12 text-base",
-                        !field.value && "text-muted-foreground"
-                      )}
-                      disabled={isLoading}
-                    >
-                      {field.value ? (
-                        format(new Date(field.value), "PPP", { locale: es })
-                      ) : (
-                        <span>Selecciona una fecha</span>
-                      )}
-                      <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
-                    </Button>
-                  </FormControl>
-                </PopoverTrigger>
-                <PopoverContent className="w-auto p-0" align="start">
-                  <Calendar
-                    mode="single"
-                    selected={field.value ? new Date(field.value) : undefined}
-                    onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : null)} // Use format
-                    disabled={(date) =>
-                      date < new Date("1900-01-01") || isLoading
-                    }
-                    initialFocus
-                    locale={es}
-                  />
-                </PopoverContent>
-              </Popover>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-      )}
-
-      {menuType === "event" && (
-        <FormField
-          control={form.control}
-          name="event_type_id"
+          control={control}
+          name="title"
           render={({ field }) => (
             <FormItem>
-              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Tipo de Evento</FormLabel>
-              <Select
-                onValueChange={field.onChange}
-                defaultValue={field.value || ""}
-                disabled={isLoading || !availableEventTypes || availableEventTypes.length === 0}
-              >
-                <FormControl>
-                  <SelectTrigger className="h-12 text-base">
-                    <SelectValue placeholder={eventTypePlaceholder()} />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {availableEventTypes?.map((eventType: EventType) => (
-                    <SelectItem key={eventType.id} value={eventType.id}>
-                      {eventType.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <FormLabel>Título del Menú</FormLabel>
+              <FormControl>
+                <Input placeholder="Ej: Menú Semanal Estándar" {...field} disabled={isLoading} />
+              </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-      )}
-    </>
+
+        <FormField
+          control={control}
+          name="description"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Descripción (Opcional)</FormLabel>
+              <FormControl>
+                <Textarea
+                  placeholder="Breve descripción del menú..."
+                  {...field}
+                  value={field.value || ""}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={control}
+          name="menu_type"
+          render={({ field }) => (
+            <FormItem className="space-y-3">
+              <FormLabel>Tipo de Menú</FormLabel>
+              <FormControl>
+                <RadioGroup
+                  onValueChange={field.onChange}
+                  value={field.value}
+                  className="flex flex-col space-y-1"
+                  disabled={isLoading}
+                >
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="daily" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Menú Diario</FormLabel>
+                  </FormItem>
+                  <FormItem className="flex items-center space-x-3 space-y-0">
+                    <FormControl>
+                      <RadioGroupItem value="event" />
+                    </FormControl>
+                    <FormLabel className="font-normal">Menú de Evento</FormLabel>
+                  </FormItem>
+                </RadioGroup>
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        {menuType === "daily" && (
+          <FormField
+            control={control}
+            name="menu_date"
+            render={({ field }) => (
+              <FormItem className="flex flex-col">
+                <FormLabel>Fecha del Menú</FormLabel>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <FormControl>
+                      <Button
+                        variant={"outline"}
+                        className={cn(
+                          "w-full pl-3 text-left font-normal",
+                          !field.value && "text-muted-foreground"
+                        )}
+                        disabled={isLoading}
+                      >
+                        {field.value ? (
+                          format(field.value, "PPP", { locale: es })
+                        ) : (
+                          <span>Selecciona una fecha</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" />
+                      </Button>
+                    </FormControl>
+                  </PopoverTrigger>
+                  <PopoverContent className="w-auto p-0" align="start">
+                    <Calendar
+                      mode="single"
+                      selected={field.value ? parse(field.value, "yyyy-MM-dd", new Date()) : undefined}
+                      onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : null)}
+                      disabled={(date) =>
+                        date < new Date("1900-01-01")
+                      }
+                      initialFocus
+                      locale={es}
+                    />
+                  </PopoverContent>
+                </Popover>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        {menuType === "event" && (
+          <FormField
+            control={control}
+            name="event_type_id"
+            render={({ field }) => (
+              <FormItem>
+                <FormLabel>Tipo de Evento</FormLabel>
+                <Select onValueChange={field.onChange} value={field.value || ""} disabled={isLoading}>
+                  <FormControl>
+                    <SelectTrigger>
+                      <SelectValue placeholder={eventTypePlaceholder()} />
+                    </SelectTrigger>
+                  </FormControl>
+                  <SelectContent>
+                    {availableEventTypes?.map((eventType) => (
+                      <SelectItem key={eventType.id} value={eventType.id}>
+                        {eventType.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        )}
+
+        <FormField
+          control={control}
+          name="diner_count"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Cantidad de Comensales</FormLabel>
+              <FormControl>
+                <Input
+                  type="number"
+                  placeholder="Ej: 100"
+                  {...field}
+                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : '')}
+                  disabled={isLoading}
+                />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+      </CardContent>
+    </Card>
   );
 };
 
