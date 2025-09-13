@@ -324,7 +324,7 @@ const Index = () => {
                   <CardDescription className="text-lg text-left">
                     Administra los roles de los usuarios de tu aplicación.
                   </CardDescription>
-                </CardContent>
+              </CardContent>
                 <Button className="w-full mt-4 px-8 py-4 text-lg bg-red-600 hover:bg-red-700 text-white transition-colors duration-200 ease-in-out">
                     Ir a Usuarios
                 </Button>

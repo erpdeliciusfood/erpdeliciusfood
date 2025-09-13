@@ -30,10 +30,10 @@ const formSchema = z.object({
   }),
   menu_date: z.string().nullable(),
   event_type_id: z.string().nullable(),
-  diner_count: z.preprocess( // NUEVO: Campo para la cantidad de comensales
-    (val) => Number(val),
-    z.number().min(1, 'La cantidad de comensales debe ser al menos 1').int('La cantidad de comensales debe ser un número entero')
-  ),
+  // diner_count: z.preprocess( // ELIMINADO: Campo para la cantidad de comensales
+  //   (val) => Number(val),
+  //   z.number().min(1, 'La cantidad de comensales debe ser al menos 1').int('La cantidad de comensales debe ser un número entero')
+  // ),
   platos_por_servicio: z.array(
     z.object({
       meal_service_id: z.string().min(1, { message: "Debe seleccionar un servicio de comida." }),
@@ -101,7 +101,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       menu_type: preselectedDate ? "daily" : "event", // Dynamically set default menu_type
       menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null, // Use format
       event_type_id: null,
-      diner_count: 1,
+      // diner_count: 1, // ELIMINADO
       platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
     },
   });
@@ -114,7 +114,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         menu_type: initialData.menu_date ? "daily" : "event",
         menu_date: initialData.menu_date || null,
         event_type_id: initialData.event_type_id || null,
-        diner_count: initialData.diner_count || 1,
+        // diner_count: initialData.diner_count || 1, // ELIMINADO
         platos_por_servicio: initialData.menu_platos?.map(mp => ({
           meal_service_id: mp.meal_service_id,
           plato_id: mp.plato_id,
@@ -129,7 +129,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         menu_type: preselectedDate ? "daily" : "event", // Dynamically set default menu_type
         menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null, // Use format
         event_type_id: null,
-        diner_count: 1,
+        // diner_count: 1, // ELIMINADO
         platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
       });
     }
@@ -142,7 +142,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       platos_por_servicio: values.platos_por_servicio,
       menu_date: values.menu_type === "daily" && values.menu_date ? values.menu_date : null,
       event_type_id: values.menu_type === "event" && values.event_type_id ? values.event_type_id : null,
-      diner_count: values.diner_count,
+      // diner_count: values.diner_count, // ELIMINADO
     };
 
     if (initialData) {

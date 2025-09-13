@@ -123,7 +123,7 @@ export interface Menu {
   created_at: string;
   event_types?: EventType;
   menu_platos?: MenuPlato[];
-  diner_count: number; // NUEVO: Cantidad de comensales para el menú
+  // diner_count: number; // ELIMINADO: Cantidad de comensales para el menú
 }
 
 export interface MenuPlato {
@@ -132,7 +132,7 @@ export interface MenuPlato {
   plato_id: string;
   meal_service_id: string;
   dish_category: string;
-  quantity_needed: number;
+  quantity_needed: number; // Esta es la cantidad de raciones por servicio / comensales para ese servicio
   created_at: string;
   platos?: Receta; // Reference to Receta
   meal_services?: MealService;
@@ -147,9 +147,9 @@ export interface MenuFormValues {
     meal_service_id: string;
     plato_id: string;
     dish_category: string;
-    quantity_needed: number;
+    quantity_needed: number; // Esta es la cantidad de raciones por servicio / comensales para ese servicio
   }[];
-  diner_count: number; // NUEVO: Cantidad de comensales para el menú
+  // diner_count: number; // ELIMINADO: Cantidad de comensales para el menú
 }
 
 export interface Profile {

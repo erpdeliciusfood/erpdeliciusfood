@@ -37,8 +37,11 @@ const PurchasePlanning = () => {
   // NUEVO: Calcular la cantidad de comensales por defecto para el diálogo de Quebrado
   const defaultDinerCount = useMemo(() => {
     if (menusForPeriod && menusForPeriod.length > 0) {
-      const totalDiners = menusForPeriod.reduce((sum, menu) => sum + (menu.diner_count || 0), 0);
-      return Math.round(totalDiners / menusForPeriod.length); // Promedio de comensales
+      const totalRaciones = menusForPeriod.reduce((sum, menu) => {
+        return sum + (menu.menu_platos?.reduce((platoSum, mp) => platoSum + (mp.quantity_needed || 0), 0) || 0);
+      }, 0);
+      // Si hay menús, el defaultDinerCount es la suma de todas las raciones por servicio
+      return totalRaciones > 0 ? totalRaciones : 1;
     }
     return 1; // Valor por defecto si no hay menús
   }, [menusForPeriod]);

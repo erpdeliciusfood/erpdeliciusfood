@@ -36,7 +36,7 @@ export const getMenuById = async (id: string): Promise<Menu | null> => {
 };
 
 export const createMenu = async (menuData: MenuFormValues): Promise<Menu> => {
-  const { title, menu_date, event_type_id, description, platos_por_servicio, diner_count } = menuData; // MODIFICADO: Añadir diner_count
+  const { title, menu_date, event_type_id, description, platos_por_servicio } = menuData; // MODIFICADO: Eliminar diner_count
 
   // Get authenticated user ID
   const { data: { user }, error: userError } = await supabase.auth.getUser();
@@ -51,7 +51,7 @@ export const createMenu = async (menuData: MenuFormValues): Promise<Menu> => {
       event_type_id: event_type_id === "" ? null : event_type_id, // Explicitly convert empty string to null
       description,
       user_id: user.id,
-      diner_count, // NUEVO: Incluir diner_count
+      // diner_count, // ELIMINADO: No incluir diner_count
     })
     .select()
     .single();
@@ -91,7 +91,7 @@ export const createMenu = async (menuData: MenuFormValues): Promise<Menu> => {
 };
 
 export const updateMenu = async (id: string, menuData: MenuFormValues): Promise<Menu> => {
-  const { title, menu_date, event_type_id, description, platos_por_servicio, diner_count } = menuData; // MODIFICADO: Añadir diner_count
+  const { title, menu_date, event_type_id, description, platos_por_servicio } = menuData; // MODIFICADO: Eliminar diner_count
 
   // Update the main menu
   const { data: updatedMenu, error: menuError } = await supabase
@@ -101,7 +101,7 @@ export const updateMenu = async (id: string, menuData: MenuFormValues): Promise<
       menu_date: menu_date === "" ? null : menu_date, // Explicitly convert empty string to null
       event_type_id: event_type_id === "" ? null : event_type_id, // Explicitly convert empty string to null
       description,
-      diner_count, // NUEVO: Incluir diner_count
+      // diner_count, // ELIMINADO: No incluir diner_count
     })
     .eq("id", id)
     .select()

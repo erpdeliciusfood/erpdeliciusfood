@@ -212,26 +212,6 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({
             )}
           />
         )}
-
-        <FormField
-          control={control}
-          name="diner_count"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>Cantidad de Comensales</FormLabel>
-              <FormControl>
-                <Input
-                  type="number"
-                  placeholder="Ej: 100"
-                  {...field}
-                  onChange={(e) => field.onChange(e.target.value ? Number(e.target.value) : '')}
-                  disabled={isLoading}
-                />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
       </CardContent>
     </Card>
   );
