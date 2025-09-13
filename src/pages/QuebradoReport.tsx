@@ -1,14 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { Loader2, Utensils, FileText } from "lucide-react";
+import { Loader2, Utensils, FileText, CalendarCheck, ListCollapse } from "lucide-react";
 import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { generateQuebradoReport } from "@/integrations/supabase/quebrado";
 import { showError } from "@/utils/toast";
 import { QuebradoReportData } from "@/types";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import QuebradoAgendaView from "../components/quebrado/QuebradoAgendaView";
+import QuebradoConsolidatedView from "../components/quebrado/QuebradoConsolidatedView";
+import { Button } from "@/components/ui/button";
 
 const QuebradoReport: React.FC = () => {
   const location = useLocation();
@@ -90,33 +93,31 @@ const QuebradoReport: React.FC = () => {
         icon={Utensils}
       />
 
-      <div className="space-y-8">
-        <Card className="shadow-lg dark:bg-gray-800">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              Datos del Quebrado (Agenda Semanal)
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-4 rounded-md overflow-x-auto">
-              {JSON.stringify(reportData.quebradoData, null, 2)}
-            </pre>
-          </CardContent>
-        </Card>
-
-        <Card className="shadow-lg dark:bg-gray-800">
-          <CardHeader>
-            <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-              Consolidado Semanal de Insumos
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <pre className="whitespace-pre-wrap text-sm text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 p-4 rounded-md overflow-x-auto">
-              {JSON.stringify(reportData.consolidatedInsumos, null, 2)}
-            </pre>
-          </CardContent>
-        </Card>
-      </div>
+      <Tabs defaultValue="agenda" className="w-full space-y-6">
+        <div className="flex justify-between items-center">
+          <TabsList>
+            <TabsTrigger value="agenda">
+              <CalendarCheck className="mr-2 h-4 w-4" />
+              Vista Agenda
+            </TabsTrigger>
+            <TabsTrigger value="consolidado">
+              <ListCollapse className="mr-2 h-4 w-4" />
+              Vista Consolidada
+            </TabsTrigger>
+          </TabsList>
+          {/* Placeholder for Export button */}
+          <Button variant="outline" disabled>
+            <FileText className="mr-2 h-4 w-4" />
+            Exportar
+          </Button>
+        </div>
+        <TabsContent value="agenda">
+          <QuebradoAgendaView data={reportData.quebradoData} />
+        </TabsContent>
+        <TabsContent value="consolidado">
+          <QuebradoConsolidatedView data={reportData.consolidatedInsumos} />
+        </TabsContent>
+      </Tabs>
 
       <MadeWithDyad />
     </div>
