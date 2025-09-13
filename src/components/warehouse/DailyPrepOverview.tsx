@@ -160,6 +160,11 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
   const selectedInsumosForDialog = aggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id));
 
+  // NEW: Console logs for debugging
+  console.log("DailyPrepOverview - Menus for selected date:", menus);
+  console.log("DailyPrepOverview - Aggregated Insumo Needs:", aggregatedInsumoNeeds);
+
+
   return (
     <div className="space-y-8">
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
