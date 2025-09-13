@@ -6,15 +6,15 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
 } from "@/components/ui/form";
-import { Menu, MenuFormValues } from "@/types"; // Removed Receta
+import { Menu, MenuFormValues } from "@/types";
 import { useAddMenu, useUpdateMenu } from "@/hooks/useMenus";
-import { useRecetas } from "@/hooks/useRecetas";
 import { useMealServices } from "@/hooks/useMealServices";
 import { useEventTypes } from "@/hooks/useEventTypes";
+import { useRecetas } from "@/hooks/useRecetas";
 import { Loader2 } from "lucide-react";
 import MenuDetailsFormSection from "./MenuDetailsFormSection";
 import PlatosPorServicioFormSection from "./PlatosPorServicioFormSection";
-import { format } from "date-fns"; // Import format
+import { format } from "date-fns";
 
 const formSchema = z.object({
   title: z.string().min(2, {
@@ -30,10 +30,6 @@ const formSchema = z.object({
   }),
   menu_date: z.string().nullable(),
   event_type_id: z.string().nullable(),
-  // diner_count: z.preprocess( // ELIMINADO: Campo para la cantidad de comensales
-  //   (val) => Number(val),
-  //   z.number().min(1, 'La cantidad de comensales debe ser al menos 1').int('La cantidad de comensales debe ser un número entero')
-  // ),
   platos_por_servicio: z.array(
     z.object({
       meal_service_id: z.string().min(1, { message: "Debe seleccionar un servicio de comida." }),
@@ -62,7 +58,6 @@ const formSchema = z.object({
     });
   }
 
-  // Custom validation for duplicate plato_id, meal_service_id, and dish_category combinations
   const seenCombinations = new Set<string>();
   data.platos_por_servicio.forEach((platoServicio, index) => {
     const combinationKey = `${platoServicio.meal_service_id}-${platoServicio.plato_id}-${platoServicio.dish_category}`;
@@ -88,7 +83,6 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
   const addMutation = useAddMenu();
   const updateMutation = useUpdateMenu();
 
-  // Fetch all necessary data here
   const { data: availableRecetas, isLoading: isLoadingRecetas } = useRecetas();
   const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
   const { data: availableEventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
@@ -98,10 +92,9 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
     defaultValues: {
       title: "",
       description: "",
-      menu_type: preselectedDate ? "daily" : "event", // Dynamically set default menu_type
-      menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null, // Use format
+      menu_type: preselectedDate ? "daily" : "event",
+      menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null,
       event_type_id: null,
-      // diner_count: 1, // ELIMINADO
       platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
     },
   });
@@ -114,7 +107,6 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         menu_type: initialData.menu_date ? "daily" : "event",
         menu_date: initialData.menu_date || null,
         event_type_id: initialData.event_type_id || null,
-        // diner_count: initialData.diner_count || 1, // ELIMINADO
         platos_por_servicio: initialData.menu_platos?.map(mp => ({
           meal_service_id: mp.meal_service_id,
           plato_id: mp.plato_id,
@@ -126,10 +118,9 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       form.reset({
         title: "",
         description: "",
-        menu_type: preselectedDate ? "daily" : "event", // Dynamically set default menu_type
-        menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null, // Use format
+        menu_type: preselectedDate ? "daily" : "event",
+        menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null,
         event_type_id: null,
-        // diner_count: 1, // ELIMINADO
         platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
       });
     }
@@ -142,7 +133,6 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       platos_por_servicio: values.platos_por_servicio,
       menu_date: values.menu_type === "daily" && values.menu_date ? values.menu_date : null,
       event_type_id: values.menu_type === "event" && values.event_type_id ? values.event_type_id : null,
-      // diner_count: values.diner_count, // ELIMINADO
     };
 
     if (initialData) {
@@ -153,7 +143,6 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
     onSuccess();
   };
 
-  // Calculate overall loading state
   const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingRecetas || isLoadingMealServices || isLoadingEventTypes;
 
   return (

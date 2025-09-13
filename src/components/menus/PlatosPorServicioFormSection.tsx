@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MealService, MenuFormValues, Receta, MEAL_SERVICES_ORDER, DISH_CATEGORIES } from "@/types"; // Changed Plato to Receta, imported DISH_CATEGORIES
+import { MealService, MenuFormValues, Receta, MEAL_SERVICES_ORDER, MENU_DISH_SERVICE_CATEGORIES } from "@/types"; // Changed Plato to Receta, imported MENU_DISH_SERVICE_CATEGORIES
 import SearchableRecetaSelect from "./SearchableRecetaSelect"; // NEW: Import SearchableRecetaSelect
 
 interface PlatosPorServicioFormSectionProps {
@@ -122,7 +122,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {DISH_CATEGORIES.map((category) => (
+                      {MENU_DISH_SERVICE_CATEGORIES.map((category) => (
                         <SelectItem key={category} value={category}>
                           {category}
                         </SelectItem>
