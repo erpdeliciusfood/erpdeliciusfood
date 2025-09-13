@@ -146,7 +146,7 @@ const MenuCalendar: React.FC<MenuCalendarProps> = ({
               Hoy
             </div>
             <div className="flex items-center">
-              <span className="h-4 w-4 rounded-full bg-green-500 dark:bg-green-700 mr-2 border border-green-600 dark:border-green-800"></span>
+              <span className="h-4 w-4 rounded-full bg-green-500 text-white dark:bg-green-700 mr-2 border border-green-600 dark:border-green-800"></span>
               Día Seleccionado
             </div>
           </div>

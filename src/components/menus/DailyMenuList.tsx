@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, UtensilsCrossed, CalendarDays, ChevronDown, CheckCircle2 } from "lucide-react";
-import { Menu, MenuPlato } from "@/types";
+import { Menu, MenuPlato, MEAL_SERVICES_ORDER } from "@/types";
 import { useDeleteMenu } from "@/hooks/useMenus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -28,8 +28,6 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
   };
-
-  const MEAL_SERVICES_ORDER = ["desayuno", "almuerzo", "cena", "merienda"]; // Standard meal services to check and order by
 
   if (menus.length === 0) {
     return (
@@ -60,7 +58,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
             });
 
             menu.menu_platos?.forEach(mp => {
-              const serviceName = mp.meal_services?.name?.toLowerCase();
+              const serviceName = mp.meal_services?.name;
               if (serviceName && MEAL_SERVICES_ORDER.includes(serviceName)) {
                 mealServiceStatus[serviceName] = true;
               }
@@ -167,8 +165,8 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                             <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Detalles de Recetas:</h4> {/* Changed text */}
                             {Object.entries(platosGroupedByServiceAndCategory || {}).sort(([serviceA], [serviceB]) => {
                               // Sort services by predefined order
-                              const indexA = MEAL_SERVICES_ORDER.indexOf(serviceA.toLowerCase());
-                              const indexB = MEAL_SERVICES_ORDER.indexOf(serviceB.toLowerCase());
+                              const indexA = MEAL_SERVICES_ORDER.indexOf(serviceA);
+                              const indexB = MEAL_SERVICES_ORDER.indexOf(serviceB);
                               if (indexA === -1) return 1; // Unknown services last
                               if (indexB === -1) return -1;
                               return indexA - indexB;

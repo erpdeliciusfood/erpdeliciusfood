@@ -18,7 +18,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MealService, MenuFormValues, Receta } from "@/types"; // Changed Plato to Receta
+import { MealService, MenuFormValues, Receta, MEAL_SERVICES_ORDER } from "@/types"; // Changed Plato to Receta
 
 interface PlatosPorServicioFormSectionProps {
   isLoading: boolean;
@@ -97,11 +97,15 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
                       </SelectTrigger>
                     </FormControl>
                     <SelectContent>
-                      {availableMealServices?.map((service: MealService) => (
-                        <SelectItem key={service.id} value={service.id}>
-                          {service.name}
-                        </SelectItem>
-                      ))}
+                      {/* Render items in the specified order */}
+                      {MEAL_SERVICES_ORDER.map(serviceName => {
+                        const service = availableMealServices?.find(s => s.name === serviceName);
+                        return service ? (
+                          <SelectItem key={service.id} value={service.id}>
+                            {service.name}
+                          </SelectItem>
+                        ) : null;
+                      })}
                     </SelectContent>
                   </Select>
                   <FormMessage />

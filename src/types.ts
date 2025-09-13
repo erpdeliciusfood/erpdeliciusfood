@@ -123,7 +123,6 @@ export interface Menu {
   created_at: string;
   event_types?: EventType;
   menu_platos?: MenuPlato[];
-  // diner_count: number; // ELIMINADO: Cantidad de comensales para el menú
 }
 
 export interface MenuPlato {
@@ -149,7 +148,6 @@ export interface MenuFormValues {
     dish_category: string;
     quantity_needed: number; // Esta es la cantidad de raciones por servicio / comensales para ese servicio
   }[];
-  // diner_count: number; // ELIMINADO: Cantidad de comensales para el menú
 }
 
 export interface Profile {
@@ -296,3 +294,12 @@ export interface UrgentPurchaseRequestFormValues {
   insistence_count?: number; // NEW: Allow updating this field
   rejection_reason?: string | null; // NEW: Allow updating this field
 }
+
+export const MEAL_SERVICES_ORDER = [
+  "Desayuno",
+  "Almuerzo regular",
+  "Almuerzo Saludable",
+  "Almuerzo Dieta Blanda",
+  "Cena",
+  "Merienda",
+];
