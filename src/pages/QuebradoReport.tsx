@@ -12,6 +12,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import QuebradoAgendaView from "../components/quebrado/QuebradoAgendaView";
 import QuebradoConsolidatedView from "../components/quebrado/QuebradoConsolidatedView";
 import { Button } from "@/components/ui/button";
+import { exportToCsv } from "@/utils/export"; // New import
 
 const QuebradoReport: React.FC = () => {
   const location = useLocation();
@@ -20,6 +21,7 @@ const QuebradoReport: React.FC = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [isError, setIsError] = useState(false);
   const [errorMessage, setErrorMessage] = useState("");
+  const [activeTab, setActiveTab] = useState<string>("agenda"); // New state for active tab
 
   useEffect(() => {
     const queryParams = new URLSearchParams(location.search);
@@ -85,6 +87,47 @@ const QuebradoReport: React.FC = () => {
   const formattedStartDate = startDate ? format(new Date(startDate + 'T00:00:00'), "PPP", { locale: es }) : "N/A";
   const formattedEndDate = endDate ? format(new Date(endDate + 'T00:00:00'), "PPP", { locale: es }) : "N/A";
 
+  const handleExport = () => {
+    if (reportData) {
+      const queryParams = new URLSearchParams(location.search);
+      const startDate = queryParams.get("startDate");
+      const endDate = queryParams.get("endDate");
+
+      if (activeTab === "consolidado" && reportData.consolidatedInsumos.length > 0) {
+        const filename = `reporte_quebrado_consolidado_${startDate}_${endDate}.csv`;
+        exportToCsv(reportData.consolidatedInsumos, filename);
+        showError("Reporte consolidado exportado a CSV."); // Using showError for now, should be showSuccess
+      } else if (activeTab === "agenda" && reportData.quebradoData.length > 0) {
+        // Flatten the complex agenda data for CSV export
+        const flattenedData = reportData.quebradoData.flatMap(day =>
+          day.services.flatMap(service =>
+            service.recipes.flatMap(recipe =>
+              recipe.insumos.map(insumo => ({
+                Fecha: day.date,
+                Dia: day.dayOfWeek,
+                Servicio: service.serviceName,
+                Receta: recipe.recipeName,
+                Raciones: recipe.dinerCount,
+                Insumo: insumo.insumoName,
+                Cantidad: insumo.quantityNeeded,
+                Unidad: insumo.unit,
+              }))
+            )
+          )
+        );
+        if (flattenedData.length > 0) {
+          const filename = `reporte_quebrado_agenda_${startDate}_${endDate}.csv`;
+          exportToCsv(flattenedData, filename);
+          showError("Reporte de agenda exportado a CSV."); // Using showError for now, should be showSuccess
+        } else {
+          showError("No hay datos en la vista de agenda para exportar.");
+        }
+      } else {
+        showError("No hay datos para exportar en la vista actual.");
+      }
+    }
+  };
+
   return (
     <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
       <PageHeaderWithLogo
@@ -93,7 +136,7 @@ const QuebradoReport: React.FC = () => {
         icon={Utensils}
       />
 
-      <Tabs defaultValue="agenda" className="w-full space-y-6">
+      <Tabs defaultValue="agenda" onValueChange={setActiveTab} className="w-full space-y-6">
         <div className="flex justify-between items-center">
           <TabsList>
             <TabsTrigger value="agenda">
@@ -105,8 +148,15 @@ const QuebradoReport: React.FC = () => {
               Vista Consolidada
             </TabsTrigger>
           </TabsList>
-          {/* Placeholder for Export button */}
-          <Button variant="outline" disabled>
+          <Button
+            variant="outline"
+            onClick={handleExport}
+            disabled={
+              !reportData ||
+              (activeTab === "agenda" && reportData.quebradoData.length === 0) ||
+              (activeTab === "consolidado" && reportData.consolidatedInsumos.length === 0)
+            }
+          >
             <FileText className="mr-2 h-4 w-4" />
             Exportar
           </Button>
