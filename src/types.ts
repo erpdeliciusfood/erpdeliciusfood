@@ -332,6 +332,7 @@ export interface ConsolidatedInsumo {
   totalQuantity: number;
   unit: string;
   services: string[]; // List of service names where it's used
+  currentStock: number; // NEW: Current stock quantity of the insumo
 }
 
 export interface QuebradoReportData {
