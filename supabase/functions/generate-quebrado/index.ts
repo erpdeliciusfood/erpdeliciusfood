@@ -56,20 +56,155 @@ serve(async (req: Request) => {
 
     console.log(`Generating quebrado report for user ${user.id} from ${startDate} to ${endDate} for ${dinerCount} diners.`);
 
-    // --- Placeholder for actual Quebrado generation logic ---
-    // In a real scenario, you would:
-    // 1. Fetch menus for the date range.
-    // 2. Fetch recipes (platos) and their insumos.
-    // 3. Calculate total insumos needed based on dinerCount.
-    // 4. Generate PDF/Excel using a library (e.g., pdf-lib, exceljs).
-    // 5. Store the generated file (e.g., in Supabase Storage) and return a download URL.
-    // ---------------------------------------------------------
+    // Use supabaseAdmin to bypass RLS for fetching all necessary data
+    const supabaseAdmin = createClient(
+      Deno.env.get('SUPABASE_URL') ?? '',
+      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+    );
 
-    // Simulate a delay for generation
-    await new Promise(resolve => setTimeout(resolve, 2000));
+    // Fetch menus for the user within the date range
+    const { data: menus, error: menusError } = await supabaseAdmin
+      .from('menus')
+      .select(`
+        id,
+        menu_date,
+        title,
+        menu_type,
+        event_types(name),
+        menu_platos(
+          quantity_needed,
+          meal_services(id, name),
+          platos(
+            id,
+            nombre,
+            plato_insumos(
+              cantidad_necesaria,
+              insumos(
+                id,
+                nombre,
+                base_unit,
+                purchase_unit,
+                conversion_factor
+              )
+            )
+          )
+        )
+      `)
+      .eq('user_id', user.id) // Filter by authenticated user
+      .gte('menu_date', startDate)
+      .lte('menu_date', endDate)
+      .order('menu_date', { ascending: true });
+
+    if (menusError) {
+      console.error('Error fetching menus:', menusError);
+      return new Response(JSON.stringify({ error: menusError.message }), {
+        headers: { ...corsHeaders, 'Content-Type': 'application/json' },
+        status: 500,
+      });
+    }
+
+    // Structure for the Quebrado report
+    const quebradoData: {
+      date: string;
+      dayOfWeek: string;
+      services: {
+        serviceId: string;
+        serviceName: string;
+        recipes: {
+          recipeId: string;
+          recipeName: string;
+          dinerCount: number; // This will be the per-service diner count
+          insumos: {
+            insumoId: string;
+            insumoName: string;
+            quantityNeeded: number; // in purchase_unit
+            unit: string; // purchase_unit
+          }[];
+        }[];
+      }[];
+    }[] = [];
+
+    const allInsumoNeeds: { [insumoId: string]: { insumoName: string; totalQuantity: number; unit: string; services: Set<string> } } = {};
+
+    // Aggregate data
+    menus.forEach(menu => {
+      const menuDate = menu.menu_date;
+      if (!menuDate) return; // Skip if no menu_date
+
+      const dayOfWeek = new Date(menuDate).toLocaleDateString('es-ES', { weekday: 'long' });
+
+      let dayEntry = quebradoData.find(entry => entry.date === menuDate);
+      if (!dayEntry) {
+        dayEntry = { date: menuDate, dayOfWeek, services: [] };
+        quebradoData.push(dayEntry);
+      }
+
+      menu.menu_platos.forEach(menuPlato => {
+        const serviceId = menuPlato.meal_services?.id;
+        const serviceName = menuPlato.meal_services?.name;
+        const recipe = menuPlato.platos;
+        const recipeDinerCount = menuPlato.quantity_needed; // Raciones por servicio del menú
+
+        if (!serviceId || !serviceName || !recipe) return;
+
+        let serviceEntry = dayEntry?.services.find(s => s.serviceId === serviceId);
+        if (!serviceEntry) {
+          serviceEntry = { serviceId, serviceName, recipes: [] };
+          dayEntry?.services.push(serviceEntry);
+        }
+
+        const insumosForRecipe: {
+          insumoId: string;
+          insumoName: string;
+          quantityNeeded: number;
+          unit: string;
+        }[] = [];
+
+        recipe.plato_insumos.forEach(platoInsumo => {
+          const insumo = platoInsumo.insumos;
+          if (!insumo) return;
+
+          // Calculate total insumo needed for this recipe * for this service's diner count
+          const totalNeededBaseUnit = platoInsumo.cantidad_necesaria * recipeDinerCount;
+          const totalNeededPurchaseUnit = totalNeededBaseUnit / insumo.conversion_factor;
+
+          insumosForRecipe.push({
+            insumoId: insumo.id,
+            insumoName: insumo.nombre,
+            quantityNeeded: parseFloat(totalNeededPurchaseUnit.toFixed(2)),
+            unit: insumo.purchase_unit,
+          });
+
+          // For consolidated report
+          if (!allInsumoNeeds[insumo.id]) {
+            allInsumoNeeds[insumo.id] = { insumoName: insumo.nombre, totalQuantity: 0, unit: insumo.purchase_unit, services: new Set() };
+          }
+          allInsumoNeeds[insumo.id].totalQuantity += totalNeededPurchaseUnit;
+          allInsumoNeeds[insumo.id].services.add(serviceName);
+        });
+
+        serviceEntry?.recipes.push({
+          recipeId: recipe.id,
+          recipeName: recipe.nombre,
+          dinerCount: recipeDinerCount,
+          insumos: insumosForRecipe,
+        });
+      });
+    });
+
+    const consolidatedInsumos = Object.entries(allInsumoNeeds).map(([insumoId, data]) => ({
+      insumoId,
+      insumoName: data.insumoName,
+      totalQuantity: parseFloat(data.totalQuantity.toFixed(2)),
+      unit: data.unit,
+      services: Array.from(data.services).sort(),
+    }));
+
 
     const responseBody = {
-      message: `Reporte de quebrado para ${dinerCount} comensales del ${startDate} al ${endDate} generado. (Funcionalidad completa de generación de documento pendiente)`,
+      message: `Quebrado de menús generado para ${dinerCount} comensales.`,
+      quebradoData,
+      consolidatedInsumos,
       // downloadUrl: 'https://example.com/quebrado_report.pdf' // Example download URL
     };
 

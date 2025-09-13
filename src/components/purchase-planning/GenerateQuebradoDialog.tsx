@@ -4,6 +4,7 @@ import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { format } from 'date-fns';
 import { Loader2, FileText } from 'lucide-react';
+import { useNavigate } from 'react-router-dom'; // NUEVO: Importar useNavigate
 
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -41,6 +42,7 @@ const GenerateQuebradoDialog: React.FC<GenerateQuebradoDialogProps> = ({ startDa
   });
 
   const [isGenerating, setIsGenerating] = useState(false);
+  const navigate = useNavigate(); // NUEVO: Inicializar useNavigate
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     if (!startDate || !endDate) {
@@ -55,14 +57,13 @@ const GenerateQuebradoDialog: React.FC<GenerateQuebradoDialogProps> = ({ startDa
       const formattedStartDate = format(startDate, 'yyyy-MM-dd');
       const formattedEndDate = format(endDate, 'yyyy-MM-dd');
 
-      // Llamar a la función Edge de Supabase
-      const result = await generateQuebradoReport(formattedStartDate, formattedEndDate, values.dinerCount);
+      // En lugar de llamar a la Edge Function directamente aquí, navegamos a la nueva página
+      // La nueva página se encargará de llamar a la Edge Function
+      navigate(`/quebrado-report?startDate=${formattedStartDate}&endDate=${formattedEndDate}&dinerCount=${values.dinerCount}`);
 
       dismissToast(toastId);
-      showSuccess(result.message || 'Quebrado de menús generado exitosamente.');
-      // Aquí podrías manejar la descarga del archivo si la función Edge lo devuelve
-      // Por ahora, solo mostramos el mensaje de éxito.
-      onClose();
+      showSuccess('Navegando al reporte de Quebrado...');
+      onClose(); // Cerrar el diálogo después de navegar
     } catch (error: any) {
       dismissToast(toastId);
       showError(`Error al generar quebrado: ${error.message}`);

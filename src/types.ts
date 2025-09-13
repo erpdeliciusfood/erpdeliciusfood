@@ -299,6 +299,49 @@ export interface UrgentPurchaseRequestFormValues {
   rejection_reason?: string | null; // NEW: Allow updating this field
 }
 
+// NEW: Interfaces for Quebrado Report
+export interface QuebradoInsumoDetail {
+  insumoId: string;
+  insumoName: string;
+  quantityNeeded: number; // in purchase_unit
+  unit: string; // purchase_unit
+}
+
+export interface QuebradoRecipeDetail {
+  recipeId: string;
+  recipeName: string;
+  dinerCount: number; // per-service diner count
+  insumos: QuebradoInsumoDetail[];
+}
+
+export interface QuebradoServiceDetail {
+  serviceId: string;
+  serviceName: string;
+  recipes: QuebradoRecipeDetail[];
+}
+
+export interface QuebradoDayDetail {
+  date: string; // YYYY-MM-DD
+  dayOfWeek: string; // e.g., "lunes"
+  services: QuebradoServiceDetail[];
+}
+
+export interface ConsolidatedInsumo {
+  insumoId: string;
+  insumoName: string;
+  totalQuantity: number;
+  unit: string;
+  services: string[]; // List of service names where it's used
+}
+
+export interface QuebradoReportData {
+  message: string;
+  quebradoData: QuebradoDayDetail[];
+  consolidatedInsumos: ConsolidatedInsumo[];
+  downloadUrl?: string;
+}
+
+
 export const MEAL_SERVICES_ORDER = [
   "Desayuno",
   "Almuerzo regular",
