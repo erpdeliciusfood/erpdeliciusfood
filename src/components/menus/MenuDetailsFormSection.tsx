@@ -18,13 +18,13 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EventType, MenuFormValues } from "@/types";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns"; // Importar parseISO
 import { es } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { CalendarIcon } from "lucide-react"; // Import CalendarIcon
+import { CalendarIcon } from "lucide-react";
 
 interface MenuDetailsFormSectionProps {
   isLoading: boolean;
@@ -133,25 +133,25 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
-                      <div className="relative w-full"> {/* Wrapper div for icon positioning */}
+                      <div className="relative w-full">
                         <Input
                           placeholder="Selecciona una fecha"
                           className={cn(
-                            "w-full pl-3 pr-10 text-left font-normal h-12 text-base cursor-pointer", // Added pr-10 and cursor-pointer
+                            "w-full pl-3 pr-10 text-left font-normal h-12 text-base cursor-pointer",
                             !field.value && "text-muted-foreground"
                           )}
-                          value={field.value ? format(new Date(field.value), "PPP", { locale: es }) : ""}
+                          value={field.value ? format(parseISO(field.value), "PPP", { locale: es }) : ""} // Usar parseISO aquí
                           readOnly
                           disabled={isLoading}
                         />
-                        <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50 pointer-events-none" /> {/* Icon inside */}
+                        <CalendarIcon className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 opacity-50 pointer-events-none" />
                       </div>
                     </FormControl>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
-                      selected={field.value ? new Date(field.value) : undefined}
+                      selected={field.value ? parseISO(field.value) : undefined} // Usar parseISO aquí
                       onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : null)}
                       initialFocus
                       locale={es}
