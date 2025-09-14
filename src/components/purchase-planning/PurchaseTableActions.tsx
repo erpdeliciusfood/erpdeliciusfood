@@ -25,8 +25,8 @@ const PurchaseTableActions: React.FC<PurchaseTableActionsProps> = ({
   isSuggestedPurchaseListOpen,
   handleCloseSuggestedPurchaseList,
 }) => {
-  const purchasableInsumosCount = insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0).length;
-  const selectedInsumosForBatchPurchase = insumosForPurchase.filter(insumo => selectedInsumoIds.has(insumo.id));
+  const purchasableInsumosCount = insumosForPurchase.filter((i: InsumoNeeded) => i.purchase_suggestion_rounded > 0).length;
+  const selectedInsumosForBatchPurchase = insumosForPurchase.filter((insumo: InsumoNeeded) => selectedInsumoIds.has(insumo.id));
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-2">

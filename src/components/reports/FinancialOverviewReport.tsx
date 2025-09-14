@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, TrendingDown, LineChart as LineChartIcon } from "lucide-react";
 import { format, isWithinInterval, parseISO, eachDayOfInterval } from "date-fns";
 import { es } from "date-fns/locale";
-import { ServiceReport, ServiceReportPlatoWithRelations } from "@/types";
+import { ServiceReportWithRelations, ServiceReportPlatoWithRelations } from "@/types"; // Updated import
 import {
   ResponsiveContainer,
   LineChart,
@@ -46,7 +46,7 @@ const FinancialOverviewReport: React.FC<FinancialOverviewReportProps> = ({ start
       dailyDataMap.set(formattedDay, { cogs: 0 });
     });
 
-    serviceReports.forEach((report: ServiceReport) => {
+    serviceReports.forEach((report: ServiceReportWithRelations) => {
       const reportDate = parseISO(report.report_date);
       if (isWithinInterval(reportDate, { start: startDate, end: endDate })) {
         const formattedReportDate = format(reportDate, "yyyy-MM-dd");

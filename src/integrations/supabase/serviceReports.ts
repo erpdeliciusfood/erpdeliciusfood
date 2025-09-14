@@ -100,7 +100,6 @@ export const updateServiceReport = async (id: string, reportData: ServiceReportF
 
   if (deleteError) throw new Error(`Failed to delete existing recetas for service report: ${deleteError.message}`);
 
-  // Insert new associated service_report_platos
   if (platos_vendidos && platos_vendidos.length > 0) {
     const serviceReportPlatosToInsert = platos_vendidos.map((item) => ({
       service_report_id: updatedReport.id,

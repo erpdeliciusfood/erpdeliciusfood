@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Package, CheckCircle2, AlertTriangle, MinusCircle, Utensils, PackageX, Info, ShoppingBag } from "lucide-react";
-import { Menu, AggregatedInsumoNeed, GroupedInsumoNeeds } from "@/types"; // Imported GroupedInsumoNeeds
+import { Menu, AggregatedInsumoNeed, GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations } from "@/types"; // Imported GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -36,7 +36,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     const serviceGroupsMap = new Map<string, GroupedInsumoNeeds>();
 
     menus.forEach((menu: Menu) => {
-      menu.menu_platos?.forEach((menuPlato) => {
+      menu.menu_platos?.forEach((menuPlato: MenuPlatoWithRelations) => {
         const mealServiceId = menuPlato.meal_service_id;
         const mealServiceName = menuPlato.meal_services?.name || "Sin Servicio";
 
@@ -60,7 +60,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
         const receta = menuPlato.platos;
         if (!receta) return;
 
-        receta.plato_insumos?.forEach((platoInsumo) => {
+        receta.plato_insumos?.forEach((platoInsumo: PlatoInsumoWithRelations) => {
           const insumo = platoInsumo.insumos;
           if (!insumo) return;
 

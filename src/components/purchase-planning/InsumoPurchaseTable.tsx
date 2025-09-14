@@ -42,7 +42,7 @@ const InsumoPurchaseTable: React.FC<InsumoPurchaseTableProps> = ({
           </TableRow>
         </TableHeader>
         <TableBody>
-          {insumosForPurchase.map((insumo) => (
+          {insumosForPurchase.map((insumo: InsumoNeeded) => (
             <TableRow key={insumo.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
               <TableCell className="text-center">
                 <Checkbox

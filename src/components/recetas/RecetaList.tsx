@@ -64,7 +64,7 @@ const RecetaList: React.FC<RecetaListProps> = ({ recetas, onEdit }) => {
         </TableHeader>
         <TableBody>
           {recetas.map((receta) => { // Changed type
-            const productionCost = calculateProductionCost(receta);
+            const productionCost = receta.costo_produccion || 0; // Use the pre-calculated cost
             return (
               <TableRow key={receta.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
                 <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[200px]">{receta.nombre}</TableCell>

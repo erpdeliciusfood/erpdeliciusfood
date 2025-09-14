@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from "@/components/ui/badge";
+import { Badge } from '@/components/ui/badge';
 import { cn } from '@/lib/utils'; // Import cn for conditional classnames
 import { AlertTriangle } from 'lucide-react'; // Import AlertTriangle icon
 

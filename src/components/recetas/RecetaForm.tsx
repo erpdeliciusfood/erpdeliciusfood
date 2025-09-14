@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Receta, RecetaFormValues, Insumo, InsumoFormValues, RECETA_CATEGORIES, PlatoInsumoWithRelations } from "@/types"; // Import RECETA_CATEGORIES
+import { Receta, RecetaFormValues, Insumo, InsumoFormValues, RECETA_CATEGORIES, PlatoInsumoWithRelations } from "@/types"; // Import RECETA_CATEGORIES, PlatoInsumoWithRelations
 import { useAddReceta, useUpdateReceta } from "@/hooks/useRecetas";
 import { useInsumos } from "@/hooks/useInsumos";
 import { Loader2, PlusCircle, Trash2, Edit } from "lucide-react"; // Added Edit icon

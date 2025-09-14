@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
 } from "@/components/ui/form";
-import { Menu, MenuFormValues, MenuPlatoWithRelations } from "@/types";
+import { Menu, MenuFormValues, MenuPlatoWithRelations } from "@/types"; // Changed MenuPlato to MenuPlatoWithRelations
 import { useAddMenu, useUpdateMenu } from "@/hooks/useMenus";
 import { useMealServices } from "@/hooks/useMealServices";
 import { useEventTypes } from "@/hooks/useEventTypes";

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, UtensilsCrossed, CalendarDays, ChevronDown, CheckCircle2 } from "lucide-react";
-import { Menu, MenuPlato, MEAL_SERVICES_ORDER, MenuPlatoWithRelations } from "@/types";
+import { Menu, MenuPlato, MEAL_SERVICES_ORDER, MenuPlatoWithRelations } from "@/types"; // Changed MenuPlato to MenuPlatoWithRelations
 import { useDeleteMenu } from "@/hooks/useMenus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -163,14 +163,14 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                           </AccordionTrigger>
                           <AccordionContent className="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
                             <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Detalles de Recetas:</h4> {/* Changed text */}
-                            {Object.entries(platosGroupedByServiceAndCategory || {} as { [serviceName: string]: { [dishCategory: string]: MenuPlatoWithRelations[] } }).sort(([serviceA], [serviceB]) => {
+                            {Object.entries(platosGroupedByServiceAndCategory || {}).sort(([serviceA], [serviceB]) => {
                               // Sort services by predefined order
                               const indexA = MEAL_SERVICES_ORDER.indexOf(serviceA);
                               const indexB = MEAL_SERVICES_ORDER.indexOf(serviceB);
                               if (indexA === -1) return 1; // Unknown services last
                               if (indexB === -1) return -1;
                               return indexA - indexB;
-                            }).map(([serviceName, dishCategories]: [string, { [dishCategory: string]: MenuPlatoWithRelations[] }]) => (
+                            }).map(([serviceName, dishCategories]) => (
                               <div key={serviceName} className="mb-4 last:mb-0">
                                 <h5 className="text-md font-bold text-gray-800 dark:text-gray-200 mb-2 capitalize">{serviceName}</h5>
                                 {Object.entries(dishCategories).map(([dishCategory, platos]: [string, MenuPlatoWithRelations[]]) => (

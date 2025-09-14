@@ -70,8 +70,6 @@ export const createPurchaseRecord = async (
       insumo_id: newRecord.insumo_id,
       movement_type: 'purchase_in',
       quantity_change: newRecord.quantity_purchased,
-      total_purchase_amount: newRecord.total_amount,
-      total_purchase_quantity: newRecord.quantity_purchased,
       notes: `Ingreso a almacén de compra (inicial): ${newRecord.notes || 'N/A'}`,
     }, user.id);
   }
@@ -112,7 +110,7 @@ export const updatePurchaseRecord = async (
   let quantityToMove = partialReceptionQuantity;
   if (partialReceptionQuantity === undefined) {
     // If no partial quantity, calculate the difference in total received quantity
-    quantityToMove = recordData.quantity_received! - oldRecord.quantity_received;
+    quantityToMove = (recordData.quantity_received ?? 0) - oldRecord.quantity_received;
   }
 
   // Update the purchase record
@@ -158,8 +156,6 @@ export const updatePurchaseRecord = async (
       insumo_id: updatedRecord.insumo_id,
       movement_type: 'purchase_in', // This now means 'received by warehouse'
       quantity_change: quantityToMove!,
-      total_purchase_amount: updatedRecord.total_amount, // Use total_amount from recordData
-      total_purchase_quantity: quantityToMove!, // Use quantityToMove for total_purchase_quantity
       notes: `Ingreso a almacén de compra (parcial/total): ${updatedRecord.notes || 'N/A'}`,
     }, user.id);
   }

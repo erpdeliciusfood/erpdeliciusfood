@@ -26,7 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns"; // Importar parseISO
 import { es } from "date-fns/locale";
-import { ServiceReportWithRelations, ServiceReportFormValues, MealService, Receta, Menu, ServiceReportPlatoWithRelations } from "@/types"; // NEW: Import Menu, ServiceReportWithRelations
+import { ServiceReportWithRelations, ServiceReportFormValues, MealService, Receta, MenuWithRelations } from "@/types"; // NEW: Import MenuWithRelations, ServiceReportWithRelations
 import { useAddServiceReport, useUpdateServiceReport } from "@/hooks/useServiceReports";
 import { useMealServices } from "@/hooks/useMealServices";
 import { useRecetas } from "@/hooks/useRecetas";
@@ -91,7 +91,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
         meals_sold: initialData.meals_sold,
         additional_services_revenue: initialData.additional_services_revenue,
         notes: initialData.notes || "",
-        platos_vendidos: initialData.service_report_platos?.map((srp: ServiceReportPlatoWithRelations) => ({
+        platos_vendidos: initialData.service_report_platos?.map(srp => ({
           plato_id: srp.plato_id,
           quantity_sold: srp.quantity_sold,
         })) || [{ plato_id: "", quantity_sold: 1 }],
@@ -142,7 +142,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
                       disabled={isLoading}
                     >
                       {field.value ? (
-                        format(parseISO(field.value), "PPP", { locale: es }) // Usar parseISO aquí
+                        format(parseISO(field.value), "PPP", { locale: es })
                       ) : (
                         <span>Selecciona una fecha</span>
                       )}
@@ -153,7 +153,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={field.value ? parseISO(field.value) : undefined} // Usar parseISO aquí
+                    selected={field.value ? parseISO(field.value) : undefined}
                     onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : null)}
                     disabled={(date) =>
                       date > new Date() || date < new Date("1900-01-01") || isLoading
@@ -214,7 +214,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {availableMenus?.map((menu: Menu) => (
+                  {availableMenus?.map((menu: MenuWithRelations) => (
                     <SelectItem key={menu.id} value={menu.id}>
                       {menu.title} ({menu.menu_date ? format(parseISO(menu.menu_date), "PPP", { locale: es }) : menu.event_types?.name || "Sin Fecha"})
                     </SelectItem>

@@ -10,7 +10,7 @@ import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { useServiceReports, useUpdateServiceReport } from "@/hooks/useServiceReports";
 import { useMealServices } from "@/hooks/useMealServices";
-import { ServiceReportWithRelations, ServiceReportFormValues, ServiceReportPlatoWithRelations } from "@/types"; // Updated import
+import { ServiceReportWithRelations, ServiceReportFormValues } from "@/types"; // Updated import
 import { showSuccess, showError } from "@/utils/toast";
 
 interface RationAccountingReportProps {
@@ -68,7 +68,7 @@ const RationAccountingReport: React.FC<RationAccountingReportProps> = ({ startDa
         additional_services_revenue: report.additional_services_revenue,
         notes: report.notes,
         menu_id: report.menu_id, // Ensure menu_id is passed
-        platos_vendidos: report.service_report_platos?.map((srp: ServiceReportPlatoWithRelations) => ({
+        platos_vendidos: report.service_report_platos?.map(srp => ({
           plato_id: srp.plato_id,
           quantity_sold: srp.quantity_sold,
         })) || [],
@@ -158,7 +158,7 @@ const RationAccountingReport: React.FC<RationAccountingReportProps> = ({ startDa
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredReports.map(report => (
+              {filteredReports.map((report: ServiceReportWithRelations) => (
                 <TableRow key={report.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <TableCell className="text-base text-gray-800 dark:text-gray-200">
                     {format(parseISO(report.report_date), "PPP", { locale: es })}

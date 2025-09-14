@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ShoppingBag, PlusCircle, Info, Loader2 } from "lucide-react";
-import { Insumo } from "@/types";
+import { Insumo, InsumoNeeded as InsumoNeededType, PurchaseRecord } from "@/types"; // Renamed InsumoNeeded to InsumoNeededType
 import PurchaseRecordForm from "./PurchaseRecordForm";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
@@ -13,17 +13,7 @@ import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast
 import { useQueryClient } from "@tanstack/react-query";
 import ReasonBadge from "@/components/shared/ReasonBadge"; // NEW: Import ReasonBadge
 
-interface InsumoNeeded extends Insumo {
-  quantity_needed_for_period_raw: number;
-  quantity_needed_for_period_rounded: number;
-  quantity_needed_for_period_rounded_up: boolean;
-  current_stock: number;
-  purchase_suggestion_raw: number;
-  purchase_suggestion_rounded: number;
-  purchase_suggestion_rounded_up: boolean;
-  estimated_purchase_cost: number;
-  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert';
-}
+interface InsumoNeeded extends InsumoNeededType {} // Use the renamed type
 
 interface SuggestedPurchaseListContentProps {
   suggestedPurchases: InsumoNeeded[];
@@ -53,7 +43,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
 
   useEffect(() => {
     // Update "Select All" checkbox state when suggestedPurchases or selectedInsumoIds change
-    const allPurchasableIds = purchasableInsumos.map(i => i.id);
+    const allPurchasableIds = purchasableInsumos.map((i: InsumoNeeded) => i.id);
     setIsSelectAllChecked(allPurchasableIds.length > 0 && selectedInsumoIds.size === allPurchasableIds.length);
   }, [purchasableInsumos, selectedInsumoIds]);
 
@@ -79,7 +69,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
 
   const handleSelectAllChange = (checked: boolean) => {
     if (checked) {
-      const allPurchasableIds = purchasableInsumos.map(i => i.id);
+      const allPurchasableIds = purchasableInsumos.map((i: InsumoNeeded) => i.id);
       setSelectedInsumoIds(new Set(allPurchasableIds));
     } else {
       setSelectedInsumoIds(new Set());
@@ -113,7 +103,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
     let successfulRegistrations = 0;
     let failedRegistrations = 0;
 
-    const selectedInsumosToPurchase = suggestedPurchases.filter(insumo => selectedInsumoIds.has(insumo.id));
+    const selectedInsumosToPurchase = suggestedPurchases.filter((insumo: InsumoNeeded) => selectedInsumoIds.has(insumo.id));
 
     for (const insumo of selectedInsumosToPurchase) {
       try {
@@ -193,7 +183,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
       </div>
 
       <div className="space-y-4">
-        {purchasableInsumos.map((insumo) => (
+        {purchasableInsumos.map((insumo: InsumoNeeded) => (
           <Card key={insumo.id} className="p-4 shadow-sm dark:bg-gray-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="flex items-center space-x-3">

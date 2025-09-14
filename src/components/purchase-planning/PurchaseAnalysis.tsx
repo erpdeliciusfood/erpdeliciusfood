@@ -4,8 +4,7 @@ import { useInsumos } from "@/hooks/useInsumos";
 import { Loader2, ShoppingBag } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Insumo } from "@/types";
+import { Insumo, MenuPlatoWithRelations, PlatoInsumoWithRelations, InsumoNeeded as InsumoNeededType } from "@/types"; // Renamed InsumoNeeded to InsumoNeededType
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import InsumoSupplierDetailsDialog from "@/components/insumos/InsumoSupplierDetailsDialog";
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
@@ -18,20 +17,10 @@ import InsumoPurchaseTable from "./InsumoPurchaseTable";
 interface PurchaseAnalysisProps {
   startDate: Date;
   endDate: Date;
-  selectedReasonFilter: 'all' | InsumoNeeded['reason_for_purchase_suggestion'];
+  selectedReasonFilter: 'all' | InsumoNeededType['reason_for_purchase_suggestion'];
 }
 
-interface InsumoNeeded extends Insumo {
-  quantity_needed_for_period_raw: number;
-  quantity_needed_for_period_rounded: number;
-  quantity_needed_for_period_rounded_up: boolean;
-  current_stock: number;
-  purchase_suggestion_raw: number;
-  purchase_suggestion_rounded: number;
-  purchase_suggestion_rounded_up: boolean;
-  estimated_purchase_cost: number;
-  reason_for_purchase_suggestion: 'menu_demand' | 'min_stock_level' | 'both' | 'zero_stock_alert';
-}
+interface InsumoNeeded extends InsumoNeededType {} // Use the renamed type
 
 const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate, selectedReasonFilter }) => {
   const { data: menus, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenus(
@@ -63,10 +52,10 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
 
     menus.forEach(menu => {
       if (menu.menu_date && isWithinInterval(parseISO(menu.menu_date), { start: startDate, end: endDate })) {
-        menu.menu_platos?.forEach(menuPlato => {
+        menu.menu_platos?.forEach((menuPlato: MenuPlatoWithRelations) => {
           const plato = menuPlato.platos;
           if (plato) {
-            plato.plato_insumos?.forEach(platoInsumo => {
+            plato.plato_insumos?.forEach((platoInsumo: PlatoInsumoWithRelations) => {
               const insumo = platoInsumo.insumos;
               if (insumo) {
                 const totalNeededBaseUnit = (platoInsumo.cantidad_necesaria * menuPlato.quantity_needed);
@@ -146,7 +135,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
   }, [menus, allInsumosData?.data, startDate, endDate, isLoading, isError, selectedReasonFilter]);
 
   useEffect(() => {
-    const allPurchasableIds = insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0).map(i => i.id);
+    const allPurchasableIds = insumosForPurchase.filter((i: InsumoNeeded) => i.purchase_suggestion_rounded > 0).map((i: InsumoNeeded) => i.id);
     setIsSelectAllChecked(allPurchasableIds.length > 0 && selectedInsumoIds.size === allPurchasableIds.length);
   }, [insumosForPurchase, selectedInsumoIds]);
 
@@ -164,7 +153,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
 
   const handleSelectAllChange = (checked: boolean) => {
     if (checked) {
-      const allPurchasableIds = insumosForPurchase.filter(i => i.purchase_suggestion_rounded > 0).map(i => i.id);
+      const allPurchasableIds = insumosForPurchase.filter((i: InsumoNeeded) => i.purchase_suggestion_rounded > 0).map((i: InsumoNeeded) => i.id);
       setSelectedInsumoIds(new Set(allPurchasableIds));
     } else {
       setSelectedInsumoIds(new Set());

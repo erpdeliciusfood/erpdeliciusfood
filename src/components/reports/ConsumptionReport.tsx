@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Package } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { ServiceReport, ServiceReportPlatoWithRelations, PlatoInsumoWithRelations } from "@/types";
+import { ServiceReportWithRelations, ServiceReportPlatoWithRelations, PlatoInsumoWithRelations } from "@/types"; // Updated import
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
@@ -28,7 +28,7 @@ const ConsumptionReport: React.FC<ConsumptionReportProps> = ({ startDate, endDat
 
     const consumptionMap = new Map<string, InsumoConsumption>();
 
-    serviceReports.forEach((report: ServiceReport) => {
+    serviceReports.forEach((report: ServiceReportWithRelations) => {
       const reportDate = parseISO(report.report_date);
       if (isWithinInterval(reportDate, { start: startDate, end: endDate })) {
         report.service_report_platos?.forEach((srp: ServiceReportPlatoWithRelations) => {
