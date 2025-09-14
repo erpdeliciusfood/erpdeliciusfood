@@ -36,33 +36,45 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     const needsMap = new Map<string, AggregatedInsumoNeed>();
 
     menus.forEach(menu => {
+      if (!menu.menu_platos || menu.menu_platos.length === 0) {
+        return;
+      }
+
       menu.menu_platos?.forEach(menuPlato => {
         const receta = menuPlato.platos;
-        if (receta) {
-          receta.plato_insumos?.forEach(platoInsumo => {
-            const insumo = platoInsumo.insumos;
-            if (insumo) {
-              const totalNeededBaseUnit = platoInsumo.cantidad_necesaria * menuPlato.quantity_needed;
-              const totalNeededPurchaseUnit = totalNeededBaseUnit / insumo.conversion_factor;
-
-              const currentEntry = needsMap.get(insumo.id) || {
-                insumo_id: insumo.id,
-                insumo_nombre: insumo.nombre,
-                base_unit: insumo.base_unit,
-                purchase_unit: insumo.purchase_unit,
-                conversion_factor: insumo.conversion_factor,
-                current_stock_quantity: insumo.stock_quantity,
-                total_needed_base_unit: 0,
-                total_needed_purchase_unit: 0,
-                missing_quantity: 0,
-              };
-
-              currentEntry.total_needed_base_unit += totalNeededBaseUnit;
-              currentEntry.total_needed_purchase_unit += totalNeededPurchaseUnit;
-              needsMap.set(insumo.id, currentEntry);
-            }
-          });
+        if (!receta) {
+          return;
         }
+        
+        if (!receta.plato_insumos || receta.plato_insumos.length === 0) {
+          return;
+        }
+
+        receta.plato_insumos?.forEach(platoInsumo => {
+          const insumo = platoInsumo.insumos;
+          if (!insumo) {
+            return;
+          }
+
+          const totalNeededBaseUnit = platoInsumo.cantidad_necesaria * menuPlato.quantity_needed;
+          const totalNeededPurchaseUnit = totalNeededBaseUnit / insumo.conversion_factor;
+
+          const currentEntry = needsMap.get(insumo.id) || {
+            insumo_id: insumo.id,
+            insumo_nombre: insumo.nombre,
+            base_unit: insumo.base_unit,
+            purchase_unit: insumo.purchase_unit,
+            conversion_factor: insumo.conversion_factor,
+            current_stock_quantity: insumo.stock_quantity,
+            total_needed_base_unit: 0,
+            total_needed_purchase_unit: 0,
+            missing_quantity: 0,
+          };
+
+          currentEntry.total_needed_base_unit += totalNeededBaseUnit;
+          currentEntry.total_needed_purchase_unit += totalNeededPurchaseUnit;
+          needsMap.set(insumo.id, currentEntry);
+        });
       });
     });
 
@@ -159,11 +171,6 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     aggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0;
 
   const selectedInsumosForDialog = aggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id));
-
-  // NEW: Console logs for debugging
-  console.log("DailyPrepOverview - Menus for selected date:", menus);
-  console.log("DailyPrepOverview - Aggregated Insumo Needs:", aggregatedInsumoNeeds);
-
 
   return (
     <div className="space-y-8">
