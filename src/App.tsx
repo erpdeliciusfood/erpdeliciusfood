@@ -19,7 +19,8 @@ import StockMovements from "./pages/StockMovements";
 import PurchaseRecords from "./pages/PurchaseRecords";
 import WarehousePage from "./pages/Warehouse";
 import UrgentPurchaseRequests from "./pages/UrgentPurchaseRequests";
-import QuebradoReport from "./pages/QuebradoReport"; // NUEVO: Importar QuebradoReport
+import QuebradoReport from "./pages/QuebradoReport";
+import Suppliers from "./pages/Suppliers"; // NEW: Import Suppliers page
 import { SessionContextProvider, useSession } from "./contexts/SessionContext";
 import MainLayout from "./components/layout/MainLayout";
 import { ThemeProvider } from "./contexts/ThemeProvider";
@@ -61,7 +62,8 @@ const AppRoutes = () => (
     <Route path="/stock-movements" element={<ProtectedRoute><StockMovements /></ProtectedRoute>} />
     <Route path="/warehouse" element={<ProtectedRoute><WarehousePage /></ProtectedRoute>} />
     <Route path="/urgent-purchase-requests" element={<ProtectedRoute><UrgentPurchaseRequests /></ProtectedRoute>} />
-    <Route path="/quebrado-report" element={<ProtectedRoute><QuebradoReport /></ProtectedRoute>} /> {/* NUEVO: Ruta para QuebradoReport */}
+    <Route path="/quebrado-report" element={<ProtectedRoute><QuebradoReport /></ProtectedRoute>} />
+    <Route path="/suppliers" element={<ProtectedRoute><Suppliers /></ProtectedRoute>} /> {/* NEW: Route for Suppliers */}
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
     <Route path="*" element={<NotFound />} />

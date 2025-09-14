@@ -19,6 +19,8 @@ export interface Insumo {
   last_physical_count_quantity: number; // NEW: Último conteo físico
   last_physical_count_date: string | null; // NEW: Fecha del último conteo físico
   discrepancy_quantity: number; // NEW: Diferencia entre stock_quantity y last_physical_count_quantity
+  proveedor_preferido_id: string | null; // NEW: Link to preferred supplier
+  proveedores?: Supplier; // NEW: Relationship to Supplier
 }
 
 export interface InsumoFormValues {
@@ -38,6 +40,7 @@ export interface InsumoFormValues {
   last_physical_count_quantity?: number; // NEW: Optional for form, managed by system
   last_physical_count_date?: string | null; // NEW: Optional for form, managed by system
   discrepancy_quantity?: number; // NEW: Optional for form, managed by system
+  proveedor_preferido_id?: string | null; // NEW: Optional for form, link to preferred supplier
 }
 
 export interface Receta {
@@ -340,6 +343,26 @@ export interface QuebradoReportData {
   quebradoData: QuebradoDayDetail[];
   consolidatedInsumos: ConsolidatedInsumo[];
   downloadUrl?: string;
+}
+
+// NEW: Interface for Supplier
+export interface Supplier {
+  id: string;
+  name: string;
+  contact_person: string | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
+  created_at: string;
+}
+
+// NEW: Interface for Supplier form values
+export interface SupplierFormValues {
+  name: string;
+  contact_person: string | null;
+  phone: string | null;
+  email: string | null;
+  address: string | null;
 }
 
 

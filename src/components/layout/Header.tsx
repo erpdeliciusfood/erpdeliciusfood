@@ -19,6 +19,7 @@ import {
   Home,
   ArrowLeft,
   ReceiptText,
+  Building2, // NEW: Import Building2 icon for Suppliers
 } from "lucide-react";
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
@@ -61,6 +62,7 @@ const Header: React.FC = () => {
     { to: "/event-types", icon: CalendarDays, label: "Tipos Evento" },
     { to: "/menus", icon: BookText, label: "Menús" },
     { to: "/service-reports", icon: FileText, label: "Reportes Servicio" },
+    { to: "/suppliers", icon: Building2, label: "Proveedores" }, // NEW: Suppliers link
     { to: "/purchase-planning", icon: ShoppingBag, label: "Planificación Compras" },
     { to: "/purchase-records", icon: ReceiptText, label: "Registros Compra" },
     { to: "/urgent-purchase-requests", icon: AlertCircle, label: "Solicitudes Urgentes" },
