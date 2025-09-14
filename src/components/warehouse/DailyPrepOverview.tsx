@@ -4,7 +4,7 @@ import React, { useMemo, useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Package, CheckCircle2, AlertTriangle, MinusCircle, Utensils, PackageX, Info, ShoppingBag } from "lucide-react"; // NEW: ShoppingBag icon
+import { Package, CheckCircle2, AlertTriangle, MinusCircle, Utensils, PackageX, Info, ShoppingBag } from "lucide-react";
 import { Menu, AggregatedInsumoNeed } from "@/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
@@ -17,7 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Checkbox } from "@/components/ui/checkbox";
 import DeductQuantitiesDialog from "./DeductQuantitiesDialog";
 import { Dialog } from "@/components/ui/dialog";
-import UrgentPurchaseRequestDialog from "./UrgentPurchaseRequestDialog"; // NEW: Import UrgentPurchaseRequestDialog
+import UrgentPurchaseRequestDialog from "./UrgentPurchaseRequestDialog";
 
 interface DailyPrepOverviewProps {
   selectedDate: Date;
@@ -26,35 +26,47 @@ interface DailyPrepOverviewProps {
 
 const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, menus }) => {
   const [stockFilter, setStockFilter] = useState<'all' | 'sufficient' | 'insufficient'>('all');
-  const [selectedInsumoIds, setSelectedInsumoIds] = useState<Set<string>>(new Set()); // Corrected initialization
+  const [selectedInsumoIds, setSelectedInsumoIds] = useState<Set<string>>(new Set());
   const [isSelectAllChecked, setIsSelectAllChecked] = useState(false);
   const [isDeductQuantitiesDialogOpen, setIsDeductQuantitiesDialogOpen] = useState(false);
-  const [isUrgentPurchaseRequestDialogOpen, setIsUrgentPurchaseRequestDialogOpen] = useState(false); // NEW: State for urgent purchase dialog
-  const [selectedInsumoForUrgentRequest, setSelectedInsumoForUrgentRequest] = useState<AggregatedInsumoNeed | null>(null); // NEW: State for selected insumo for urgent request
+  const [isUrgentPurchaseRequestDialogOpen, setIsUrgentPurchaseRequestDialogOpen] = useState(false);
+  const [selectedInsumoForUrgentRequest, setSelectedInsumoForUrgentRequest] = useState<AggregatedInsumoNeed | null>(null);
 
   const aggregatedInsumoNeeds: AggregatedInsumoNeed[] = useMemo(() => {
     const needsMap = new Map<string, AggregatedInsumoNeed>();
 
+    console.log("useMemo - Processing menus (initial):", menus);
+
     menus.forEach(menu => {
+      console.log("useMemo - Current menu:", menu.title, menu.id);
       if (!menu.menu_platos || menu.menu_platos.length === 0) {
+        console.log(`useMemo - Menu ${menu.title} (ID: ${menu.id}) has no menu_platos.`);
         return;
       }
 
       menu.menu_platos?.forEach(menuPlato => {
+        console.log("useMemo - Current menuPlato:", menuPlato.platos?.nombre, menuPlato.plato_id, "Quantity needed:", menuPlato.quantity_needed);
         const receta = menuPlato.platos;
         if (!receta) {
+          console.log(`useMemo - menuPlato with ID ${menuPlato.plato_id} has no associated receta.`);
           return;
         }
         
+        console.log("useMemo - Receta found:", receta.nombre, receta.id);
         if (!receta.plato_insumos || receta.plato_insumos.length === 0) {
+          console.log(`useMemo - Receta ${receta.nombre} (ID: ${receta.id}) has no associated plato_insumos.`);
           return;
         }
 
         receta.plato_insumos?.forEach(platoInsumo => {
+          console.log("useMemo - Current platoInsumo:", platoInsumo.insumos?.nombre, platoInsumo.insumo_id, "Cantidad necesaria:", platoInsumo.cantidad_necesaria);
           const insumo = platoInsumo.insumos;
           if (!insumo) {
+            console.log(`useMemo - platoInsumo with ID ${platoInsumo.insumo_id} has no associated insumo.`);
             return;
           }
+          console.log("useMemo - Insumo found:", insumo.nombre, insumo.id, "Stock:", insumo.stock_quantity, "Conversion Factor:", insumo.conversion_factor);
+
 
           const totalNeededBaseUnit = platoInsumo.cantidad_necesaria * menuPlato.quantity_needed;
           const totalNeededPurchaseUnit = totalNeededBaseUnit / insumo.conversion_factor;
@@ -88,6 +100,8 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
       };
     }).sort((a, b) => a.insumo_nombre.localeCompare(b.insumo_nombre));
 
+    console.log("useMemo - Final aggregated needs before filter:", allNeeds);
+
     // Apply filter
     if (stockFilter === 'sufficient') {
       return allNeeds.filter(need => need.current_stock_quantity >= need.total_needed_purchase_unit);
@@ -97,15 +111,13 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     return allNeeds;
   }, [menus, stockFilter]);
 
-  // Effect to update "Select All" checkbox state
   useEffect(() => {
     const allDeductibleIds = aggregatedInsumoNeeds.filter(need => need.total_needed_purchase_unit > 0).map(need => need.insumo_id);
     setIsSelectAllChecked(allDeductibleIds.length > 0 && selectedInsumoIds.size === allDeductibleIds.length);
   }, [aggregatedInsumoNeeds, selectedInsumoIds]);
 
-  // Handle individual checkbox change
   const handleCheckboxChange = (insumoId: string, checked: boolean) => {
-    setSelectedInsumoIds((prev: Set<string>) => { // Corrected typing for 'prev'
+    setSelectedInsumoIds((prev: Set<string>) => {
       const newSet = new Set(prev);
       if (checked) {
         newSet.add(insumoId);
@@ -116,7 +128,6 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     });
   };
 
-  // Handle "Select All" checkbox change
   const handleSelectAllChange = (checked: boolean) => {
     if (checked) {
       const allDeductibleIds = aggregatedInsumoNeeds.filter(need => need.total_needed_purchase_unit > 0).map(need => need.insumo_id);
@@ -127,7 +138,6 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     setIsSelectAllChecked(checked);
   };
 
-  // Function to open the DeductQuantitiesDialog
   const handleOpenDeductQuantitiesDialog = () => {
     const selectedInsumosWithSufficientStock = aggregatedInsumoNeeds.filter(
       (need) => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity >= need.total_needed_purchase_unit
@@ -140,20 +150,17 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     setIsDeductQuantitiesDialogOpen(true);
   };
 
-  // Function to close the DeductQuantitiesDialog
   const handleCloseDeductQuantitiesDialog = () => {
     setIsDeductQuantitiesDialogOpen(false);
-    setSelectedInsumoIds(new Set()); // Clear selection after deduction
+    setSelectedInsumoIds(new Set());
     setIsSelectAllChecked(false);
   };
 
-  // NEW: Function to open the UrgentPurchaseRequestDialog
   const handleOpenUrgentPurchaseRequestDialog = (insumoNeed: AggregatedInsumoNeed) => {
     setSelectedInsumoForUrgentRequest(insumoNeed);
     setIsUrgentPurchaseRequestDialogOpen(true);
   };
 
-  // NEW: Function to close the UrgentPurchaseRequestDialog
   const handleCloseUrgentPurchaseRequestDialog = () => {
     setIsUrgentPurchaseRequestDialogOpen(false);
     setSelectedInsumoForUrgentRequest(null);
@@ -165,7 +172,6 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
   const formattedDate = format(selectedDate, "PPP", { locale: es });
 
-  // Determine if the "Deducir Stock" button should be disabled
   const isDeductButtonDisabled =
     selectedInsumoIds.size === 0 ||
     aggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0;
@@ -271,7 +277,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Necesidad</TableHead>
                     <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Faltante</TableHead>
                     <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Estado</TableHead>
-                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Acciones</TableHead> {/* NEW: Actions column */}
+                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Acciones</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
@@ -398,7 +404,6 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
         />
       </Dialog>
 
-      {/* NEW: Urgent Purchase Request Dialog */}
       <Dialog open={isUrgentPurchaseRequestDialogOpen} onOpenChange={setIsUrgentPurchaseRequestDialogOpen}>
         {selectedInsumoForUrgentRequest && (
           <UrgentPurchaseRequestDialog
