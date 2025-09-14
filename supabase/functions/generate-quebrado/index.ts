@@ -84,7 +84,9 @@ serve(async (req: Request) => {
                 nombre,
                 base_unit,
                 purchase_unit,
-                conversion_factor
+                conversion_factor,
+                stock_quantity,
+                min_stock_level
               )
             )
           )
@@ -124,7 +126,7 @@ serve(async (req: Request) => {
       }[];
     }[] = [];
 
-    const allInsumoNeeds: { [insumoId: string]: { insumoName: string; totalQuantity: number; unit: string; services: Set<string> } } = {};
+    const allInsumoNeeds: { [insumoId: string]: { insumoName: string; totalQuantity: number; unit: string; services: Set<string>; currentStock: number; minStockLevel: number | null } } = {};
 
     // Aggregate data
     menus.forEach(menu => {
@@ -177,7 +179,14 @@ serve(async (req: Request) => {
 
           // For consolidated report
           if (!allInsumoNeeds[insumo.id]) {
-            allInsumoNeeds[insumo.id] = { insumoName: insumo.nombre, totalQuantity: 0, unit: insumo.purchase_unit, services: new Set() };
+            allInsumoNeeds[insumo.id] = {
+              insumoName: insumo.nombre,
+              totalQuantity: 0,
+              unit: insumo.purchase_unit,
+              services: new Set(),
+              currentStock: insumo.stock_quantity, // Capture current stock
+              minStockLevel: insumo.min_stock_level, // Capture min stock level
+            };
           }
           allInsumoNeeds[insumo.id].totalQuantity += totalNeededPurchaseUnit;
           allInsumoNeeds[insumo.id].services.add(serviceName);
@@ -198,6 +207,8 @@ serve(async (req: Request) => {
       totalQuantity: parseFloat(data.totalQuantity.toFixed(2)),
       unit: data.unit,
       services: Array.from(data.services).sort(),
+      currentStock: parseFloat(data.currentStock.toFixed(2)), // Include current stock
+      minStockLevel: data.minStockLevel, // Include min stock level
     }));
 
 
