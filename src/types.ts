@@ -1,4 +1,4 @@
-import { Database } from "./supabase";
+import { Database } from "./types/supabase";
 
 // Base types from Supabase auto-generated file
 export type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -42,9 +42,10 @@ export type MenuWithRelations = Menu & {
   menu_platos?: MenuPlatoWithRelations[];
 };
 
+// NEW: Extended ServiceReport to include MenuWithRelations
 export type ServiceReportWithRelations = ServiceReport & {
   meal_services?: MealService;
-  menus?: Menu; // NEW: Added menus relationship
+  menus?: MenuWithRelations; // Add menu relation
   service_report_platos?: ServiceReportPlatoWithRelations[];
 };
 
@@ -155,6 +156,12 @@ export interface SupplierFormValues {
   address: string | null;
 }
 
+export interface ProfileFormValues { // Made first_name and last_name optional
+  first_name?: string | null;
+  last_name?: string | null;
+  role?: 'user' | 'admin';
+}
+
 
 // Aggregated Insumo Need for Daily Prep Overview
 export interface AggregatedInsumoNeed {
@@ -189,6 +196,16 @@ export interface InsumoToDeduct {
 
 // Interface for suggested insumos in PurchaseAnalysis
 export interface InsumoNeeded extends Insumo {
+  // Explicitly define properties that might be nullable in base Insumo but are expected here
+  id: string;
+  nombre: string;
+  purchase_unit: string;
+  costo_unitario: number;
+  min_stock_level: number | null; // Keep as nullable as per DB schema
+  supplier_name: string | null;
+  supplier_phone: string | null;
+  supplier_address: string | null;
+
   quantity_needed_for_period_raw: number;
   quantity_needed_for_period_rounded: number;
   quantity_needed_for_period_rounded_up: boolean;

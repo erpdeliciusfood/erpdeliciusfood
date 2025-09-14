@@ -37,7 +37,7 @@ const UserList: React.FC<UserListProps> = ({ users }) => {
       }
 
       await updateProfileMutation.mutateAsync({
-        profileData: { role: newRole, first_name: undefined, last_name: undefined }, // Only send role for this specific update, explicitly set others to undefined
+        profileData: { role: newRole, first_name: null, last_name: null }, // Only send role for this specific update, explicitly set others to null
         targetUserId: userId, // Pass the specific user ID to update
       });
       showSuccess("Rol de usuario actualizado exitosamente.");

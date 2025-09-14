@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, UtensilsCrossed, CalendarDays, ChevronDown, CheckCircle2 } from "lucide-react";
-import { Menu, MenuPlato, MEAL_SERVICES_ORDER, MenuPlatoWithRelations } from "@/types"; // Changed MenuPlato to MenuPlatoWithRelations
+import { Menu, MEAL_SERVICES_ORDER, MenuPlatoWithRelations } from "@/types"; // Removed MenuPlato import
 import { useDeleteMenu } from "@/hooks/useMenus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -163,7 +163,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                           </AccordionTrigger>
                           <AccordionContent className="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
                             <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Detalles de Recetas:</h4> {/* Changed text */}
-                            {Object.entries(platosGroupedByServiceAndCategory || {}).sort(([serviceA], [serviceB]) => {
+                            {Object.entries(platosGroupedByServiceAndCategory as Record<string, Record<string, MenuPlatoWithRelations[]>> || {}).sort(([serviceA], [serviceB]) => {
                               // Sort services by predefined order
                               const indexA = MEAL_SERVICES_ORDER.indexOf(serviceA);
                               const indexB = MEAL_SERVICES_ORDER.indexOf(serviceB);

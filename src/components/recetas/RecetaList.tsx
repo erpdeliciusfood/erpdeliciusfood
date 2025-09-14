@@ -26,20 +26,8 @@ const RecetaList: React.FC<RecetaListProps> = ({ recetas, onEdit }) => {
     deleteMutation.mutate(id);
   };
 
-  const calculateProductionCost = (receta: Receta): number => { // Changed type
-    if (!receta.plato_insumos || receta.plato_insumos.length === 0) {
-      return 0;
-    }
-    return receta.plato_insumos.reduce((totalCost: number, platoInsumo: PlatoInsumoWithRelations) => {
-      const insumo = platoInsumo.insumos; // Access the nested insumo object
-      if (insumo) {
-        // Ensure costo_unitario is per base_unit for calculation
-        const costPerBaseUnit = insumo.costo_unitario / insumo.conversion_factor;
-        return totalCost + (costPerBaseUnit * platoInsumo.cantidad_necesaria);
-      }
-      return totalCost;
-    }, 0);
-  };
+  // Removed calculateProductionCost as it's no longer needed.
+  // The production cost is now pre-calculated and stored in receta.costo_produccion.
 
   if (recetas.length === 0) {
     return (
@@ -96,7 +84,7 @@ const RecetaList: React.FC<RecetaListProps> = ({ recetas, onEdit }) => {
                       <AlertDialogHeader>
                         <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
                         <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                          Esta acción no se puede deshacer. Esto eliminará permanentemente la receta <span className="font-semibold">{receta.nombre}</span> y sus insumos asociados de nuestros servidores.
+                          Esta acción no se puede deshacer. Esto eliminará permanentemente la receta <span className="font-semibold">{receta.nombre}</span> y sus insumos asociados de nuestros servidores. {/* Changed text */}
                         </AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">

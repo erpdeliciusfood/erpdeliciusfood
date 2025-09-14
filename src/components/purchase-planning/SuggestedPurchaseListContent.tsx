@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ShoppingBag, PlusCircle, Info, Loader2 } from "lucide-react";
-import { Insumo, InsumoNeeded as InsumoNeededType, PurchaseRecord } from "@/types"; // Renamed InsumoNeeded to InsumoNeededType
+import { InsumoNeeded as InsumoNeededType } from "@/types"; // Renamed InsumoNeeded to InsumoNeededType
 import PurchaseRecordForm from "./PurchaseRecordForm";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";

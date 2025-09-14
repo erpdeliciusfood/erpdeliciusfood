@@ -5,8 +5,10 @@ import { Button } from "@/components/ui/button";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Info, Building2, PlusCircle } from "lucide-react";
-import { Insumo, InsumoNeeded } from "@/types";
+import { Insumo, InsumoNeeded as InsumoNeededType } from "@/types";
 import ReasonBadge from "@/components/shared/ReasonBadge"; // NEW: Import ReasonBadge
+
+interface InsumoNeeded extends InsumoNeededType {}
 
 interface InsumoPurchaseTableProps {
   insumosForPurchase: InsumoNeeded[];
@@ -83,7 +85,7 @@ const InsumoPurchaseTable: React.FC<InsumoPurchaseTableProps> = ({
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white text-lg px-3 py-1 inline-flex items-center cursor-help">
+                        <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white text-lg px-3 py-1 inline-flex items-center">
                           <span className="whitespace-nowrap"> {/* NEW: Added whitespace-nowrap */}
                             {insumo.purchase_suggestion_rounded} {insumo.purchase_unit}
                           </span>

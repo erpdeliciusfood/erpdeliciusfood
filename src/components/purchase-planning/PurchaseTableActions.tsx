@@ -4,7 +4,9 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { ShoppingBag } from "lucide-react"; // Removed Loader2
 import SuggestedPurchaseListContent from "./SuggestedPurchaseListContent";
-import { InsumoNeeded } from "@/types";
+import { InsumoNeeded as InsumoNeededType } from "@/types";
+
+interface InsumoNeeded extends InsumoNeededType {}
 
 interface PurchaseTableActionsProps {
   insumosForPurchase: InsumoNeeded[];

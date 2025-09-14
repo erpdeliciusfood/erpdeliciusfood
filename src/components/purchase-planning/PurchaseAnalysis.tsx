@@ -11,8 +11,7 @@ import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordFor
 import PurchaseCostSummary from "./PurchaseCostSummary";
 import PurchaseTableActions from "./PurchaseTableActions";
 import InsumoPurchaseTable from "./InsumoPurchaseTable";
-// Removed: import { Badge } from "@/components/ui/badge";
-// Removed: import ReasonBadge from "@/components/shared/ReasonBadge"; // NEW: Import ReasonBadge
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // NEW: Import Card components
 
 interface PurchaseAnalysisProps {
   startDate: Date;
