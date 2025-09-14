@@ -24,12 +24,12 @@ export const getServiceReports = async (): Promise<ServiceReport[]> => {
 };
 
 export const createServiceReport = async (reportData: ServiceReportFormValues): Promise<ServiceReport> => {
-  const { platos_vendidos, ...restReportData } = reportData;
+  const { platos_vendidos, menu_id, ...restReportData } = reportData; // NEW: Destructure menu_id
 
   // Insert the main service report
   const { data: newReport, error: reportError } = await supabase
     .from("service_reports")
-    .insert(restReportData)
+    .insert({ ...restReportData, menu_id }) // NEW: Include menu_id
     .select()
     .single();
 
@@ -77,12 +77,12 @@ export const createServiceReport = async (reportData: ServiceReportFormValues): 
 };
 
 export const updateServiceReport = async (id: string, reportData: ServiceReportFormValues): Promise<ServiceReport> => {
-  const { platos_vendidos, ...restReportData } = reportData;
+  const { platos_vendidos, menu_id, ...restReportData } = reportData; // NEW: Destructure menu_id
 
   // Update the main service report
   const { data: updatedReport, error: reportError } = await supabase
     .from("service_reports")
-    .update(restReportData)
+    .update({ ...restReportData, menu_id }) // NEW: Include menu_id
     .eq("id", id)
     .select()
     .single();
