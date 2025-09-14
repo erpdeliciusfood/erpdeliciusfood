@@ -24,8 +24,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-// import { Button } from "@/components/ui/button"; // Removed Button import
-// import { CalendarIcon } from "lucide-react"; // Removed CalendarIcon import
+import { Button } from "@/components/ui/button"; // Import Button
+import { CalendarIcon } from "lucide-react"; // Import CalendarIcon
 
 interface MenuDetailsFormSectionProps {
   isLoading: boolean;
@@ -134,16 +134,21 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
-                      <Input // Changed back to Input
-                        placeholder="Selecciona una fecha"
+                      <Button // Reemplazado Input con Button
+                        variant={"outline"}
                         className={cn(
                           "w-full pl-3 text-left font-normal h-12 text-base",
                           !field.value && "text-muted-foreground"
                         )}
-                        value={field.value ? format(new Date(field.value), "PPP", { locale: es }) : ""}
-                        readOnly // Make it read-only so it's only clickable
                         disabled={isLoading}
-                      />
+                      >
+                        {field.value ? (
+                          format(new Date(field.value), "PPP", { locale: es })
+                        ) : (
+                          <span>Selecciona una fecha</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" /> {/* Añadido CalendarIcon */}
+                      </Button>
                     </FormControl>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
