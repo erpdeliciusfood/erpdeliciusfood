@@ -30,6 +30,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   const [isDeductQuantitiesDialogOpen, setIsDeductQuantitiesDialogOpen] = useState(false);
   const [isUrgentPurchaseRequestDialogOpen, setIsUrgentPurchaseRequestDialogOpen] = useState(false);
   const [selectedInsumoForUrgentRequest, setSelectedInsumoForUrgentRequest] = useState<AggregatedInsumoNeed | null>(null);
+  const [isSelectAllChecked, setIsSelectAllChecked] = useState(false); // NEW: Declare isSelectAllChecked state
 
   const groupedInsumoNeeds: GroupedInsumoNeeds[] = useMemo(() => {
     const serviceGroupsMap = new Map<string, GroupedInsumoNeeds>();
@@ -76,8 +77,8 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
             total_needed_base_unit: 0,
             total_needed_purchase_unit: 0,
             missing_quantity: 0,
-            meal_service_id: mealServiceId,
-            meal_service_name: mealServiceName,
+            meal_service_id: mealServiceId, // Now correctly part of AggregatedInsumoNeed
+            meal_service_name: mealServiceName, // Now correctly part of AggregatedInsumoNeed
           };
 
           currentEntry.total_needed_base_unit += totalNeededBaseUnit;
