@@ -8,11 +8,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, FileText } from "lucide-react";
+import { Edit, Trash2, FileText, CalendarDays } from "lucide-react";
 import { ServiceReport } from "@/types";
 import { useDeleteServiceReport } from "@/hooks/useServiceReports";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 
 interface ServiceReportListProps {
@@ -43,6 +43,7 @@ const ServiceReportList: React.FC<ServiceReportListProps> = ({ reports, onEdit }
           <TableRow>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Fecha</TableHead>
             <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Servicio</TableHead>
+            <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[200px]">Menú Asociado</TableHead> {/* Adjusted min-width */}
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Tickets Emitidos</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Colaciones Vendidas</TableHead>
             <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Ingresos Adicionales (S/)</TableHead>
@@ -57,6 +58,16 @@ const ServiceReportList: React.FC<ServiceReportListProps> = ({ reports, onEdit }
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[150px]">
                 {report.meal_services?.name || "N/A"}
+              </TableCell>
+              <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[200px]">
+                {report.menus ? (
+                  <div className="flex flex-col">
+                    <span className="font-semibold">{report.menus.title}</span>
+                    <span className="text-sm text-gray-500 dark:text-gray-400">
+                      {report.menus.menu_date ? format(parseISO(report.menus.menu_date), "PPP", { locale: es }) : report.menus.event_types?.name || "Sin Fecha"}
+                    </span>
+                  </div>
+                ) : "N/A"}
               </TableCell>
               <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[120px]">
                 {report.tickets_issued}

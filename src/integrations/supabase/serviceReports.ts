@@ -7,6 +7,7 @@ export const getServiceReports = async (): Promise<ServiceReport[]> => {
     .select(`
       *,
       meal_services(*),
+      menus(id, title, menu_date, event_types(name)),
       service_report_platos(
         quantity_sold,
         platos(
@@ -59,6 +60,7 @@ export const createServiceReport = async (reportData: ServiceReportFormValues): 
     .select(`
       *,
       meal_services(*),
+      menus(id, title, menu_date, event_types(name)),
       service_report_platos(
         quantity_sold,
         platos(
@@ -121,6 +123,7 @@ export const updateServiceReport = async (id: string, reportData: ServiceReportF
     .select(`
       *,
       meal_services(*),
+      menus(id, title, menu_date, event_types(name)),
       service_report_platos(
         quantity_sold,
         platos(

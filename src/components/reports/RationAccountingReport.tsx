@@ -154,7 +154,7 @@ const RationAccountingReport: React.FC<RationAccountingReportProps> = ({ startDa
               <TableRow>
                 <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 min-w-[120px]">Fecha</TableHead>
                 <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 min-w-[150px]">Servicio</TableHead>
-                <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 min-w-[150px]">Menú</TableHead>
+                <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 min-w-[200px]">Menú Asociado</TableHead> {/* Adjusted min-width */}
                 <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 min-w-[120px]">Tickets Emitidos</TableHead>
                 <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 min-w-[120px]">Colaciones Vendidas</TableHead>
                 <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 min-w-[150px]">Acciones</TableHead>
@@ -170,7 +170,14 @@ const RationAccountingReport: React.FC<RationAccountingReportProps> = ({ startDa
                     {mealServices?.find(s => s.id === report.meal_service_id)?.name || "N/A"}
                   </TableCell>
                   <TableCell className="text-base text-gray-700 dark:text-gray-300">
-                    {report.menu_id || "N/A"} {/* Display menu_id for now, could fetch menu title */}
+                    {report.menus ? (
+                      <div className="flex flex-col">
+                        <span className="font-semibold">{report.menus.title}</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">
+                          {report.menus.menu_date ? format(parseISO(report.menus.menu_date), "PPP", { locale: es }) : report.menus.event_types?.name || "Sin Fecha"}
+                        </span>
+                      </div>
+                    ) : "N/A"}
                   </TableCell>
                   <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">
                     {editingReportId === report.id ? (
