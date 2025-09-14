@@ -8,16 +8,16 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, FileText, CalendarDays } from "lucide-react";
-import { ServiceReport } from "@/types";
+import { Edit, Trash2, FileText } from "lucide-react"; // Removed CalendarDays
+import { ServiceReportWithRelations } from "@/types"; // Changed type to ServiceReportWithRelations
 import { useDeleteServiceReport } from "@/hooks/useServiceReports";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 
 interface ServiceReportListProps {
-  reports: ServiceReport[];
-  onEdit: (report: ServiceReport) => void;
+  reports: ServiceReportWithRelations[]; // Changed type
+  onEdit: (report: ServiceReportWithRelations) => void; // Changed type
 }
 
 const ServiceReportList: React.FC<ServiceReportListProps> = ({ reports, onEdit }) => {

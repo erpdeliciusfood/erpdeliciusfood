@@ -1,11 +1,11 @@
 "use client";
 
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo, useState } from "react"; // Removed useEffect
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Package, CheckCircle2, AlertTriangle, MinusCircle, Utensils, PackageX, Info, ShoppingBag } from "lucide-react";
-import { Menu, AggregatedInsumoNeed, GroupedInsumoNeeds } from "@/types";
+import { Menu, AggregatedInsumoNeed, GroupedInsumoNeeds, MenuWithRelations } from "@/types"; // Added MenuWithRelations
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +21,7 @@ import UrgentPurchaseRequestDialog from "./UrgentPurchaseRequestDialog";
 
 interface DailyPrepOverviewProps {
   selectedDate: Date;
-  menus: Menu[];
+  menus: MenuWithRelations[]; // Changed type to MenuWithRelations
 }
 
 const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, menus }) => {
@@ -35,7 +35,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   const groupedInsumoNeeds: GroupedInsumoNeeds[] = useMemo(() => {
     const serviceGroupsMap = new Map<string, GroupedInsumoNeeds>();
 
-    menus.forEach((menu: Menu) => {
+    menus.forEach((menu: MenuWithRelations) => { // Use MenuWithRelations
       menu.menu_platos?.forEach((menuPlato) => {
         const mealServiceId = menuPlato.meal_service_id;
         const mealServiceName = menuPlato.meal_services?.name || "Sin Servicio";
@@ -64,6 +64,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
           const insumo = platoInsumo.insumos;
           if (!insumo) return;
 
+          // Calculate total insumo needed for this recipe * for this service's diner count
           const totalNeededBaseUnit = platoInsumo.cantidad_necesaria * menuPlato.quantity_needed;
           const totalNeededPurchaseUnit = totalNeededBaseUnit / insumo.conversion_factor;
 

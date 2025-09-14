@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
-import { ServiceReport, ServiceReportFormValues } from "@/types"; // Removed Receta
+import { ServiceReportWithRelations, ServiceReportFormValues } from "@/types"; // Changed type to ServiceReportWithRelations
 
-export const getServiceReports = async (): Promise<ServiceReport[]> => {
+export const getServiceReports = async (): Promise<ServiceReportWithRelations[]> => {
   const { data, error } = await supabase
     .from("service_reports")
     .select(`
@@ -24,7 +24,7 @@ export const getServiceReports = async (): Promise<ServiceReport[]> => {
   return data;
 };
 
-export const createServiceReport = async (reportData: ServiceReportFormValues): Promise<ServiceReport> => {
+export const createServiceReport = async (reportData: ServiceReportFormValues): Promise<ServiceReportWithRelations> => {
   const { platos_vendidos, menu_id, ...restReportData } = reportData; // NEW: Destructure menu_id
 
   // Insert the main service report
@@ -78,7 +78,7 @@ export const createServiceReport = async (reportData: ServiceReportFormValues): 
   return completeReport;
 };
 
-export const updateServiceReport = async (id: string, reportData: ServiceReportFormValues): Promise<ServiceReport> => {
+export const updateServiceReport = async (id: string, reportData: ServiceReportFormValues): Promise<ServiceReportWithRelations> => {
   const { platos_vendidos, menu_id, ...restReportData } = reportData; // NEW: Destructure menu_id
 
   // Update the main service report

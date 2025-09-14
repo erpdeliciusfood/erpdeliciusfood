@@ -30,7 +30,7 @@ export const createStockMovement = async (
   let pendingDeliveryChange = 0;
   let pendingReceptionChange = 0;
   let stockChange = 0;
-  let newCostoUnitario = currentInsumo.costo_unitario; // Default to current cost
+  // Removed newCostoUnitario as it was declared but never read.
 
   // Determine how stock quantities and cost change based on movement type
   if (movement_type === "purchase_in") { // This now means 'received by warehouse'
@@ -41,8 +41,6 @@ export const createStockMovement = async (
     // and the unit cost is derived from it.
     // In a real scenario, the form would provide total_amount and total_quantity_purchased
     // and this function would calculate newCostoUnitario = total_amount / total_quantity_purchased.
-    // For now, we'll use the quantity_change as the quantity for cost calculation if it's a purchase_in.
-    // This part needs to be carefully designed with the UI.
     // For now, we'll just add to stock and update cost if provided.
     stockChange = quantity_change;
     // If a new unit cost is implied by the purchase, it should be passed here.

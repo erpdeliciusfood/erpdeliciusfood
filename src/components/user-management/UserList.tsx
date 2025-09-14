@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/select";
 import { useUpdateProfile } from "@/hooks/useProfile";
 import { showSuccess, showError } from "@/utils/toast";
+import { useSession } from "@/contexts/SessionContext"; // NEW: Import useSession
 
 interface UserListProps {
   users: Profile[];
@@ -25,20 +26,18 @@ interface UserListProps {
 
 const UserList: React.FC<UserListProps> = ({ users }) => {
   const updateProfileMutation = useUpdateProfile();
+  const { user: currentUser } = useSession(); // NEW: Get current user from session
 
   const handleRoleChange = async (userId: string, newRole: 'user' | 'admin') => {
     try {
-      const userToUpdate = users.find(u => u.id === userId);
-      if (!userToUpdate) {
-        showError("Usuario no encontrado para actualizar.");
+      // Prevent a user from changing their own role or an admin from demoting themselves
+      if (userId === currentUser?.id && newRole === 'user') {
+        showError("No puedes cambiar tu propio rol de administrador a usuario.");
         return;
       }
+
       await updateProfileMutation.mutateAsync({
-        profileData: {
-          first_name: userToUpdate.first_name,
-          last_name: userToUpdate.last_name,
-          role: newRole
-        },
+        profileData: { role: newRole }, // Only send role for this specific update
         targetUserId: userId, // Pass the specific user ID to update
       });
       showSuccess("Rol de usuario actualizado exitosamente.");
@@ -80,7 +79,7 @@ const UserList: React.FC<UserListProps> = ({ users }) => {
                 <Select
                   onValueChange={(value: 'user' | 'admin') => handleRoleChange(userProfile.id, value)}
                   defaultValue={userProfile.role}
-                  disabled={updateProfileMutation.isPending}
+                  disabled={updateProfileMutation.isPending || (userProfile.id === currentUser?.id && userProfile.role === 'admin')} // Disable if current user is admin and trying to demote self
                 >
                   <SelectTrigger className="w-[180px] h-10 text-base">
                     <SelectValue placeholder="Selecciona un rol" />

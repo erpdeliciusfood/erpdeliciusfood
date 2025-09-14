@@ -26,7 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns"; // Importar parseISO
 import { es } from "date-fns/locale";
-import { ServiceReport, ServiceReportFormValues, MealService, Receta, Menu } from "@/types"; // NEW: Import Menu
+import { ServiceReportWithRelations, ServiceReportFormValues, MealService, Receta, MenuWithRelations } from "@/types"; // NEW: Import MenuWithRelations and ServiceReportWithRelations
 import { useAddServiceReport, useUpdateServiceReport } from "@/hooks/useServiceReports";
 import { useMealServices } from "@/hooks/useMealServices";
 import { useRecetas } from "@/hooks/useRecetas";
@@ -50,7 +50,7 @@ const formSchema = z.object({
 });
 
 interface ServiceReportFormProps {
-  initialData?: ServiceReport | null;
+  initialData?: ServiceReportWithRelations | null; // Changed type to ServiceReportWithRelations
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -205,7 +205,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
               <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Menú Asociado</FormLabel>
               <Select
                 onValueChange={field.onChange}
-                defaultValue={field.value}
+                defaultValue={field.value || ""} // Handle null/undefined for defaultValue
                 disabled={isLoading || isLoadingMenus}
               >
                 <FormControl>
@@ -214,7 +214,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
                   </SelectTrigger>
                 </FormControl>
                 <SelectContent>
-                  {availableMenus?.map((menu: Menu) => (
+                  {availableMenus?.map((menu: MenuWithRelations) => ( // Use MenuWithRelations
                     <SelectItem key={menu.id} value={menu.id}>
                       {menu.title} ({menu.menu_date ? format(parseISO(menu.menu_date), "PPP", { locale: es }) : menu.event_types?.name || "Sin Fecha"})
                     </SelectItem>

@@ -42,9 +42,11 @@ export type MenuWithRelations = Menu & {
   menu_platos?: MenuPlatoWithRelations[];
 };
 
+// NEW: Extended ServiceReport to include MenuWithRelations
 export type ServiceReportWithRelations = ServiceReport & {
   meal_services?: MealService;
   service_report_platos?: ServiceReportPlatoWithRelations[];
+  menus?: MenuWithRelations; // Add menu relation
 };
 
 export type ServiceReportPlatoWithRelations = ServiceReportPlato & {
@@ -111,11 +113,11 @@ export interface RecetaFormValues {
 export interface ServiceReportFormValues {
   report_date: string;
   meal_service_id: string;
+  menu_id: string; // NEW: Added menu_id
   tickets_issued: number;
   meals_sold: number;
   additional_services_revenue: number;
   notes: string | null;
-  menu_id: string; // NEW: Added menu_id
   platos_vendidos: { plato_id: string; quantity_sold: number }[];
 }
 
@@ -152,6 +154,12 @@ export interface SupplierFormValues {
   phone: string | null;
   email: string | null;
   address: string | null;
+}
+
+export interface ProfileFormValues { // Made first_name and last_name optional
+  first_name?: string | null;
+  last_name?: string | null;
+  role?: 'user' | 'admin';
 }
 
 
@@ -233,6 +241,7 @@ export interface ConsolidatedInsumo {
   unit: string;
   services: string[]; // List of service names where it's used
   currentStock: number; // NEW: Current stock quantity of the insumo
+  minStockLevel: number | null; // NEW: Min stock level of the insumo
 }
 
 export interface QuebradoReportData {

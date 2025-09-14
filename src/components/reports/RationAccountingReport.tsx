@@ -5,12 +5,12 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, UtensilsCrossed, Edit, Save, XCircle, CheckCircle2 } from "lucide-react";
+import { Loader2, UtensilsCrossed, Edit, Save, XCircle } from "lucide-react"; // Removed CheckCircle2
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { useServiceReports, useUpdateServiceReport } from "@/hooks/useServiceReports";
 import { useMealServices } from "@/hooks/useMealServices";
-import { ServiceReport, ServiceReportFormValues } from "@/types";
+import { ServiceReportWithRelations, ServiceReportFormValues } from "@/types"; // Changed type to ServiceReportWithRelations
 import { showSuccess, showError } from "@/utils/toast";
 
 interface RationAccountingReportProps {
@@ -19,9 +19,8 @@ interface RationAccountingReportProps {
 }
 
 const RationAccountingReport: React.FC<RationAccountingReportProps> = ({ startDate, endDate }) => {
-  const formattedStartDate = format(startDate, "yyyy-MM-dd");
-  const formattedEndDate = format(endDate, "yyyy-MM-dd");
-
+  // Removed unused formattedStartDate and formattedEndDate
+  
   const { data: serviceReports, isLoading, isError, error } = useServiceReports();
   const { data: mealServices, isLoading: isLoadingMealServices } = useMealServices();
   const updateServiceReportMutation = useUpdateServiceReport();
@@ -46,13 +45,13 @@ const RationAccountingReport: React.FC<RationAccountingReportProps> = ({ startDa
     }
   }, [editingReportId, filteredReports]);
 
-  const handleEditClick = (report: ServiceReport) => {
+  const handleEditClick = (report: ServiceReportWithRelations) => { // Changed type
     setEditingReportId(report.id);
     setEditedTicketsIssued(report.tickets_issued);
     setEditedMealsSold(report.meals_sold);
   };
 
-  const handleSaveClick = async (report: ServiceReport) => {
+  const handleSaveClick = async (report: ServiceReportWithRelations) => { // Changed type
     if (editedMealsSold < 0 || editedTicketsIssued < 0) {
       showError("Las cantidades no pueden ser negativas.");
       return;

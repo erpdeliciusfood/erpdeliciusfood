@@ -43,6 +43,20 @@ export const updateProfile = async (userId: string, profile: ProfileFormValues):
   return data;
 };
 
+// NEW: Function to update user role via Edge Function (for admin use)
+export const updateUserRoleAdmin = async (targetUserId: string, newRole: 'user' | 'admin'): Promise<Profile> => {
+  const { data, error } = await supabase.functions.invoke('update-user-role', {
+    body: { targetUserId, newRole },
+  });
+
+  if (error) {
+    throw new Error(`Error invoking update-user-role function: ${error.message}`);
+  }
+
+  // The Edge Function returns the updated profile
+  return data.profile as Profile;
+};
+
 export const signOut = async (): Promise<void> => {
   const { error } = await supabase.auth.signOut();
   if (error) throw new Error(error.message);

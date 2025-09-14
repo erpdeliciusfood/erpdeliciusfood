@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getProfile, updateProfile, getAllProfiles } from "@/integrations/supabase/profiles";
+import { getProfile, updateProfile, getAllProfiles, updateUserRoleAdmin } from "@/integrations/supabase/profiles";
 import { useSession } from "@/contexts/SessionContext";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { Profile } from "@/types"; // Import Profile from types
@@ -32,13 +32,25 @@ export const useAllProfiles = () => {
 
 export const useUpdateProfile = () => {
   const queryClient = useQueryClient();
-  const { user } = useSession();
+  const { user, session } = useSession(); // Get session to check current user's role
 
   return useMutation<Profile, Error, { profileData: ProfileFormValues; targetUserId?: string }, { toastId: string }>({
-    mutationFn: ({ profileData, targetUserId }) => {
+    mutationFn: async ({ profileData, targetUserId }) => {
       const userIdToUpdate = targetUserId || user?.id;
       if (!userIdToUpdate) throw new Error("User not authenticated or target user ID not provided.");
-      return updateProfile(userIdToUpdate, profileData);
+
+      // If role is being updated and it's for another user (or self, but typically for others by admin)
+      if (profileData.role && userIdToUpdate !== user?.id) {
+        // Only allow admin to update other users' roles
+        const currentUserRole = session?.user?.user_metadata?.role;
+        if (currentUserRole !== 'admin') {
+          throw new Error("You do not have permission to update other users' roles.");
+        }
+        return updateUserRoleAdmin(userIdToUpdate, profileData.role);
+      } else {
+        // For updating own profile or non-role fields
+        return updateProfile(userIdToUpdate, profileData);
+      }
     },
     onMutate: () => {
       const toastId: string = showLoading("Actualizando perfil...");
