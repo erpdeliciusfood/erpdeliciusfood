@@ -14,7 +14,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Receta, RecetaFormValues, Insumo, InsumoFormValues, RECETA_CATEGORIES } from "@/types"; // Import RECETA_CATEGORIES
+import { Receta, RecetaFormValues, Insumo, InsumoFormValues, RECETA_CATEGORIES, PlatoInsumoWithRelations } from "@/types"; // Import RECETA_CATEGORIES
 import { useAddReceta, useUpdateReceta } from "@/hooks/useRecetas";
 import { useInsumos } from "@/hooks/useInsumos";
 import { Loader2, PlusCircle, Trash2, Edit } from "lucide-react"; // Added Edit icon
@@ -85,7 +85,7 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
         nombre: initialData.nombre,
         descripcion: initialData.descripcion || "",
         category: initialData.category || "PLATO DE FONDO", // NEW: Set initial category
-        insumos: initialData.plato_insumos?.map(pi => ({
+        insumos: initialData.plato_insumos?.map((pi: PlatoInsumoWithRelations) => ({
           insumo_id: pi.insumo_id,
           cantidad_necesaria: pi.cantidad_necesaria,
         })) || [{ insumo_id: "", cantidad_necesaria: 0 }],
@@ -136,7 +136,7 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
 
     if (currentInsumoFieldIndex !== null) {
       // If it was a new insumo, set its ID in the form field
-      if (!initialData || !initialData.plato_insumos?.some(pi => pi.insumo_id === newOrUpdatedInsumo.id)) {
+      if (!initialData || !initialData.plato_insumos?.some((pi: PlatoInsumoWithRelations) => pi.insumo_id === newOrUpdatedInsumo.id)) {
         update(currentInsumoFieldIndex, {
           ...fields[currentInsumoFieldIndex],
           insumo_id: newOrUpdatedInsumo.id, // Set the newly created insumo's ID

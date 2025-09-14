@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, UtensilsCrossed, CalendarDays, ChevronDown, CheckCircle2 } from "lucide-react";
-import { Menu, MenuPlato, MEAL_SERVICES_ORDER } from "@/types";
+import { Menu, MenuPlato, MEAL_SERVICES_ORDER, MenuPlatoWithRelations } from "@/types";
 import { useDeleteMenu } from "@/hooks/useMenus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
@@ -57,7 +57,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
               mealServiceStatus[type] = false; // Initialize all to false
             });
 
-            menu.menu_platos?.forEach(mp => {
+            menu.menu_platos?.forEach((mp: MenuPlatoWithRelations) => {
               const serviceName = mp.meal_services?.name;
               if (serviceName && MEAL_SERVICES_ORDER.includes(serviceName)) {
                 mealServiceStatus[serviceName] = true;
@@ -65,7 +65,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
             });
 
             // Group platos by meal service and then by dish category for detailed display
-            const platosGroupedByServiceAndCategory = menu.menu_platos?.reduce((acc, mp) => {
+            const platosGroupedByServiceAndCategory = menu.menu_platos?.reduce((acc: { [serviceName: string]: { [dishCategory: string]: MenuPlatoWithRelations[] } }, mp: MenuPlatoWithRelations) => {
               const serviceName = mp.meal_services?.name || "Sin Servicio";
               const dishCategory = mp.dish_category || "Sin Categoría"; // NEW: Use dish_category
               if (!acc[serviceName]) {
@@ -76,7 +76,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
               }
               acc[serviceName][dishCategory].push(mp);
               return acc;
-            }, {} as { [serviceName: string]: { [dishCategory: string]: MenuPlato[] } });
+            }, {} as { [serviceName: string]: { [dishCategory: string]: MenuPlatoWithRelations[] } });
 
             return (
               <React.Fragment key={menu.id}>
@@ -163,21 +163,21 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                           </AccordionTrigger>
                           <AccordionContent className="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
                             <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Detalles de Recetas:</h4> {/* Changed text */}
-                            {Object.entries(platosGroupedByServiceAndCategory || {}).sort(([serviceA], [serviceB]) => {
+                            {Object.entries(platosGroupedByServiceAndCategory || {} as { [serviceName: string]: { [dishCategory: string]: MenuPlatoWithRelations[] } }).sort(([serviceA], [serviceB]) => {
                               // Sort services by predefined order
                               const indexA = MEAL_SERVICES_ORDER.indexOf(serviceA);
                               const indexB = MEAL_SERVICES_ORDER.indexOf(serviceB);
                               if (indexA === -1) return 1; // Unknown services last
                               if (indexB === -1) return -1;
                               return indexA - indexB;
-                            }).map(([serviceName, dishCategories]) => (
+                            }).map(([serviceName, dishCategories]: [string, { [dishCategory: string]: MenuPlatoWithRelations[] }]) => (
                               <div key={serviceName} className="mb-4 last:mb-0">
                                 <h5 className="text-md font-bold text-gray-800 dark:text-gray-200 mb-2 capitalize">{serviceName}</h5>
-                                {Object.entries(dishCategories).map(([dishCategory, platos]) => (
+                                {Object.entries(dishCategories).map(([dishCategory, platos]: [string, MenuPlatoWithRelations[]]) => (
                                   <div key={dishCategory} className="ml-4 mb-2 last:mb-0">
                                     <h6 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 capitalize">{dishCategory}:</h6>
                                     <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
-                                      {platos?.map((mp, idx) => (
+                                      {platos?.map((mp: MenuPlatoWithRelations, idx: number) => (
                                         <li key={idx} className="text-base">
                                           <span className="font-medium text-gray-800 dark:text-gray-200">{mp.platos?.nombre || "Receta Desconocida"}</span> {/* Changed text */}
                                           {" "} (Cantidad: {mp.quantity_needed})

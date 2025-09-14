@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, Package } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { ServiceReport } from "@/types";
+import { ServiceReport, ServiceReportPlatoWithRelations, PlatoInsumoWithRelations } from "@/types";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
 
@@ -31,10 +31,10 @@ const ConsumptionReport: React.FC<ConsumptionReportProps> = ({ startDate, endDat
     serviceReports.forEach((report: ServiceReport) => {
       const reportDate = parseISO(report.report_date);
       if (isWithinInterval(reportDate, { start: startDate, end: endDate })) {
-        report.service_report_platos?.forEach(srp => {
+        report.service_report_platos?.forEach((srp: ServiceReportPlatoWithRelations) => {
           const receta = srp.platos; // Changed plato to receta
           if (receta) {
-            receta.plato_insumos?.forEach(pi => {
+            receta.plato_insumos?.forEach((pi: PlatoInsumoWithRelations) => {
               const insumo = pi.insumos;
               if (insumo) {
                 const consumedQuantityInBaseUnit = pi.cantidad_necesaria * srp.quantity_sold;

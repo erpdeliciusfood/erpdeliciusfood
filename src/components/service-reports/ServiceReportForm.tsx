@@ -26,7 +26,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns"; // Importar parseISO
 import { es } from "date-fns/locale";
-import { ServiceReportWithRelations, ServiceReportFormValues, MealService, Receta, Menu } from "@/types"; // NEW: Import Menu, ServiceReportWithRelations
+import { ServiceReportWithRelations, ServiceReportFormValues, MealService, Receta, Menu, ServiceReportPlatoWithRelations } from "@/types"; // NEW: Import Menu, ServiceReportWithRelations
 import { useAddServiceReport, useUpdateServiceReport } from "@/hooks/useServiceReports";
 import { useMealServices } from "@/hooks/useMealServices";
 import { useRecetas } from "@/hooks/useRecetas";
@@ -91,7 +91,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
         meals_sold: initialData.meals_sold,
         additional_services_revenue: initialData.additional_services_revenue,
         notes: initialData.notes || "",
-        platos_vendidos: initialData.service_report_platos?.map(srp => ({
+        platos_vendidos: initialData.service_report_platos?.map((srp: ServiceReportPlatoWithRelations) => ({
           plato_id: srp.plato_id,
           quantity_sold: srp.quantity_sold,
         })) || [{ plato_id: "", quantity_sold: 1 }],

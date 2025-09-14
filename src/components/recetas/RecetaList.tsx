@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, UtensilsCrossed } from "lucide-react";
-import { Receta } from "@/types"; // Changed type import
+import { Receta, PlatoInsumoWithRelations } from "@/types"; // Changed type import
 import { useDeleteReceta } from "@/hooks/useRecetas"; // Changed hook import
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Badge } from "@/components/ui/badge"; // NEW: Import Badge
@@ -30,7 +30,7 @@ const RecetaList: React.FC<RecetaListProps> = ({ recetas, onEdit }) => {
     if (!receta.plato_insumos || receta.plato_insumos.length === 0) {
       return 0;
     }
-    return receta.plato_insumos.reduce((totalCost, platoInsumo) => {
+    return receta.plato_insumos.reduce((totalCost: number, platoInsumo: PlatoInsumoWithRelations) => {
       const insumo = platoInsumo.insumos; // Access the nested insumo object
       if (insumo) {
         // Ensure costo_unitario is per base_unit for calculation

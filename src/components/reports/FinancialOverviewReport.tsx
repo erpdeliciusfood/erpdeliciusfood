@@ -4,7 +4,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Loader2, TrendingDown, LineChart as LineChartIcon } from "lucide-react";
 import { format, isWithinInterval, parseISO, eachDayOfInterval } from "date-fns";
 import { es } from "date-fns/locale";
-import { ServiceReport } from "@/types";
+import { ServiceReport, ServiceReportPlatoWithRelations } from "@/types";
 import {
   ResponsiveContainer,
   LineChart,
@@ -52,10 +52,10 @@ const FinancialOverviewReport: React.FC<FinancialOverviewReportProps> = ({ start
         const formattedReportDate = format(reportDate, "yyyy-MM-dd");
         const currentDayData = dailyDataMap.get(formattedReportDate) || { cogs: 0 };
 
-        report.service_report_platos?.forEach(pv => {
+        report.service_report_platos?.forEach((pv: ServiceReportPlatoWithRelations) => {
           const receta = pv.platos; // Changed plato to receta
           if (receta) {
-            const cogs = receta.costo_produccion * pv.quantity_sold;
+            const cogs = (receta.costo_produccion || 0) * pv.quantity_sold;
             currentDayData.cogs += cogs;
             overallCogs += cogs;
           }

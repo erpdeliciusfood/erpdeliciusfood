@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
 } from "@/components/ui/form";
-import { Menu, MenuFormValues } from "@/types";
+import { Menu, MenuFormValues, MenuPlatoWithRelations } from "@/types";
 import { useAddMenu, useUpdateMenu } from "@/hooks/useMenus";
 import { useMealServices } from "@/hooks/useMealServices";
 import { useEventTypes } from "@/hooks/useEventTypes";
@@ -107,7 +107,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
         menu_type: initialData.menu_type, // NEW: Set initial menu_type
         menu_date: initialData.menu_date || null,
         event_type_id: initialData.event_type_id || null,
-        platos_por_servicio: initialData.menu_platos?.map(mp => ({
+        platos_por_servicio: initialData.menu_platos?.map((mp: MenuPlatoWithRelations) => ({
           meal_service_id: mp.meal_service_id,
           plato_id: mp.plato_id,
           dish_category: mp.dish_category,

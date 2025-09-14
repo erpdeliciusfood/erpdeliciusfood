@@ -10,7 +10,7 @@ import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { useServiceReports, useUpdateServiceReport } from "@/hooks/useServiceReports";
 import { useMealServices } from "@/hooks/useMealServices";
-import { ServiceReportWithRelations, ServiceReportFormValues } from "@/types"; // Updated import
+import { ServiceReportWithRelations, ServiceReportFormValues, ServiceReportPlatoWithRelations } from "@/types"; // Updated import
 import { showSuccess, showError } from "@/utils/toast";
 
 interface RationAccountingReportProps {
@@ -68,7 +68,7 @@ const RationAccountingReport: React.FC<RationAccountingReportProps> = ({ startDa
         additional_services_revenue: report.additional_services_revenue,
         notes: report.notes,
         menu_id: report.menu_id, // Ensure menu_id is passed
-        platos_vendidos: report.service_report_platos?.map(srp => ({
+        platos_vendidos: report.service_report_platos?.map((srp: ServiceReportPlatoWithRelations) => ({
           plato_id: srp.plato_id,
           quantity_sold: srp.quantity_sold,
         })) || [],

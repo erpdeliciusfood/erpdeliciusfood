@@ -139,3 +139,12 @@ export const updateServiceReport = async (id: string, reportData: ServiceReportF
 
   return completeReport;
 };
+
+export const deleteServiceReport = async (id: string): Promise<void> => {
+  const { error } = await supabase
+    .from("service_reports")
+    .delete()
+    .eq("id", id);
+
+  if (error) throw new Error(error.message);
+};
