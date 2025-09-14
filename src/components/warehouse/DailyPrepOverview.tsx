@@ -30,7 +30,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   const [isDeductQuantitiesDialogOpen, setIsDeductQuantitiesDialogOpen] = useState(false);
   const [isUrgentPurchaseRequestDialogOpen, setIsUrgentPurchaseRequestDialogOpen] = useState(false);
   const [selectedInsumoForUrgentRequest, setSelectedInsumoForUrgentRequest] = useState<AggregatedInsumoNeed | null>(null);
-  const [isSelectAllChecked, setIsSelectAllChecked] = useState(false); // NEW: Declare isSelectAllChecked state
+  // const [isSelectAllChecked, setIsSelectAllChecked] = useState(false); // REMOVED: Unused state
 
   const groupedInsumoNeeds: GroupedInsumoNeeds[] = useMemo(() => {
     const serviceGroupsMap = new Map<string, GroupedInsumoNeeds>();
@@ -120,11 +120,12 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     return groupedInsumoNeeds.flatMap((group: GroupedInsumoNeeds) => group.insumos);
   }, [groupedInsumoNeeds]);
 
-  useEffect(() => {
-    const allDeductibleIds = allAggregatedInsumoNeeds.filter((need: AggregatedInsumoNeed) => need.total_needed_purchase_unit > 0).map((need: AggregatedInsumoNeed) => need.insumo_id);
-    // Update isSelectAllChecked based on whether all deductible items are currently selected
-    setIsSelectAllChecked(allDeductibleIds.length > 0 && selectedInsumoIds.size === allDeductibleIds.length);
-  }, [allAggregatedInsumoNeeds, selectedInsumoIds]);
+  // REMOVED: useEffect for isSelectAllChecked as it's no longer used.
+  // useEffect(() => {
+  //   const allDeductibleIds = allAggregatedInsumoNeeds.filter((need: AggregatedInsumoNeed) => need.total_needed_purchase_unit > 0).map((need: AggregatedInsumoNeed) => need.insumo_id);
+  //   // Update isSelectAllChecked based on whether all deductible items are currently selected
+  //   setIsSelectAllChecked(allDeductibleIds.length > 0 && selectedInsumoIds.size === allDeductibleIds.length);
+  // }, [allAggregatedInsumoNeeds, selectedInsumoIds]);
 
   const handleCheckboxChange = (insumoId: string, checked: boolean) => {
     setSelectedInsumoIds((prev: Set<string>) => {
