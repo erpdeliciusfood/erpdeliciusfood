@@ -17,13 +17,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { EventType, MenuFormValues } from "@/types"; // Removed Menu
+import { EventType, MenuFormValues } from "@/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Button } from "@/components/ui/button"; // Import Button
+import { CalendarIcon } from "lucide-react"; // Import CalendarIcon
 
 interface MenuDetailsFormSectionProps {
   isLoading: boolean;
@@ -132,16 +134,21 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({
                 <Popover>
                   <PopoverTrigger asChild>
                     <FormControl>
-                      <Input
-                        placeholder="Selecciona una fecha"
+                      <Button // Changed from Input to Button
+                        variant={"outline"}
                         className={cn(
                           "w-full pl-3 text-left font-normal h-12 text-base",
                           !field.value && "text-muted-foreground"
                         )}
-                        value={field.value ? format(field.value, "PPP", { locale: es }) : ""}
-                        readOnly
                         disabled={isLoading}
-                      />
+                      >
+                        {field.value ? (
+                          format(new Date(field.value), "PPP", { locale: es })
+                        ) : (
+                          <span>Selecciona una fecha</span>
+                        )}
+                        <CalendarIcon className="ml-auto h-4 w-4 opacity-50" /> {/* Added CalendarIcon */}
+                      </Button>
                     </FormControl>
                   </PopoverTrigger>
                   <PopoverContent className="w-auto p-0" align="start">
@@ -150,7 +157,7 @@ const MenuDetailsFormSection: React.FC<MenuDetailsFormSectionProps> = ({
                       selected={field.value ? new Date(field.value) : undefined}
                       onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : null)}
                       initialFocus
-                      locale={es} // Added locale={es}
+                      locale={es}
                     />
                   </PopoverContent>
                 </Popover>
