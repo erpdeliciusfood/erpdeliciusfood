@@ -1,7 +1,7 @@
 import { supabase } from "@/integrations/supabase/client";
-import { ServiceReportWithRelations, ServiceReportFormValues } from "@/types"; // Changed type to ServiceReportWithRelations
+import { ServiceReport, ServiceReportFormValues } from "@/types"; // Removed Receta
 
-export const getServiceReports = async (): Promise<ServiceReportWithRelations[]> => {
+export const getServiceReports = async (): Promise<ServiceReport[]> => {
   const { data, error } = await supabase
     .from("service_reports")
     .select(`
@@ -24,7 +24,7 @@ export const getServiceReports = async (): Promise<ServiceReportWithRelations[]>
   return data;
 };
 
-export const createServiceReport = async (reportData: ServiceReportFormValues): Promise<ServiceReportWithRelations> => {
+export const createServiceReport = async (reportData: ServiceReportFormValues): Promise<ServiceReport> => {
   const { platos_vendidos, menu_id, ...restReportData } = reportData; // NEW: Destructure menu_id
 
   // Insert the main service report
@@ -78,7 +78,7 @@ export const createServiceReport = async (reportData: ServiceReportFormValues): 
   return completeReport;
 };
 
-export const updateServiceReport = async (id: string, reportData: ServiceReportFormValues): Promise<ServiceReportWithRelations> => {
+export const updateServiceReport = async (id: string, reportData: ServiceReportFormValues): Promise<ServiceReport> => {
   const { platos_vendidos, menu_id, ...restReportData } = reportData; // NEW: Destructure menu_id
 
   // Update the main service report
@@ -139,13 +139,4 @@ export const updateServiceReport = async (id: string, reportData: ServiceReportF
   if (fetchError) throw new Error(`Failed to fetch complete service report: ${fetchError.message}`);
 
   return completeReport;
-};
-
-export const deleteServiceReport = async (id: string): Promise<void> => {
-  const { error } = await supabase
-    .from("service_reports")
-    .delete()
-    .eq("id", id);
-
-  if (error) throw new Error(error.message);
 };

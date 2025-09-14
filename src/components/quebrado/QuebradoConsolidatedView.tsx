@@ -63,7 +63,7 @@ const QuebradoConsolidatedView: React.FC<QuebradoConsolidatedViewProps> = ({ dat
                         {insumo.currentStock.toFixed(2)}
                       </Badge>
                       {isCriticalStock && (
-                        <AlertTriangle className="ml-2 h-5 w-5 text-red-600 dark:text-red-400" /> // Removed title prop
+                        <AlertTriangle className="ml-2 h-5 w-5 text-red-600 dark:text-red-400" aria-label="Stock insuficiente para la demanda del período" /> // Changed title to aria-label
                       )}
                     </div>
                   </TableCell>

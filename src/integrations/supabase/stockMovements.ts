@@ -30,7 +30,7 @@ export const createStockMovement = async (
   let pendingDeliveryChange = 0;
   let pendingReceptionChange = 0;
   let stockChange = 0;
-  // Removed newCostoUnitario as it was declared but never read.
+  // let newCostoUnitario = currentInsumo.costo_unitario; // Default to current cost - REMOVED: Unused
 
   // Determine how stock quantities and cost change based on movement type
   if (movement_type === "purchase_in") { // This now means 'received by warehouse'

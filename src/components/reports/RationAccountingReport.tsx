@@ -10,7 +10,7 @@ import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { useServiceReports, useUpdateServiceReport } from "@/hooks/useServiceReports";
 import { useMealServices } from "@/hooks/useMealServices";
-import { ServiceReportWithRelations, ServiceReportFormValues } from "@/types"; // Changed type to ServiceReportWithRelations
+import { ServiceReportWithRelations, ServiceReportFormValues } from "@/types"; // Updated import
 import { showSuccess, showError } from "@/utils/toast";
 
 interface RationAccountingReportProps {
@@ -20,7 +20,6 @@ interface RationAccountingReportProps {
 
 const RationAccountingReport: React.FC<RationAccountingReportProps> = ({ startDate, endDate }) => {
   // Removed unused formattedStartDate and formattedEndDate
-  
   const { data: serviceReports, isLoading, isError, error } = useServiceReports();
   const { data: mealServices, isLoading: isLoadingMealServices } = useMealServices();
   const updateServiceReportMutation = useUpdateServiceReport();
@@ -45,13 +44,13 @@ const RationAccountingReport: React.FC<RationAccountingReportProps> = ({ startDa
     }
   }, [editingReportId, filteredReports]);
 
-  const handleEditClick = (report: ServiceReportWithRelations) => { // Changed type
+  const handleEditClick = (report: ServiceReportWithRelations) => { // Updated type
     setEditingReportId(report.id);
     setEditedTicketsIssued(report.tickets_issued);
     setEditedMealsSold(report.meals_sold);
   };
 
-  const handleSaveClick = async (report: ServiceReportWithRelations) => { // Changed type
+  const handleSaveClick = async (report: ServiceReportWithRelations) => { // Updated type
     if (editedMealsSold < 0 || editedTicketsIssued < 0) {
       showError("Las cantidades no pueden ser negativas.");
       return;
