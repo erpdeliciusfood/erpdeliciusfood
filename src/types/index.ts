@@ -42,11 +42,10 @@ export type MenuWithRelations = Menu & {
   menu_platos?: MenuPlatoWithRelations[];
 };
 
-// NEW: Extended ServiceReport to include MenuWithRelations
 export type ServiceReportWithRelations = ServiceReport & {
   meal_services?: MealService;
+  menus?: Menu; // NEW: Added menus relationship
   service_report_platos?: ServiceReportPlatoWithRelations[];
-  menus?: MenuWithRelations; // Add menu relation
 };
 
 export type ServiceReportPlatoWithRelations = ServiceReportPlato & {
@@ -154,12 +153,6 @@ export interface SupplierFormValues {
   phone: string | null;
   email: string | null;
   address: string | null;
-}
-
-export interface ProfileFormValues { // Made first_name and last_name optional
-  first_name?: string | null;
-  last_name?: string | null;
-  role?: 'user' | 'admin';
 }
 
 

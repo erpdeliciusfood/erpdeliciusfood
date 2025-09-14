@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { Loader2, BarChart3, CalendarDays, ChevronDown, DollarSign } from "lucide-react"; // Removed UtensilsCrossed
+import { Loader2, BarChart3, CalendarDays, ChevronDown, DollarSign } from "lucide-react";
 import { useInsumos } from "@/hooks/useInsumos";
 import StockOverview from "@/components/reports/StockOverview";
 import ConsumptionReport from "@/components/reports/ConsumptionReport";

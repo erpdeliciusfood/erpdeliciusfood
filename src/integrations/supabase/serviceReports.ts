@@ -117,7 +117,6 @@ export const updateServiceReport = async (id: string, reportData: ServiceReportF
     }
   }
 
-  // Fetch the complete service report with its relations for the return value
   const { data: completeReport, error: fetchError } = await supabase
     .from("service_reports")
     .select(`

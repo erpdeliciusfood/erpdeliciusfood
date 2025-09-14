@@ -8,7 +8,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
-import { Edit, Trash2, FileText } from "lucide-react"; // Removed CalendarDays
+import { Edit, Trash2, FileText } from "lucide-react";
 import { ServiceReportWithRelations } from "@/types"; // Updated import
 import { useDeleteServiceReport } from "@/hooks/useServiceReports";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";

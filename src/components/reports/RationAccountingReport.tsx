@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, UtensilsCrossed, Edit, Save, XCircle } from "lucide-react"; // Removed CheckCircle2
+import { Loader2, UtensilsCrossed, Edit, Save, XCircle } from "lucide-react";
 import { format, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
 import { useServiceReports, useUpdateServiceReport } from "@/hooks/useServiceReports";
@@ -19,7 +19,6 @@ interface RationAccountingReportProps {
 }
 
 const RationAccountingReport: React.FC<RationAccountingReportProps> = ({ startDate, endDate }) => {
-  // Removed unused formattedStartDate and formattedEndDate
   const { data: serviceReports, isLoading, isError, error } = useServiceReports();
   const { data: mealServices, isLoading: isLoadingMealServices } = useMealServices();
   const updateServiceReportMutation = useUpdateServiceReport();

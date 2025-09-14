@@ -30,24 +30,10 @@ export const createStockMovement = async (
   let pendingDeliveryChange = 0;
   let pendingReceptionChange = 0;
   let stockChange = 0;
-  // let newCostoUnitario = currentInsumo.costo_unitario; // Default to current cost - REMOVED: Unused
 
   // Determine how stock quantities and cost change based on movement type
   if (movement_type === "purchase_in") { // This now means 'received by warehouse'
-    // For 'purchase_in', we assume the quantity_change is the total quantity purchased
-    // and we need to update the unit cost based on this purchase.
-    // The form will provide the total amount and quantity for this.
-    // For simplicity here, we'll assume quantity_change is the total_purchase_quantity
-    // and the unit cost is derived from it.
-    // In a real scenario, the form would provide total_amount and total_quantity_purchased
-    // and this function would calculate newCostoUnitario = total_amount / total_quantity_purchased.
-    // For now, we'll just add to stock and update cost if provided.
     stockChange = quantity_change;
-    // If a new unit cost is implied by the purchase, it should be passed here.
-    // For this refactor, we'll assume the form handles the cost update if it's a purchase_in.
-    // If the form doesn't provide a new unit cost, it remains the same.
-    // This RPC doesn't take new unit cost directly, only quantity changes.
-    // The `update_insumo_price_timestamp` trigger will handle price history.
   } else if (movement_type === "reception_in") {
     // For 'reception_in', pending_reception_quantity is updated.
     pendingReceptionChange = quantity_change;

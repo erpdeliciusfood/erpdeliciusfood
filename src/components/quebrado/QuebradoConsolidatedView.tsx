@@ -9,7 +9,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
+import { Badge } from "@/components/ui/badge";
 import { cn } from '@/lib/utils'; // Import cn for conditional classnames
 import { AlertTriangle } from 'lucide-react'; // Import AlertTriangle icon
 
@@ -63,7 +63,7 @@ const QuebradoConsolidatedView: React.FC<QuebradoConsolidatedViewProps> = ({ dat
                         {insumo.currentStock.toFixed(2)}
                       </Badge>
                       {isCriticalStock && (
-                        <AlertTriangle className="ml-2 h-5 w-5 text-red-600 dark:text-red-400" aria-label="Stock insuficiente para la demanda del período" /> // Changed title to aria-label
+                        <AlertTriangle className="ml-2 h-5 w-5 text-red-600 dark:text-red-400" aria-label="Stock insuficiente para la demanda del período" />
                       )}
                     </div>
                   </TableCell>
