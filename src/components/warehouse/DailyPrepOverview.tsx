@@ -27,7 +27,6 @@ interface DailyPrepOverviewProps {
 const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, menus }) => {
   const [stockFilter, setStockFilter] = useState<'all' | 'sufficient' | 'insufficient'>('all');
   const [selectedInsumoIds, setSelectedInsumoIds] = useState<Set<string>>(new Set());
-  const [isSelectAllChecked, setIsSelectAllChecked] = useState(false);
   const [isDeductQuantitiesDialogOpen, setIsDeductQuantitiesDialogOpen] = useState(false);
   const [isUrgentPurchaseRequestDialogOpen, setIsUrgentPurchaseRequestDialogOpen] = useState(false);
   const [selectedInsumoForUrgentRequest, setSelectedInsumoForUrgentRequest] = useState<AggregatedInsumoNeed | null>(null);
@@ -35,8 +34,8 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   const groupedInsumoNeeds: GroupedInsumoNeeds[] = useMemo(() => {
     const serviceGroupsMap = new Map<string, GroupedInsumoNeeds>();
 
-    menus.forEach(menu => {
-      menu.menu_platos?.forEach(menuPlato => {
+    menus.forEach((menu: Menu) => {
+      menu.menu_platos?.forEach((menuPlato) => {
         const mealServiceId = menuPlato.meal_service_id;
         const mealServiceName = menuPlato.meal_services?.name || "Sin Servicio";
 
@@ -55,19 +54,19 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
         const currentServiceGroup = serviceGroupsMap.get(mealServiceId)!;
         const insumoNeedsMapForService = new Map<string, AggregatedInsumoNeed>();
-        currentServiceGroup.insumos.forEach(insumo => insumoNeedsMapForService.set(insumo.insumo_id, insumo));
+        currentServiceGroup.insumos.forEach((insumo: AggregatedInsumoNeed) => insumoNeedsMapForService.set(insumo.insumo_id, insumo));
 
         const receta = menuPlato.platos;
         if (!receta) return;
 
-        receta.plato_insumos?.forEach(platoInsumo => {
+        receta.plato_insumos?.forEach((platoInsumo) => {
           const insumo = platoInsumo.insumos;
           if (!insumo) return;
 
           const totalNeededBaseUnit = platoInsumo.cantidad_necesaria * menuPlato.quantity_needed;
           const totalNeededPurchaseUnit = totalNeededBaseUnit / insumo.conversion_factor;
 
-          const currentEntry = insumoNeedsMapForService.get(insumo.id) || {
+          const currentEntry: AggregatedInsumoNeed = insumoNeedsMapForService.get(insumo.id) || {
             insumo_id: insumo.id,
             insumo_nombre: insumo.nombre,
             base_unit: insumo.base_unit,
@@ -86,7 +85,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
           insumoNeedsMapForService.set(insumo.id, currentEntry);
         });
 
-        currentServiceGroup.insumos = Array.from(insumoNeedsMapForService.values()).map(entry => {
+        currentServiceGroup.insumos = Array.from(insumoNeedsMapForService.values()).map((entry: AggregatedInsumoNeed) => {
           const missing = Math.max(0, entry.total_needed_purchase_unit - entry.current_stock_quantity);
           return {
             ...entry,
@@ -94,15 +93,15 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
             total_needed_purchase_unit: parseFloat(entry.total_needed_purchase_unit.toFixed(2)),
             missing_quantity: parseFloat(missing.toFixed(2)),
           };
-        }).sort((a, b) => a.insumo_nombre.localeCompare(b.insumo_nombre));
+        }).sort((a: AggregatedInsumoNeed, b: AggregatedInsumoNeed) => a.insumo_nombre.localeCompare(b.insumo_nombre));
       });
     });
 
-    const allGroupedNeeds = Array.from(serviceGroupsMap.values()).sort((a, b) => a.meal_service_name.localeCompare(b.meal_service_name));
+    const allGroupedNeeds = Array.from(serviceGroupsMap.values()).sort((a: GroupedInsumoNeeds, b: GroupedInsumoNeeds) => a.meal_service_name.localeCompare(b.meal_service_name));
 
-    const filteredGroupedNeeds = allGroupedNeeds.map(group => ({
+    const filteredGroupedNeeds = allGroupedNeeds.map((group: GroupedInsumoNeeds) => ({
       ...group,
-      insumos: group.insumos.filter(need => {
+      insumos: group.insumos.filter((need: AggregatedInsumoNeed) => {
         if (stockFilter === 'sufficient') {
           return need.current_stock_quantity >= need.total_needed_purchase_unit;
         } else if (stockFilter === 'insufficient') {
@@ -110,18 +109,19 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
         }
         return true;
       })
-    })).filter(group => group.insumos.length > 0);
+    })).filter((group: GroupedInsumoNeeds) => group.insumos.length > 0);
 
     return filteredGroupedNeeds;
   }, [menus, stockFilter]);
 
   // Flatten the grouped needs for overall calculations and dialogs
   const allAggregatedInsumoNeeds = useMemo(() => {
-    return groupedInsumoNeeds.flatMap(group => group.insumos);
+    return groupedInsumoNeeds.flatMap((group: GroupedInsumoNeeds) => group.insumos);
   }, [groupedInsumoNeeds]);
 
   useEffect(() => {
-    const allDeductibleIds = allAggregatedInsumoNeeds.filter(need => need.total_needed_purchase_unit > 0).map(need => need.insumo_id);
+    const allDeductibleIds = allAggregatedInsumoNeeds.filter((need: AggregatedInsumoNeed) => need.total_needed_purchase_unit > 0).map((need: AggregatedInsumoNeed) => need.insumo_id);
+    // Update isSelectAllChecked based on whether all deductible items are currently selected
     setIsSelectAllChecked(allDeductibleIds.length > 0 && selectedInsumoIds.size === allDeductibleIds.length);
   }, [allAggregatedInsumoNeeds, selectedInsumoIds]);
 
@@ -137,19 +137,13 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     });
   };
 
-  const handleSelectAllChange = (checked: boolean) => {
-    if (checked) {
-      const allDeductibleIds = allAggregatedInsumoNeeds.filter(need => need.total_needed_purchase_unit > 0).map(need => need.insumo_id);
-      setSelectedInsumoIds(new Set(allDeductibleIds));
-    } else {
-      setSelectedInsumoIds(new Set());
-    }
-    setIsSelectAllChecked(checked);
-  };
+  // Removed handleSelectAllChange as it's no longer directly used.
+  // The logic for selecting all items within a group is handled directly in the group's checkbox.
+  // The overall isSelectAllChecked state is managed by the useEffect above.
 
   const handleOpenDeductQuantitiesDialog = () => {
     const selectedInsumosWithSufficientStock = allAggregatedInsumoNeeds.filter(
-      (need) => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity >= need.total_needed_purchase_unit
+      (need: AggregatedInsumoNeed) => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity >= need.total_needed_purchase_unit
     );
 
     if (selectedInsumosWithSufficientStock.length === 0) {
@@ -162,7 +156,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   const handleCloseDeductQuantitiesDialog = () => {
     setIsDeductQuantitiesDialogOpen(false);
     setSelectedInsumoIds(new Set());
-    setIsSelectAllChecked(false);
+    // No need to reset isSelectAllChecked here, as the useEffect will handle it based on selectedInsumoIds
   };
 
   const handleOpenUrgentPurchaseRequestDialog = (insumoNeed: AggregatedInsumoNeed) => {
@@ -176,16 +170,16 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   };
 
   const insufficientStockCount = allAggregatedInsumoNeeds.filter(
-    (need) => need.current_stock_quantity < need.total_needed_purchase_unit
+    (need: AggregatedInsumoNeed) => need.current_stock_quantity < need.total_needed_purchase_unit
   ).length;
 
   const formattedDate = format(selectedDate, "PPP", { locale: es });
 
   const isDeductButtonDisabled =
     selectedInsumoIds.size === 0 ||
-    allAggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0;
+    allAggregatedInsumoNeeds.filter((need: AggregatedInsumoNeed) => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0;
 
-  const selectedInsumosForDialog = allAggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id));
+  const selectedInsumosForDialog = allAggregatedInsumoNeeds.filter((need: AggregatedInsumoNeed) => selectedInsumoIds.has(need.insumo_id));
 
   return (
     <div className="space-y-8">
@@ -259,7 +253,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                     <p>Selecciona al menos un insumo para deducir.</p>
                   </TooltipContent>
                 )}
-                {isDeductButtonDisabled && allAggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0 && (
+                {isDeductButtonDisabled && allAggregatedInsumoNeeds.filter((need: AggregatedInsumoNeed) => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0 && (
                   <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
                     <p>No se puede deducir el stock porque hay insumos seleccionados con cantidades insuficientes.</p>
                   </TooltipContent>
@@ -271,7 +265,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
         <CardContent>
           {groupedInsumoNeeds.length > 0 ? (
             <div className="space-y-8">
-              {groupedInsumoNeeds.map((group) => (
+              {groupedInsumoNeeds.map((group: GroupedInsumoNeeds) => (
                 <div key={group.meal_service_id} className="border rounded-lg shadow-sm dark:border-gray-700">
                   <h3 className="text-xl font-semibold p-4 bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-700 rounded-t-lg flex items-center">
                     <Utensils className="h-5 w-5 mr-2 text-gray-600 dark:text-gray-300" />
@@ -283,19 +277,19 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                         <TableRow>
                           <TableHead className="w-[50px] text-center py-4 px-6">
                             <Checkbox
-                              checked={isSelectAllChecked && group.insumos.every(need => selectedInsumoIds.has(need.insumo_id))}
+                              checked={group.insumos.every((need: AggregatedInsumoNeed) => selectedInsumoIds.has(need.insumo_id))}
                               onCheckedChange={(checked: boolean) => {
                                 if (checked) {
                                   const newSelected = new Set(selectedInsumoIds);
-                                  group.insumos.forEach(need => newSelected.add(need.insumo_id));
+                                  group.insumos.forEach((need: AggregatedInsumoNeed) => newSelected.add(need.insumo_id));
                                   setSelectedInsumoIds(newSelected);
                                 } else {
                                   const newSelected = new Set(selectedInsumoIds);
-                                  group.insumos.forEach(need => newSelected.delete(need.insumo_id));
+                                  group.insumos.forEach((need: AggregatedInsumoNeed) => newSelected.delete(need.insumo_id));
                                   setSelectedInsumoIds(newSelected);
                                 }
                               }}
-                              disabled={group.insumos.filter(need => need.total_needed_purchase_unit > 0).length === 0}
+                              disabled={group.insumos.filter((need: AggregatedInsumoNeed) => need.total_needed_purchase_unit > 0).length === 0}
                             />
                           </TableHead>
                           <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Insumo</TableHead>
@@ -307,7 +301,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                         </TableRow>
                       </TableHeader>
                       <TableBody>
-                        {group.insumos.map((need) => {
+                        {group.insumos.map((need: AggregatedInsumoNeed) => {
                           const isSufficient = need.current_stock_quantity >= need.total_needed_purchase_unit;
                           const progressValue = need.total_needed_purchase_unit > 0
                             ? Math.min(100, (need.current_stock_quantity / need.total_needed_purchase_unit) * 100)
@@ -405,7 +399,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                   </div>
                 </div>
               ))}
-              {allAggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0 && (
+              {allAggregatedInsumoNeeds.filter((need: AggregatedInsumoNeed) => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0 && (
                 <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg text-red-700 dark:text-red-300 flex items-center">
                   <AlertTriangle className="h-5 w-5 mr-2" />
                   <p className="text-base font-medium">
