@@ -26,15 +26,17 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
 import { format, parseISO } from "date-fns"; // Importar parseISO
 import { es } from "date-fns/locale";
-import { ServiceReport, ServiceReportFormValues, MealService, Receta } from "@/types";
+import { ServiceReport, ServiceReportFormValues, MealService, Receta, Menu } from "@/types"; // NEW: Import Menu
 import { useAddServiceReport, useUpdateServiceReport } from "@/hooks/useServiceReports";
 import { useMealServices } from "@/hooks/useMealServices";
 import { useRecetas } from "@/hooks/useRecetas";
+import { useMenus } from "@/hooks/useMenus"; // NEW: Import useMenus
 import { Loader2, CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 
 const formSchema = z.object({
   report_date: z.string().min(1, { message: "La fecha del reporte es requerida." }),
   meal_service_id: z.string().min(1, { message: "Debe seleccionar un servicio de comida." }),
+  menu_id: z.string().min(1, { message: "Debe seleccionar un menú asociado." }), // NEW: menu_id is required
   tickets_issued: z.coerce.number().min(0, { message: "Los tickets emitidos no pueden ser negativos." }).int({ message: "Los tickets emitidos deben ser un número entero." }),
   meals_sold: z.coerce.number().min(0, { message: "Las colaciones vendidas no pueden ser negativas." }).int({ message: "Las colaciones vendidas deben ser un número entero." }),
   additional_services_revenue: z.coerce.number().min(0, { message: "Los ingresos adicionales no pueden ser negativos." }).max(999999.99, { message: "Los ingresos adicionales no deben exceder 999999.99." }),
@@ -58,12 +60,14 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
   const updateMutation = useUpdateServiceReport();
   const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
   const { data: availableRecetas, isLoading: isLoadingRecetas } = useRecetas();
+  const { data: availableMenus, isLoading: isLoadingMenus } = useMenus(); // NEW: Fetch available menus
 
   const form = useForm<ServiceReportFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       report_date: format(new Date(), "yyyy-MM-dd"),
       meal_service_id: "",
+      menu_id: "", // NEW: Default menu_id
       tickets_issued: 0,
       meals_sold: 0,
       additional_services_revenue: 0,
@@ -82,6 +86,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
       form.reset({
         report_date: initialData.report_date,
         meal_service_id: initialData.meal_service_id,
+        menu_id: initialData.menu_id, // NEW: Set initial menu_id
         tickets_issued: initialData.tickets_issued,
         meals_sold: initialData.meals_sold,
         additional_services_revenue: initialData.additional_services_revenue,
@@ -95,6 +100,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
       form.reset({
         report_date: format(new Date(), "yyyy-MM-dd"),
         meal_service_id: "",
+        menu_id: "", // NEW: Reset menu_id
         tickets_issued: 0,
         meals_sold: 0,
         additional_services_revenue: 0,
@@ -113,7 +119,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
     onSuccess();
   };
 
-  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingMealServices || isLoadingRecetas;
+  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingMealServices || isLoadingRecetas || isLoadingMenus; // NEW: Include isLoadingMenus
 
   return (
     <Form {...form}>
@@ -182,6 +188,35 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
                   {availableMealServices?.map((service: MealService) => (
                     <SelectItem key={service.id} value={service.id}>
                       {service.name}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="menu_id"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Menú Asociado</FormLabel>
+              <Select
+                onValueChange={field.onChange}
+                defaultValue={field.value}
+                disabled={isLoading || isLoadingMenus}
+              >
+                <FormControl>
+                  <SelectTrigger className="h-12 text-base">
+                    <SelectValue placeholder="Selecciona un menú" />
+                  </SelectTrigger>
+                </FormControl>
+                <SelectContent>
+                  {availableMenus?.map((menu: Menu) => (
+                    <SelectItem key={menu.id} value={menu.id}>
+                      {menu.title} ({menu.menu_date ? format(parseISO(menu.menu_date), "PPP", { locale: es }) : menu.event_types?.name || "Sin Fecha"})
                     </SelectItem>
                   ))}
                 </SelectContent>

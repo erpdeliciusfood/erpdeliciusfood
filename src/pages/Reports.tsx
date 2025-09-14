@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Loader2, BarChart3, CalendarDays, ChevronDown, DollarSign } from "lucide-react";
+import { Loader2, BarChart3, CalendarDays, ChevronDown, DollarSign, UtensilsCrossed } from "lucide-react";
 import { useInsumos } from "@/hooks/useInsumos";
 import StockOverview from "@/components/reports/StockOverview";
 import ConsumptionReport from "@/components/reports/ConsumptionReport";
 import FinancialOverviewReport from "@/components/reports/FinancialOverviewReport";
+import RationAccountingReport from "@/components/reports/RationAccountingReport"; // NEW: Import RationAccountingReport
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { Button } from "@/components/ui/button";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -165,7 +166,8 @@ const Reports = () => {
           <>
             <FinancialOverviewReport startDate={dateRange.from} endDate={dateRange.to} />
             <ConsumptionReport startDate={dateRange.from} endDate={dateRange.to} />
-            <PurchaseAnalysis startDate={dateRange.from} endDate={dateRange.to} selectedReasonFilter={selectedReasonFilter} /> {/* Using the consolidated component */}
+            <PurchaseAnalysis startDate={dateRange.from} endDate={dateRange.to} selectedReasonFilter={selectedReasonFilter} />
+            <RationAccountingReport startDate={dateRange.from} endDate={dateRange.to} /> {/* NEW: Add RationAccountingReport */}
           </>
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">
