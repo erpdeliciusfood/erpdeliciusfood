@@ -6,10 +6,8 @@ import { ShoppingBag } from "lucide-react"; // Removed Loader2
 import SuggestedPurchaseListContent from "./SuggestedPurchaseListContent";
 import { InsumoNeeded as InsumoNeededType } from "@/types";
 
-interface InsumoNeeded extends InsumoNeededType {}
-
 interface PurchaseTableActionsProps {
-  insumosForPurchase: InsumoNeeded[];
+  insumosForPurchase: InsumoNeededType[]; // Use InsumoNeededType directly
   selectedInsumoIds: Set<string>;
   isSelectAllChecked: boolean;
   handleSelectAllChange: (checked: boolean) => void;
@@ -27,8 +25,8 @@ const PurchaseTableActions: React.FC<PurchaseTableActionsProps> = ({
   isSuggestedPurchaseListOpen,
   handleCloseSuggestedPurchaseList,
 }) => {
-  const purchasableInsumosCount = insumosForPurchase.filter((i: InsumoNeeded) => i.purchase_suggestion_rounded > 0).length;
-  const selectedInsumosForBatchPurchase = insumosForPurchase.filter((insumo: InsumoNeeded) => selectedInsumoIds.has(insumo.id));
+  const purchasableInsumosCount = insumosForPurchase.filter((i: InsumoNeededType) => i.purchase_suggestion_rounded > 0).length;
+  const selectedInsumosForBatchPurchase = insumosForPurchase.filter((insumo: InsumoNeededType) => selectedInsumoIds.has(insumo.id));
 
   return (
     <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-2">

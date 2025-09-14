@@ -9,16 +9,17 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, UtensilsCrossed, CalendarDays, ChevronDown, CheckCircle2 } from "lucide-react";
-import { Menu, MEAL_SERVICES_ORDER, MenuPlatoWithRelations } from "@/types"; // Removed MenuPlato import
+import { MenuWithRelations, MEAL_SERVICES_ORDER, MenuPlatoWithRelations } from "@/types"; // Changed Menu to MenuWithRelations, removed MenuPlato
 import { useDeleteMenu } from "@/hooks/useMenus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useMealServices } from "@/hooks/useMealServices";
 import { Badge } from "@/components/ui/badge";
+import { parseISO } from "date-fns"; // Import parseISO
 
 interface DailyMenuListProps {
-  menus: Menu[];
-  onEdit: (menu: Menu) => void;
+  menus: MenuWithRelations[]; // Updated type
+  onEdit: (menu: MenuWithRelations) => void; // Updated type
 }
 
 const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
@@ -173,7 +174,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                             }).map(([serviceName, dishCategories]) => (
                               <div key={serviceName} className="mb-4 last:mb-0">
                                 <h5 className="text-md font-bold text-gray-800 dark:text-gray-200 mb-2 capitalize">{serviceName}</h5>
-                                {Object.entries(dishCategories).map(([dishCategory, platos]: [string, MenuPlatoWithRelations[]]) => (
+                                {Object.entries(dishCategories as Record<string, MenuPlatoWithRelations[]>).map(([dishCategory, platos]: [string, MenuPlatoWithRelations[]]) => ( // Explicitly cast dishCategories
                                   <div key={dishCategory} className="ml-4 mb-2 last:mb-0">
                                     <h6 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 capitalize">{dishCategory}:</h6>
                                     <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">

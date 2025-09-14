@@ -1,4 +1,4 @@
-import { Database } from "./supabase";
+import { Database } from "./types/supabase";
 
 // Base types from Supabase auto-generated file
 export type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -146,6 +146,7 @@ export interface UrgentPurchaseRequestFormValues {
   fulfilled_purchase_record_id?: string | null;
   insistence_count?: number;
   rejection_reason?: string | null;
+  status?: 'pending' | 'approved' | 'rejected' | 'fulfilled'; // NEW: Added status field
 }
 
 export interface SupplierFormValues {
@@ -267,6 +268,8 @@ export interface StockMovementFormValues {
   quantity_change: number; // Made mandatory
   notes: string | null;
   menu_id?: string | null;
+  // Removed total_purchase_amount and total_purchase_quantity as they are not directly part of the RPC
+  // The logic for calculating unit cost will be handled within createStockMovement
 }
 
 

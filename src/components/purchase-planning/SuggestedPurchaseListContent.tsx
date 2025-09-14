@@ -7,16 +7,14 @@ import PurchaseRecordForm from "./PurchaseRecordForm";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { useAddPurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import ReasonBadge from "@/components/shared/ReasonBadge"; // NEW: Import ReasonBadge
 
-interface InsumoNeeded extends InsumoNeededType {} // Use the renamed type
-
 interface SuggestedPurchaseListContentProps {
-  suggestedPurchases: InsumoNeeded[];
+  suggestedPurchases: InsumoNeededType[]; // Use InsumoNeededType directly
   onClose: () => void;
   initialSelectedInsumoIds?: Set<string>; // NEW: Prop for initial selection
 }
@@ -37,13 +35,13 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
   const [isRegisteringBatch, setIsRegisteringBatch] = useState(false);
 
   const [isIndividualRegisterFormOpen, setIsIndividualRegisterFormOpen] = useState(false);
-  const [selectedInsumoForIndividualRegistration, setSelectedInsumoForIndividualRegistration] = useState<InsumoNeeded | null>(null);
+  const [selectedInsumoForIndividualRegistration, setSelectedInsumoForIndividualRegistration] = useState<InsumoNeededType | null>(null);
 
   const purchasableInsumos = suggestedPurchases.filter(i => i.purchase_suggestion_rounded > 0);
 
   useEffect(() => {
     // Update "Select All" checkbox state when suggestedPurchases or selectedInsumoIds change
-    const allPurchasableIds = purchasableInsumos.map((i: InsumoNeeded) => i.id);
+    const allPurchasableIds = purchasableInsumos.map((i: InsumoNeededType) => i.id);
     setIsSelectAllChecked(allPurchasableIds.length > 0 && selectedInsumoIds.size === allPurchasableIds.length);
   }, [purchasableInsumos, selectedInsumoIds]);
 
@@ -69,7 +67,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
 
   const handleSelectAllChange = (checked: boolean) => {
     if (checked) {
-      const allPurchasableIds = purchasableInsumos.map((i: InsumoNeeded) => i.id);
+      const allPurchasableIds = purchasableInsumos.map((i: InsumoNeededType) => i.id);
       setSelectedInsumoIds(new Set(allPurchasableIds));
     } else {
       setSelectedInsumoIds(new Set());
@@ -77,7 +75,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
     setIsSelectAllChecked(checked);
   };
 
-  const handleIndividualRegisterFormOpen = (insumo: InsumoNeeded) => {
+  const handleIndividualRegisterFormOpen = (insumo: InsumoNeededType) => {
     setSelectedInsumoForIndividualRegistration(insumo);
     setIsIndividualRegisterFormOpen(true);
   };
@@ -103,7 +101,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
     let successfulRegistrations = 0;
     let failedRegistrations = 0;
 
-    const selectedInsumosToPurchase = suggestedPurchases.filter((insumo: InsumoNeeded) => selectedInsumoIds.has(insumo.id));
+    const selectedInsumosToPurchase = suggestedPurchases.filter((insumo: InsumoNeededType) => selectedInsumoIds.has(insumo.id));
 
     for (const insumo of selectedInsumosToPurchase) {
       try {
@@ -183,7 +181,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
       </div>
 
       <div className="space-y-4">
-        {purchasableInsumos.map((insumo: InsumoNeeded) => (
+        {purchasableInsumos.map((insumo: InsumoNeededType) => (
           <Card key={insumo.id} className="p-4 shadow-sm dark:bg-gray-700">
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
               <div className="flex items-center space-x-3">

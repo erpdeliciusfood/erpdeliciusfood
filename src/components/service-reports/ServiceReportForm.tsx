@@ -91,7 +91,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
         meals_sold: initialData.meals_sold,
         additional_services_revenue: initialData.additional_services_revenue,
         notes: initialData.notes || "",
-        platos_vendidos: initialData.service_report_platos?.map((srp: ServiceReportPlatoWithRelations) => ({
+        platos_vendidos: initialData.service_report_platos?.map((srp: ServiceReportPlatoWithRelations) => ({ // Explicitly type srp
           plato_id: srp.plato_id,
           quantity_sold: srp.quantity_sold,
         })) || [{ plato_id: "", quantity_sold: 1 }],

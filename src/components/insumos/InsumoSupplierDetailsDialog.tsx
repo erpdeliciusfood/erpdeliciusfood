@@ -1,3 +1,5 @@
+"use client";
+
 import React, { useEffect } from "react";
 import {
   DialogContent,
@@ -77,6 +79,13 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
         supplier_name: values.supplier_name,
         supplier_phone: values.supplier_phone,
         supplier_address: values.supplier_address,
+        // Include other system-managed fields to avoid them being set to undefined/null if not explicitly handled
+        pending_reception_quantity: insumo.pending_reception_quantity,
+        pending_delivery_quantity: insumo.pending_delivery_quantity,
+        last_physical_count_quantity: insumo.last_physical_count_quantity,
+        last_physical_count_date: insumo.last_physical_count_date,
+        discrepancy_quantity: insumo.discrepancy_quantity,
+        proveedor_preferido_id: insumo.proveedor_preferido_id,
       };
 
       await updateInsumoMutation.mutateAsync({
@@ -185,7 +194,7 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
                     {supplierHistory.map((entry: InsumoSupplierHistory) => (
                       <TableRow key={entry.id}>
                         <TableCell className="text-sm text-gray-700 dark:text-gray-300">
-                          {format(new Date(entry.changed_at), "PPP HH:mm", { locale: es })}
+                          {format(new Date(entry.changed_at || new Date()), "PPP HH:mm", { locale: es })}
                         </TableCell>
                         <TableCell className="text-sm text-gray-700 dark:text-gray-300">{entry.old_supplier_name || "N/A"}</TableCell>
                         <TableCell className="text-sm text-gray-700 dark:text-gray-300">{entry.new_supplier_name || "N/A"}</TableCell>
@@ -223,10 +232,10 @@ const InsumoSupplierDetailsDialog: React.FC<InsumoSupplierDetailsDialogProps> = 
                     {priceHistory.map((entry: InsumoPriceHistory) => (
                       <TableRow key={entry.id}>
                         <TableCell className="text-sm text-gray-700 dark:text-gray-300">
-                          {format(new Date(entry.changed_at), "PPP HH:mm", { locale: es })}
+                          {format(new Date(entry.changed_at || new Date()), "PPP HH:mm", { locale: es })}
                         </TableCell>
-                        <TableCell className="text-right text-sm text-gray-700 dark:text-gray-300">S/ {entry.old_costo_unitario.toFixed(2)}</TableCell>
-                        <TableCell className="text-right text-sm text-gray-700 dark:text-gray-300">S/ {entry.new_costo_unitario.toFixed(2)}</TableCell>
+                        <TableCell className="text-right text-sm text-gray-700 dark:text-gray-300">S/ {(entry.old_costo_unitario ?? 0).toFixed(2)}</TableCell>
+                        <TableCell className="text-right text-sm text-gray-700 dark:text-gray-300">S/ {(entry.new_costo_unitario ?? 0).toFixed(2)}</TableCell>
                       </TableRow>
                     ))}
                   </TableBody>
