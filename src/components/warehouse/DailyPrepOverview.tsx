@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Package, CheckCircle2, AlertTriangle, MinusCircle, Utensils, PackageX, Info, ShoppingBag } from "lucide-react";
-import { Menu, AggregatedInsumoNeed } from "@/types";
+import { Menu, AggregatedInsumoNeed, GroupedInsumoNeeds } from "@/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -32,46 +32,42 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   const [isUrgentPurchaseRequestDialogOpen, setIsUrgentPurchaseRequestDialogOpen] = useState(false);
   const [selectedInsumoForUrgentRequest, setSelectedInsumoForUrgentRequest] = useState<AggregatedInsumoNeed | null>(null);
 
-  const aggregatedInsumoNeeds: AggregatedInsumoNeed[] = useMemo(() => {
-    const needsMap = new Map<string, AggregatedInsumoNeed>();
-
-    console.log("useMemo - Processing menus (initial):", menus);
+  const groupedInsumoNeeds: GroupedInsumoNeeds[] = useMemo(() => {
+    const serviceGroupsMap = new Map<string, GroupedInsumoNeeds>();
 
     menus.forEach(menu => {
-      console.log("useMemo - Current menu:", menu.title, menu.id);
-      if (!menu.menu_platos || menu.menu_platos.length === 0) {
-        console.log(`useMemo - Menu ${menu.title} (ID: ${menu.id}) has no menu_platos.`);
-        return;
-      }
-
       menu.menu_platos?.forEach(menuPlato => {
-        console.log("useMemo - Current menuPlato:", menuPlato.platos?.nombre, menuPlato.plato_id, "Quantity needed:", menuPlato.quantity_needed);
+        const mealServiceId = menuPlato.meal_service_id;
+        const mealServiceName = menuPlato.meal_services?.name || "Sin Servicio";
+
+        if (!mealServiceId) {
+          console.warn(`menuPlato with ID ${menuPlato.id} has no associated meal_service_id.`);
+          return;
+        }
+
+        if (!serviceGroupsMap.has(mealServiceId)) {
+          serviceGroupsMap.set(mealServiceId, {
+            meal_service_id: mealServiceId,
+            meal_service_name: mealServiceName,
+            insumos: [],
+          });
+        }
+
+        const currentServiceGroup = serviceGroupsMap.get(mealServiceId)!;
+        const insumoNeedsMapForService = new Map<string, AggregatedInsumoNeed>();
+        currentServiceGroup.insumos.forEach(insumo => insumoNeedsMapForService.set(insumo.insumo_id, insumo));
+
         const receta = menuPlato.platos;
-        if (!receta) {
-          console.log(`useMemo - menuPlato with ID ${menuPlato.plato_id} has no associated receta.`);
-          return;
-        }
-        
-        console.log("useMemo - Receta found:", receta.nombre, receta.id);
-        if (!receta.plato_insumos || receta.plato_insumos.length === 0) {
-          console.log(`useMemo - Receta ${receta.nombre} (ID: ${receta.id}) has no associated plato_insumos.`);
-          return;
-        }
+        if (!receta) return;
 
         receta.plato_insumos?.forEach(platoInsumo => {
-          console.log("useMemo - Current platoInsumo:", platoInsumo.insumos?.nombre, platoInsumo.insumo_id, "Cantidad necesaria:", platoInsumo.cantidad_necesaria);
           const insumo = platoInsumo.insumos;
-          if (!insumo) {
-            console.log(`useMemo - platoInsumo with ID ${platoInsumo.insumo_id} has no associated insumo.`);
-            return;
-          }
-          console.log("useMemo - Insumo found:", insumo.nombre, insumo.id, "Stock:", insumo.stock_quantity, "Conversion Factor:", insumo.conversion_factor);
-
+          if (!insumo) return;
 
           const totalNeededBaseUnit = platoInsumo.cantidad_necesaria * menuPlato.quantity_needed;
           const totalNeededPurchaseUnit = totalNeededBaseUnit / insumo.conversion_factor;
 
-          const currentEntry = needsMap.get(insumo.id) || {
+          const currentEntry = insumoNeedsMapForService.get(insumo.id) || {
             insumo_id: insumo.id,
             insumo_nombre: insumo.nombre,
             base_unit: insumo.base_unit,
@@ -81,40 +77,53 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
             total_needed_base_unit: 0,
             total_needed_purchase_unit: 0,
             missing_quantity: 0,
+            meal_service_id: mealServiceId,
+            meal_service_name: mealServiceName,
           };
 
           currentEntry.total_needed_base_unit += totalNeededBaseUnit;
           currentEntry.total_needed_purchase_unit += totalNeededPurchaseUnit;
-          needsMap.set(insumo.id, currentEntry);
+          insumoNeedsMapForService.set(insumo.id, currentEntry);
         });
+
+        currentServiceGroup.insumos = Array.from(insumoNeedsMapForService.values()).map(entry => {
+          const missing = Math.max(0, entry.total_needed_purchase_unit - entry.current_stock_quantity);
+          return {
+            ...entry,
+            total_needed_base_unit: parseFloat(entry.total_needed_base_unit.toFixed(2)),
+            total_needed_purchase_unit: parseFloat(entry.total_needed_purchase_unit.toFixed(2)),
+            missing_quantity: parseFloat(missing.toFixed(2)),
+          };
+        }).sort((a, b) => a.insumo_nombre.localeCompare(b.insumo_nombre));
       });
     });
 
-    const allNeeds = Array.from(needsMap.values()).map(entry => {
-      const missing = Math.max(0, entry.total_needed_purchase_unit - entry.current_stock_quantity);
-      return {
-        ...entry,
-        total_needed_base_unit: parseFloat(entry.total_needed_base_unit.toFixed(2)),
-        total_needed_purchase_unit: parseFloat(entry.total_needed_purchase_unit.toFixed(2)),
-        missing_quantity: parseFloat(missing.toFixed(2)),
-      };
-    }).sort((a, b) => a.insumo_nombre.localeCompare(b.insumo_nombre));
+    const allGroupedNeeds = Array.from(serviceGroupsMap.values()).sort((a, b) => a.meal_service_name.localeCompare(b.meal_service_name));
 
-    console.log("useMemo - Final aggregated needs before filter:", allNeeds);
+    const filteredGroupedNeeds = allGroupedNeeds.map(group => ({
+      ...group,
+      insumos: group.insumos.filter(need => {
+        if (stockFilter === 'sufficient') {
+          return need.current_stock_quantity >= need.total_needed_purchase_unit;
+        } else if (stockFilter === 'insufficient') {
+          return need.current_stock_quantity < need.total_needed_purchase_unit;
+        }
+        return true;
+      })
+    })).filter(group => group.insumos.length > 0);
 
-    // Apply filter
-    if (stockFilter === 'sufficient') {
-      return allNeeds.filter(need => need.current_stock_quantity >= need.total_needed_purchase_unit);
-    } else if (stockFilter === 'insufficient') {
-      return allNeeds.filter(need => need.current_stock_quantity < need.total_needed_purchase_unit);
-    }
-    return allNeeds;
+    return filteredGroupedNeeds;
   }, [menus, stockFilter]);
 
+  // Flatten the grouped needs for overall calculations and dialogs
+  const allAggregatedInsumoNeeds = useMemo(() => {
+    return groupedInsumoNeeds.flatMap(group => group.insumos);
+  }, [groupedInsumoNeeds]);
+
   useEffect(() => {
-    const allDeductibleIds = aggregatedInsumoNeeds.filter(need => need.total_needed_purchase_unit > 0).map(need => need.insumo_id);
+    const allDeductibleIds = allAggregatedInsumoNeeds.filter(need => need.total_needed_purchase_unit > 0).map(need => need.insumo_id);
     setIsSelectAllChecked(allDeductibleIds.length > 0 && selectedInsumoIds.size === allDeductibleIds.length);
-  }, [aggregatedInsumoNeeds, selectedInsumoIds]);
+  }, [allAggregatedInsumoNeeds, selectedInsumoIds]);
 
   const handleCheckboxChange = (insumoId: string, checked: boolean) => {
     setSelectedInsumoIds((prev: Set<string>) => {
@@ -130,7 +139,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
   const handleSelectAllChange = (checked: boolean) => {
     if (checked) {
-      const allDeductibleIds = aggregatedInsumoNeeds.filter(need => need.total_needed_purchase_unit > 0).map(need => need.insumo_id);
+      const allDeductibleIds = allAggregatedInsumoNeeds.filter(need => need.total_needed_purchase_unit > 0).map(need => need.insumo_id);
       setSelectedInsumoIds(new Set(allDeductibleIds));
     } else {
       setSelectedInsumoIds(new Set());
@@ -139,7 +148,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   };
 
   const handleOpenDeductQuantitiesDialog = () => {
-    const selectedInsumosWithSufficientStock = aggregatedInsumoNeeds.filter(
+    const selectedInsumosWithSufficientStock = allAggregatedInsumoNeeds.filter(
       (need) => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity >= need.total_needed_purchase_unit
     );
 
@@ -166,7 +175,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     setSelectedInsumoForUrgentRequest(null);
   };
 
-  const insufficientStockCount = aggregatedInsumoNeeds.filter(
+  const insufficientStockCount = allAggregatedInsumoNeeds.filter(
     (need) => need.current_stock_quantity < need.total_needed_purchase_unit
   ).length;
 
@@ -174,9 +183,9 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
   const isDeductButtonDisabled =
     selectedInsumoIds.size === 0 ||
-    aggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0;
+    allAggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0;
 
-  const selectedInsumosForDialog = aggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id));
+  const selectedInsumosForDialog = allAggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id));
 
   return (
     <div className="space-y-8">
@@ -198,7 +207,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
             <Package className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{aggregatedInsumoNeeds.length}</div>
+            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{allAggregatedInsumoNeeds.length}</div>
             <p className="text-sm text-muted-foreground mt-1">Tipos de insumos requeridos</p>
           </CardContent>
         </Card>
@@ -250,7 +259,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                     <p>Selecciona al menos un insumo para deducir.</p>
                   </TooltipContent>
                 )}
-                {isDeductButtonDisabled && aggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0 && (
+                {isDeductButtonDisabled && allAggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0 && (
                   <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
                     <p>No se puede deducir el stock porque hay insumos seleccionados con cantidades insuficientes.</p>
                   </TooltipContent>
@@ -260,123 +269,143 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
           </div>
         </CardHeader>
         <CardContent>
-          {aggregatedInsumoNeeds.length > 0 ? (
-            <div className="overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[50px] text-center py-4 px-6">
-                      <Checkbox
-                        checked={isSelectAllChecked}
-                        onCheckedChange={(checked: boolean) => handleSelectAllChange(checked)}
-                        disabled={aggregatedInsumoNeeds.filter(need => need.total_needed_purchase_unit > 0).length === 0}
-                      />
-                    </TableHead>
-                    <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Insumo</TableHead>
-                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Stock Actual</TableHead>
-                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Necesidad</TableHead>
-                    <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Faltante</TableHead>
-                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Estado</TableHead>
-                    <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {aggregatedInsumoNeeds.map((need) => {
-                    const isSufficient = need.current_stock_quantity >= need.total_needed_purchase_unit;
-                    const progressValue = need.total_needed_purchase_unit > 0
-                      ? Math.min(100, (need.current_stock_quantity / need.total_needed_purchase_unit) * 100)
-                      : 100;
-                    const progressColor = isSufficient ? "bg-green-500" : "bg-red-500";
+          {groupedInsumoNeeds.length > 0 ? (
+            <div className="space-y-8">
+              {groupedInsumoNeeds.map((group) => (
+                <div key={group.meal_service_id} className="border rounded-lg shadow-sm dark:border-gray-700">
+                  <h3 className="text-xl font-semibold p-4 bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-700 rounded-t-lg flex items-center">
+                    <Utensils className="h-5 w-5 mr-2 text-gray-600 dark:text-gray-300" />
+                    {group.meal_service_name}
+                  </h3>
+                  <div className="overflow-x-auto">
+                    <Table>
+                      <TableHeader>
+                        <TableRow>
+                          <TableHead className="w-[50px] text-center py-4 px-6">
+                            <Checkbox
+                              checked={isSelectAllChecked && group.insumos.every(need => selectedInsumoIds.has(need.insumo_id))}
+                              onCheckedChange={(checked: boolean) => {
+                                if (checked) {
+                                  const newSelected = new Set(selectedInsumoIds);
+                                  group.insumos.forEach(need => newSelected.add(need.insumo_id));
+                                  setSelectedInsumoIds(newSelected);
+                                } else {
+                                  const newSelected = new Set(selectedInsumoIds);
+                                  group.insumos.forEach(need => newSelected.delete(need.insumo_id));
+                                  setSelectedInsumoIds(newSelected);
+                                }
+                              }}
+                              disabled={group.insumos.filter(need => need.total_needed_purchase_unit > 0).length === 0}
+                            />
+                          </TableHead>
+                          <TableHead className="text-left text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[180px]">Insumo</TableHead>
+                          <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Stock Actual</TableHead>
+                          <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Necesidad</TableHead>
+                          <TableHead className="text-right text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[120px]">Faltante</TableHead>
+                          <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Estado</TableHead>
+                          <TableHead className="text-center text-lg font-semibold text-gray-700 dark:text-gray-200 py-4 px-6 min-w-[150px]">Acciones</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        {group.insumos.map((need) => {
+                          const isSufficient = need.current_stock_quantity >= need.total_needed_purchase_unit;
+                          const progressValue = need.total_needed_purchase_unit > 0
+                            ? Math.min(100, (need.current_stock_quantity / need.total_needed_purchase_unit) * 100)
+                            : 100;
+                          const progressColor = isSufficient ? "bg-green-500" : "bg-red-500";
 
-                    return (
-                      <TableRow
-                        key={need.insumo_id}
-                        className={cn(
-                          "border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out",
-                          !isSufficient && "bg-red-50/50 dark:bg-red-900/20"
-                        )}
-                      >
-                        <TableCell className="text-center py-3 px-6">
-                          <Checkbox
-                            checked={selectedInsumoIds.has(need.insumo_id)}
-                            onCheckedChange={(checked: boolean) => handleCheckboxChange(need.insumo_id, checked)}
-                            disabled={need.total_needed_purchase_unit === 0}
-                          />
-                        </TableCell>
-                        <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[180px]">{need.insumo_nombre}</TableCell>
-                        <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[150px]">
-                          <div className="flex flex-col items-end">
-                            <span className="font-semibold">{need.current_stock_quantity.toFixed(2)} {need.purchase_unit}</span>
-                            <TooltipProvider>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <ColoredProgress
-                                    value={progressValue}
-                                    className="w-24 h-2 mt-1 cursor-help"
-                                    indicatorColorClass={progressColor}
-                                  />
-                                </TooltipTrigger>
-                                <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                                  <p>{progressValue.toFixed(0)}% Cubierto</p>
-                                </TooltipContent>
-                              </Tooltip>
-                            </TooltipProvider>
-                          </div>
-                        </TableCell>
-                        <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[150px]">
-                          <TooltipProvider>
-                            <Tooltip>
-                              <TooltipTrigger asChild>
-                                <span className="inline-flex items-center cursor-help">
-                                  {need.total_needed_purchase_unit.toFixed(2)} {need.purchase_unit}
-                                  <Info className="ml-1 h-4 w-4 text-gray-500 dark:text-gray-400" />
-                                </span>
-                              </TooltipTrigger>
-                              <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                                <p>Cantidad en unidad base: {need.total_needed_base_unit.toFixed(2)} {need.base_unit}</p>
-                              </TooltipContent>
-                            </Tooltip>
-                          </TooltipProvider>
-                        </TableCell>
-                        <TableCell className="text-right text-base py-3 px-6 min-w-[120px]">
-                          {need.missing_quantity > 0 ? (
-                            <Badge variant="destructive" className="text-base px-2 py-1">
-                              {need.missing_quantity.toFixed(2)} {need.purchase_unit}
-                            </Badge>
-                          ) : (
-                            <span className="text-gray-500 dark:text-gray-400">0 {need.purchase_unit}</span>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center py-3 px-6 min-w-[150px]">
-                          {isSufficient ? (
-                            <Badge className="bg-green-500 hover:bg-green-600 text-white text-base px-3 py-1">
-                              <CheckCircle2 className="h-4 w-4 mr-1" /> Suficiente
-                            </Badge>
-                          ) : (
-                            <Badge variant="destructive" className="text-base px-3 py-1">
-                              <AlertTriangle className="h-4 w-4 mr-1" /> Insuficiente
-                            </Badge>
-                          )}
-                        </TableCell>
-                        <TableCell className="text-center py-3 px-6 min-w-[150px]">
-                          {!isSufficient && need.missing_quantity > 0 && (
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              onClick={() => handleOpenUrgentPurchaseRequestDialog(need)}
-                              className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white transition-colors duration-200 ease-in-out"
+                          return (
+                            <TableRow
+                              key={need.insumo_id}
+                              className={cn(
+                                "border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out",
+                                !isSufficient && "bg-red-50/50 dark:bg-red-900/20"
+                              )}
                             >
-                              <ShoppingBag className="mr-1 h-4 w-4" />
-                              Solicitar Urgente
-                            </Button>
-                          )}
-                        </TableCell>
-                      </TableRow>
-                    );
-                  })}
-                </TableBody>
-              </Table>
-              {aggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0 && (
+                              <TableCell className="text-center py-3 px-6">
+                                <Checkbox
+                                  checked={selectedInsumoIds.has(need.insumo_id)}
+                                  onCheckedChange={(checked: boolean) => handleCheckboxChange(need.insumo_id, checked)}
+                                  disabled={need.total_needed_purchase_unit === 0}
+                                />
+                              </TableCell>
+                              <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[180px]">{need.insumo_nombre}</TableCell>
+                              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[150px]">
+                                <div className="flex flex-col items-end">
+                                  <span className="font-semibold">{need.current_stock_quantity.toFixed(2)} {need.purchase_unit}</span>
+                                  <TooltipProvider>
+                                    <Tooltip>
+                                      <TooltipTrigger asChild>
+                                        <ColoredProgress
+                                          value={progressValue}
+                                          className="w-24 h-2 mt-1 cursor-help"
+                                          indicatorColorClass={progressColor}
+                                        />
+                                      </TooltipTrigger>
+                                      <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
+                                        <p>{progressValue.toFixed(0)}% Cubierto</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  </TooltipProvider>
+                                </div>
+                              </TableCell>
+                              <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[150px]">
+                                <TooltipProvider>
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <span className="inline-flex items-center cursor-help">
+                                        {need.total_needed_purchase_unit.toFixed(2)} {need.purchase_unit}
+                                        <Info className="ml-1 h-4 w-4 text-gray-500 dark:text-gray-400" />
+                                      </span>
+                                    </TooltipTrigger>
+                                    <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
+                                      <p>Cantidad en unidad base: {need.total_needed_base_unit.toFixed(2)} {need.base_unit}</p>
+                                    </TooltipContent>
+                                  </Tooltip>
+                                </TooltipProvider>
+                              </TableCell>
+                              <TableCell className="text-right text-base py-3 px-6 min-w-[120px]">
+                                {need.missing_quantity > 0 ? (
+                                  <Badge variant="destructive" className="text-base px-2 py-1">
+                                    {need.missing_quantity.toFixed(2)} {need.purchase_unit}
+                                  </Badge>
+                                ) : (
+                                  <span className="text-gray-500 dark:text-gray-400">0 {need.purchase_unit}</span>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-center py-3 px-6 min-w-[150px]">
+                                {isSufficient ? (
+                                  <Badge className="bg-green-500 hover:bg-green-600 text-white text-base px-3 py-1">
+                                    <CheckCircle2 className="h-4 w-4 mr-1" /> Suficiente
+                                  </Badge>
+                                ) : (
+                                  <Badge variant="destructive" className="text-base px-3 py-1">
+                                    <AlertTriangle className="h-4 w-4 mr-1" /> Insuficiente
+                                  </Badge>
+                                )}
+                              </TableCell>
+                              <TableCell className="text-center py-3 px-6 min-w-[150px]">
+                                {!isSufficient && need.missing_quantity > 0 && (
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleOpenUrgentPurchaseRequestDialog(need)}
+                                    className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white transition-colors duration-200 ease-in-out"
+                                  >
+                                    <ShoppingBag className="mr-1 h-4 w-4" />
+                                    Solicitar Urgente
+                                  </Button>
+                                )}
+                              </TableCell>
+                            </TableRow>
+                          );
+                        })}
+                      </TableBody>
+                    </Table>
+                  </div>
+                </div>
+              ))}
+              {allAggregatedInsumoNeeds.filter(need => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0 && (
                 <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg text-red-700 dark:text-red-300 flex items-center">
                   <AlertTriangle className="h-5 w-5 mr-2" />
                   <p className="text-base font-medium">
