@@ -19,7 +19,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { format, formatISO } from "date-fns";
+import { format, formatISO, parseISO } from "date-fns"; // Importar parseISO
 import { es } from "date-fns/locale";
 import { Insumo, PurchaseRecordFormValues } from "@/types";
 import { CalendarIcon } from "lucide-react";
@@ -90,7 +90,7 @@ const PurchaseDetailsFormSection: React.FC<PurchaseDetailsFormSectionProps> = ({
                     disabled={isLoading}
                   >
                     {field.value ? (
-                      format(new Date(field.value), "PPP", { locale: es })
+                      format(parseISO(field.value), "PPP", { locale: es }) // Usar parseISO aquí
                     ) : (
                       <span>Selecciona una fecha</span>
                     )}
@@ -101,13 +101,13 @@ const PurchaseDetailsFormSection: React.FC<PurchaseDetailsFormSectionProps> = ({
               <PopoverContent className="w-auto p-0" align="start">
                 <Calendar
                   mode="single"
-                  selected={field.value ? new Date(field.value) : undefined}
+                  selected={field.value ? parseISO(field.value) : undefined} // Usar parseISO aquí
                   onSelect={(date) => field.onChange(date ? formatISO(date, { representation: 'date' }) : null)}
                   disabled={(date) =>
                     date > new Date() || date < new Date("1900-01-01") || isLoading
                   }
                   initialFocus
-                  locale={es} // Added locale={es}
+                  locale={es}
                 />
               </PopoverContent>
             </Popover>

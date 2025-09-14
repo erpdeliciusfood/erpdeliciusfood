@@ -24,12 +24,12 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { Calendar } from "@/components/ui/calendar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { cn } from "@/lib/utils";
-import { format } from "date-fns";
+import { format, parseISO } from "date-fns"; // Importar parseISO
 import { es } from "date-fns/locale";
-import { ServiceReport, ServiceReportFormValues, MealService, Receta } from "@/types"; // Changed Plato to Receta
+import { ServiceReport, ServiceReportFormValues, MealService, Receta } from "@/types";
 import { useAddServiceReport, useUpdateServiceReport } from "@/hooks/useServiceReports";
 import { useMealServices } from "@/hooks/useMealServices";
-import { useRecetas } from "@/hooks/useRecetas"; // Changed usePlatos to useRecetas
+import { useRecetas } from "@/hooks/useRecetas";
 import { Loader2, CalendarIcon, PlusCircle, Trash2 } from "lucide-react";
 
 const formSchema = z.object({
@@ -41,10 +41,10 @@ const formSchema = z.object({
   notes: z.string().max(500, { message: "Las notas no deben exceder los 500 caracteres." }).nullable(),
   platos_vendidos: z.array(
     z.object({
-      plato_id: z.string().min(1, { message: "Debe seleccionar una receta." }), // Changed text
+      plato_id: z.string().min(1, { message: "Debe seleccionar una receta." }),
       quantity_sold: z.coerce.number().min(1, { message: "La cantidad vendida debe ser al menos 1." }).int({ message: "La cantidad vendida debe ser un número entero." }),
     })
-  ).min(1, { message: "Debe añadir al menos una receta vendida al reporte." }), // Changed text
+  ).min(1, { message: "Debe añadir al menos una receta vendida al reporte." }),
 });
 
 interface ServiceReportFormProps {
@@ -57,7 +57,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
   const addMutation = useAddServiceReport();
   const updateMutation = useUpdateServiceReport();
   const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
-  const { data: availableRecetas, isLoading: isLoadingRecetas } = useRecetas(); // Changed variable name and hook
+  const { data: availableRecetas, isLoading: isLoadingRecetas } = useRecetas();
 
   const form = useForm<ServiceReportFormValues>({
     resolver: zodResolver(formSchema),
@@ -68,7 +68,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
       meals_sold: 0,
       additional_services_revenue: 0,
       notes: "",
-      platos_vendidos: [{ plato_id: "", quantity_sold: 1 }], // Default for new reports
+      platos_vendidos: [{ plato_id: "", quantity_sold: 1 }],
     },
   });
 
@@ -113,7 +113,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
     onSuccess();
   };
 
-  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingMealServices || isLoadingRecetas; // Changed loading state
+  const isLoading = addMutation.isPending || updateMutation.isPending || isLoadingMealServices || isLoadingRecetas;
 
   return (
     <Form {...form}>
@@ -136,7 +136,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
                       disabled={isLoading}
                     >
                       {field.value ? (
-                        format(new Date(field.value), "PPP", { locale: es })
+                        format(parseISO(field.value), "PPP", { locale: es }) // Usar parseISO aquí
                       ) : (
                         <span>Selecciona una fecha</span>
                       )}
@@ -147,13 +147,13 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={field.value ? new Date(field.value) : undefined}
+                    selected={field.value ? parseISO(field.value) : undefined} // Usar parseISO aquí
                     onSelect={(date) => field.onChange(date ? format(date, "yyyy-MM-dd") : null)}
                     disabled={(date) =>
                       date > new Date() || date < new Date("1900-01-01") || isLoading
                     }
                     initialFocus
-                    locale={es} // Added locale={es}
+                    locale={es}
                   />
                 </PopoverContent>
               </Popover>
@@ -279,7 +279,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
 
         <Card className="mt-8">
           <CardHeader>
-            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Recetas Vendidas</CardTitle> {/* Changed text */}
+            <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Recetas Vendidas</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {fields.map((field, index) => (
@@ -289,19 +289,19 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
                   name={`platos_vendidos.${index}.plato_id`}
                   render={({ field: platoField }) => (
                     <FormItem className="flex-grow w-full md:w-2/3">
-                      <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Receta</FormLabel> {/* Changed text */}
+                      <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Receta</FormLabel>
                       <Select
                         onValueChange={platoField.onChange}
                         defaultValue={platoField.value}
-                        disabled={isLoading || isLoadingRecetas} // Changed loading state
+                        disabled={isLoading || isLoadingRecetas}
                       >
                         <FormControl>
                           <SelectTrigger className="h-12 text-base">
-                            <SelectValue placeholder="Selecciona una receta" /> {/* Changed text */}
+                            <SelectValue placeholder="Selecciona una receta" />
                           </SelectTrigger>
                         </FormControl>
                         <SelectContent>
-                          {availableRecetas?.map((receta: Receta) => ( // Changed variable name and type
+                          {availableRecetas?.map((receta: Receta) => (
                             <SelectItem key={receta.id} value={receta.id}>
                               {receta.nombre}
                             </SelectItem>
@@ -353,7 +353,7 @@ const ServiceReportForm: React.FC<ServiceReportFormProps> = ({ initialData, onSu
               disabled={isLoading}
             >
               <PlusCircle className="mr-2 h-5 w-5" />
-              Añadir Receta Vendida {/* Changed text */}
+              Añadir Receta Vendida
             </Button>
           </CardContent>
         </Card>

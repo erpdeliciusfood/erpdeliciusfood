@@ -11,11 +11,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod"; // Corregido: de '*s z' a '* as z'
+import * as z from "zod";
 import { Insumo, InsumoFormValues } from "@/types";
 import { useUpdateInsumo } from "@/hooks/useInsumos";
 import { Loader2, CalendarIcon, AlertCircle } from "lucide-react";
-import { format, formatISO } from "date-fns";
+import { format, formatISO, parseISO } from "date-fns"; // Importar parseISO
 import { es } from "date-fns/locale";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
@@ -161,7 +161,7 @@ const PhysicalCountDialog: React.FC<PhysicalCountDialogProps> = ({ insumo, onClo
                     disabled={isUpdating}
                   >
                     {field.value ? (
-                      format(new Date(field.value), "PPP", { locale: es })
+                      format(parseISO(field.value), "PPP", { locale: es }) // Usar parseISO aquí
                     ) : (
                       <span>Selecciona una fecha</span>
                     )}
@@ -171,13 +171,13 @@ const PhysicalCountDialog: React.FC<PhysicalCountDialogProps> = ({ insumo, onClo
                 <PopoverContent className="w-auto p-0" align="start">
                   <Calendar
                     mode="single"
-                    selected={field.value ? new Date(field.value) : undefined}
+                    selected={field.value ? parseISO(field.value) : undefined} // Usar parseISO aquí
                     onSelect={(date) => field.onChange(date ? formatISO(date, { representation: 'date' }) : null)}
                     disabled={(date) =>
                       date > new Date() || date < new Date("1900-01-01") || isUpdating
                     }
                     initialFocus
-                    locale={es} // Added locale={es}
+                    locale={es}
                   />
                 </PopoverContent>
               </Popover>
