@@ -1,371 +1,200 @@
 "use client";
 
-import React from "react";
-import {
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import React, { useState, useMemo } from "react";
+import { DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useForm, useFieldArray } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import * as z from "zod";
-import { Loader2, AlertTriangle, RotateCcw, Package, Utensils, CalendarDays } from "lucide-react"; // NEW: Utensils, CalendarDays icons
+import { InsumoDeductionItem } from "@/types"; // Removed InsumoToDeduct
+import { createStockMovement } from "@/lib/supabase/actions";
+import { useAuth } from "@/hooks/useAuth";
+import { toast } from "react-hot-toast";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { InsumoDeductionItem } from "@/types"; // MODIFIED: Import InsumoDeductionItem
-import { useAddStockMovement } from "@/hooks/useStockMovements";
-import { showSuccess, showError, showLoading, dismissToast, showInfo } from "@/utils/toast";
-import { useQueryClient } from "@tanstack/react-query";
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
-import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils";
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-
-const formSchema = z.object({
-  deductor_name: z.string().min(1, { message: "El nombre de quien realiza la acción es requerido." }).max(100, { message: "El nombre no debe exceder los 100 caracteres." }),
-  deduction_items: z.array( // MODIFIED: Renamed from insumos_to_deduct
-    z.object({
-      unique_id: z.string(), // NEW: Unique ID for each item
-      insumo_id: z.string(),
-      insumo_nombre: z.string(),
-      purchase_unit: z.string(),
-      current_stock_quantity: z.number(),
-      suggested_quantity: z.number(), // This will be total_needed_purchase_unit_for_item
-      quantity_to_deduct: z.coerce.number().min(0, { message: "La cantidad a deducir no puede ser negativa." }),
-      plato_nombre: z.string(), // NEW: Plato (Receta) name
-      meal_service_name: z.string(), // NEW: Meal Service name
-      menu_title: z.string(), // NEW: Menu title
-      menu_date: z.string().nullable(), // NEW: Menu date
-    })
-  ).min(1, { message: "Debe haber al menos un insumo para deducir." }),
-  confirm_deduction: z.boolean().refine(val => val === true, {
-    message: "Debe confirmar que la deducción real de productos ha sido realizada.",
-  }),
-}).superRefine((data, ctx) => {
-  data.deduction_items.forEach((item, index) => {
-    if (item.quantity_to_deduct > item.current_stock_quantity) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: `La cantidad a deducir (${item.quantity_to_deduct.toFixed(2)}) no puede ser mayor que el stock actual (${item.current_stock_quantity.toFixed(2)}).`,
-        path: [`deduction_items.${index}.quantity_to_deduct`],
-      });
-    }
-    if (item.quantity_to_deduct === 0) {
-      ctx.addIssue({
-        code: z.ZodIssueCode.custom,
-        message: "La cantidad a deducir no puede ser cero. Si no desea deducir este insumo, desmárquelo en la lista anterior.",
-        path: [`deduction_items.${index}.quantity_to_deduct`],
-      });
-    }
-  });
-});
+// Removed Textarea as it's not used
 
 interface DeductQuantitiesDialogProps {
-  selectedDeductionItems: InsumoDeductionItem[]; // MODIFIED: Use InsumoDeductionItem[]
+  selectedDeductionItems: InsumoDeductionItem[];
   selectedDate: Date;
-  menuId: string | null;
   onClose: () => void;
 }
 
 const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
-  selectedDeductionItems, // MODIFIED: Use selectedDeductionItems
+  selectedDeductionItems,
   selectedDate,
-  menuId,
   onClose,
 }) => {
-  const queryClient = useQueryClient();
-  const addStockMovementMutation = useAddStockMovement();
+  const { user } = useAuth();
+  const [deductorName, setDeductorName] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [quantitiesToDeduct, setQuantitiesToDeduct] = useState<Record<string, number>>({});
 
-  const form = useForm<z.infer<typeof formSchema>>({
-    resolver: zodResolver(formSchema),
-    defaultValues: {
-      deductor_name: "",
-      deduction_items: selectedDeductionItems.map(item => ({ // MODIFIED: Map InsumoDeductionItem
-        unique_id: item.unique_id,
-        insumo_id: item.insumo_id,
-        insumo_nombre: item.insumo_nombre,
-        purchase_unit: item.purchase_unit,
-        current_stock_quantity: item.current_stock_quantity,
-        suggested_quantity: item.total_needed_purchase_unit_for_item,
-        quantity_to_deduct: item.total_needed_purchase_unit_for_item,
-        plato_nombre: item.plato_nombre, // NEW
-        meal_service_name: item.meal_service_name, // NEW
-        menu_title: item.menu_title, // NEW
-        menu_date: item.menu_date, // NEW
-      })),
-      confirm_deduction: false,
-    },
-  });
+  // Aggregate selectedDeductionItems by insumo_id for display and initial deduction quantities
+  const insumosToProcess = useMemo(() => {
+    const aggregated = new Map<string, {
+      insumo_id: string;
+      insumo_nombre: string;
+      purchase_unit: string;
+      current_stock_quantity: number;
+      total_needed: number;
+      items: InsumoDeductionItem[]; // Keep track of original granular items
+    }>();
 
-  const { fields } = useFieldArray({
-    control: form.control,
-    name: "deduction_items", // MODIFIED: Use deduction_items
-  });
-
-  const isDeductingStock = addStockMovementMutation.isPending;
-  const deduction_items = form.watch("deduction_items"); // MODIFIED: Use deduction_items
-
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
-    const { deductor_name, deduction_items } = values; // MODIFIED: Use deduction_items
-
-    const deductToastId = showLoading("Deduciendo insumos para la preparación diaria...");
-    let successfulDeductions = 0;
-    let failedDeductions = 0;
-    let adjustedDeductionsCount = 0;
-
-    for (const item of deduction_items) { // MODIFIED: Iterate over deduction_items
-      if (item.quantity_to_deduct > 0) {
-        let notes = `Salida por preparación diaria para el menú del ${format(selectedDate, "PPP", { locale: es })}. Realizado por: ${deductor_name}`;
-        notes += `\nServicio: ${item.meal_service_name}, Receta: ${item.plato_nombre}`; // NEW: Add service and recipe to notes
-        
-        if (item.quantity_to_deduct !== item.suggested_quantity) {
-          adjustedDeductionsCount++;
-          notes += `\n(Ajuste manual: Necesidad original ${item.suggested_quantity.toFixed(2)} ${item.purchase_unit}, Deducido: ${item.quantity_to_deduct.toFixed(2)} ${item.purchase_unit})`;
-        }
-
-        try {
-          await addStockMovementMutation.mutateAsync({
-            insumo_id: item.insumo_id,
-            movement_type: 'daily_prep_out',
-            quantity_change: item.quantity_to_deduct,
-            notes: notes,
-            menu_id: menuId,
-          });
-          successfulDeductions++;
-        } catch (error: any) {
-          failedDeductions++;
-          showError(`Error al deducir ${item.insumo_nombre}: ${error.message}`);
-        }
+    selectedDeductionItems.forEach(item => {
+      if (!aggregated.has(item.insumo_id)) {
+        aggregated.set(item.insumo_id, {
+          insumo_id: item.insumo_id,
+          insumo_nombre: item.insumo_nombre,
+          purchase_unit: item.purchase_unit,
+          current_stock_quantity: item.current_stock_quantity,
+          total_needed: 0,
+          items: [],
+        });
       }
-    }
+      const entry = aggregated.get(item.insumo_id)!;
+      entry.total_needed += item.total_needed_purchase_unit_for_item;
+      entry.items.push(item); // Add the granular item
+    });
 
-    dismissToast(deductToastId);
-    if (successfulDeductions > 0) {
-      let successMessage = `Se dedujeron ${successfulDeductions} insumos exitosamente para la preparación diaria.`;
-      if (adjustedDeductionsCount > 0) {
-        successMessage += ` Se realizaron ${adjustedDeductionsCount} ajustes manuales.`;
-        showInfo("Revisa el módulo de Movimientos de Stock para ver los detalles de los ajustes.");
-      }
-      showSuccess(successMessage);
-    }
-    if (failedDeductions > 0) {
-      showError(`Fallaron ${failedDeductions} deducciones de insumos.`);
-    }
+    return Array.from(aggregated.values()).map(entry => ({
+      ...entry,
+      total_needed: parseFloat(entry.total_needed.toFixed(2)),
+      quantity_to_deduct: quantitiesToDeduct[entry.insumo_id] !== undefined
+        ? quantitiesToDeduct[entry.insumo_id]
+        : parseFloat(entry.total_needed.toFixed(2)), // Default to total needed
+    }));
+  }, [selectedDeductionItems, quantitiesToDeduct]);
 
-    queryClient.invalidateQueries({ queryKey: ["stockMovements"] });
-    queryClient.invalidateQueries({ queryKey: ["insumos"] });
-    queryClient.invalidateQueries({ queryKey: ["menus"] });
-    onClose();
+  const handleQuantityChange = (insumoId: string, value: string) => {
+    const numValue = parseFloat(value);
+    setQuantitiesToDeduct(prev => ({
+      ...prev,
+      [insumoId]: isNaN(numValue) ? 0 : numValue,
+    }));
   };
 
-  const hasErrors = Object.keys(form.formState.errors).length > 0;
-  const isConfirmChecked = form.watch("confirm_deduction");
+  const handleDeduct = async () => {
+    if (!user) {
+      toast.error("Debes iniciar sesión para realizar esta acción.");
+      return;
+    }
+    if (!deductorName.trim()) {
+      toast.error("Por favor, ingresa el nombre de la persona que realiza la deducción.");
+      return;
+    }
+
+    setIsSubmitting(true);
+    const deductionPromises = insumosToProcess.map(async (insumo) => {
+      if (insumo.quantity_to_deduct <= 0) {
+        return { success: true, message: `Insumo ${insumo.insumo_nombre} no deducido (cantidad 0).` };
+      }
+      if (insumo.quantity_to_deduct > insumo.current_stock_quantity) {
+        return { success: false, message: `Stock insuficiente para deducir ${insumo.quantity_to_deduct} ${insumo.purchase_unit} de ${insumo.insumo_nombre}. Stock actual: ${insumo.current_stock_quantity} ${insumo.purchase_unit}.` };
+      }
+
+      // Construct a detailed note including all granular items contributing to this deduction
+      const detailedNotes = insumo.items.map(item =>
+        `Menú: ${item.menu_title} (${format(new Date(item.menu_date || selectedDate), "PPP", { locale: es })}) - Servicio: ${item.meal_service_name} - Receta: ${item.plato_nombre} - Cantidad necesaria: ${item.total_needed_purchase_unit_for_item} ${item.purchase_unit}`
+      ).join('; ');
+
+      const { error: stockMovementError } = await createStockMovement({
+        user_id: user.id,
+        insumo_id: insumo.insumo_id,
+        movement_type: 'daily_prep_out',
+        quantity_change: -insumo.quantity_to_deduct, // Negative for deduction
+        notes: `Deducción para preparación diaria por ${deductorName}. Detalles: ${detailedNotes}`,
+        menu_id: null, // Set to null as a single deduction might span multiple menus, and notes provide detail
+      });
+
+      if (stockMovementError) {
+        return { success: false, message: `Error al deducir ${insumo.insumo_nombre}: ${stockMovementError.message}` };
+      }
+      return { success: true, message: `Deducido ${insumo.quantity_to_deduct} ${insumo.purchase_unit} de ${insumo.insumo_nombre}.` };
+    });
+
+    const results = await Promise.all(deductionPromises);
+
+    const successfulDeductions = results.filter(r => r.success);
+    const failedDeductions = results.filter(r => !r.success);
+
+    if (successfulDeductions.length > 0) {
+      toast.success(`Se dedujeron ${successfulDeductions.length} insumos exitosamente.`);
+    }
+    if (failedDeductions.length > 0) {
+      failedDeductions.forEach(f => toast.error(f.message));
+    }
+
+    setIsSubmitting(false);
+    onClose(); // Close the dialog after processing
+  };
+
+  const formattedDate = format(selectedDate, "PPP", { locale: es });
 
   return (
-    <DialogContent className="sm:max-w-[425px] md:max-w-lg lg:max-w-2xl p-6 max-h-[90vh] overflow-y-auto">
+    <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">
       <DialogHeader>
-        <DialogTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100">
-          Confirmar y Ajustar Cantidades a Deducir
-        </DialogTitle>
+        <DialogTitle className="text-2xl font-bold">Deducir Stock para Preparación</DialogTitle>
+        <p className="text-muted-foreground">
+          Confirma las cantidades de insumos a deducir del stock para la preparación de los menús del {formattedDate}.
+        </p>
       </DialogHeader>
-      <Form {...form}>
-        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-2">
-          <p className="text-base text-gray-700 dark:text-gray-300">
-            Revisa las cantidades sugeridas para la preparación diaria del <span className="font-semibold">{format(selectedDate, "PPP", { locale: es })}</span>.
-            Puedes ajustar las cantidades si es necesario.
-          </p>
-
-          <FormField
-            control={form.control}
-            name="deductor_name"
-            render={({ field }) => (
-              <FormItem>
-                <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Nombre de quien realiza la acción</FormLabel>
-                <FormControl>
-                  <Input
-                    placeholder="Ej. Juan Pérez"
-                    {...field}
-                    className="h-10 text-base"
-                    disabled={isDeductingStock}
-                  />
-                </FormControl>
-                <FormMessage />
-              </FormItem>
-            )}
+      <div className="grid gap-4 py-4">
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="deductorName" className="text-right">
+            Persona que deduce
+          </Label>
+          <Input
+            id="deductorName"
+            value={deductorName}
+            onChange={(e) => setDeductorName(e.target.value)}
+            className="col-span-3"
+            placeholder="Ej. Juan Pérez"
           />
+        </div>
 
-          <div className="space-y-4">
-            {fields.map((item, index) => (
-              <div key={item.unique_id} className="flex flex-col md:flex-row gap-3 items-center border-b pb-3 last:border-b-0 last:pb-0">
-                <div className="flex-grow">
-                  <Label className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center">
-                    <Package className="mr-2 h-6 w-6 text-primary dark:text-primary-foreground" />
-                    {item.insumo_nombre}
-                  </Label>
-                  <p className="text-base text-gray-700 dark:text-gray-300 mt-1">
-                    Stock actual: <span className="font-semibold">{item.current_stock_quantity.toFixed(2)} {item.purchase_unit}</span>
-                  </p>
-                  <p className="text-base text-gray-700 dark:text-gray-300">
-                    Necesidad para receta: <span className="font-semibold text-blue-600 dark:text-blue-400">{item.suggested_quantity.toFixed(2)} {item.purchase_unit}</span>
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 flex items-center">
-                    <Utensils className="h-4 w-4 mr-1" /> Servicio: <span className="font-medium ml-1">{item.meal_service_name}</span>
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 flex items-center">
-                    <CalendarDays className="h-4 w-4 mr-1" /> Receta: <span className="font-medium ml-1">{item.plato_nombre}</span>
-                  </p>
-                </div>
-                <FormField
-                  control={form.control}
-                  name={`deduction_items.${index}.quantity_to_deduct`} // MODIFIED: Use deduction_items
-                  render={({ field: quantityField }) => {
-                    const isAdjusted = parseFloat(quantityField.value.toFixed(2)) !== parseFloat(item.suggested_quantity.toFixed(2));
-                    return (
-                      <FormItem className="w-full md:w-1/3">
-                        <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
-                          Cantidad a Deducir ({item.purchase_unit})
-                        </FormLabel>
-                        <div className="flex items-center gap-2">
-                          <FormControl>
-                            <Input
-                              type="number"
-                              step="0.01"
-                              placeholder={`Sugerido: ${item.suggested_quantity.toFixed(2)} ${item.purchase_unit}`}
-                              {...quantityField}
-                              onChange={(e) => quantityField.onChange(parseFloat(e.target.value))}
-                              className={cn(
-                                "h-10 text-base",
-                                isAdjusted && "border-blue-500 dark:border-blue-400 ring-blue-500 dark:ring-blue-400"
-                              )}
-                              disabled={isDeductingStock}
-                            />
-                          </FormControl>
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="icon"
-                            onClick={() => form.setValue(`deduction_items.${index}.quantity_to_deduct`, item.suggested_quantity, { shouldValidate: true })} // MODIFIED: Use deduction_items
-                            className="h-10 w-10 flex-shrink-0"
-                            disabled={isDeductingStock}
-                            title="Restablecer a cantidad sugerida"
-                          >
-                            <RotateCcw className="h-5 w-5 text-gray-600 dark:text-gray-300" />
-                          </Button>
-                        </div>
-                        <FormDescription className="text-sm text-gray-600 dark:text-gray-400">
-                          Cantidad sugerida: {item.suggested_quantity.toFixed(2)} {item.purchase_unit}. Puedes ajustar este valor.
-                        </FormDescription>
-                        <FormMessage />
-                      </FormItem>
-                    );
-                  }}
-                />
-              </div>
-            ))}
-          </div>
-
-          {deduction_items.filter(item => item.quantity_to_deduct > 0).length > 0 && (
-            <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-              <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
-                Resumen de Deducción para el {format(selectedDate, "PPP", { locale: es })}:
-              </h4>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead className="w-[25%]">Insumo</TableHead>
-                    <TableHead className="w-[25%]">Servicio</TableHead> {/* NEW */}
-                    <TableHead className="w-[25%]">Receta</TableHead> {/* NEW */}
-                    <TableHead className="text-right w-[25%]">Cantidad Deducida</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {deduction_items.filter(item => item.quantity_to_deduct > 0).map(item => (
-                    <TableRow key={item.unique_id}> {/* MODIFIED: Use unique_id */}
-                      <TableCell className="font-medium">
-                        {item.insumo_nombre}
-                      </TableCell>
-                      <TableCell> {/* NEW */}
-                        {item.meal_service_name}
-                      </TableCell>
-                      <TableCell> {/* NEW */}
-                        {item.plato_nombre}
-                      </TableCell>
-                      <TableCell className="text-right">
-                        {item.quantity_to_deduct.toFixed(2)} {item.purchase_unit}
-                        {parseFloat(item.quantity_to_deduct.toFixed(2)) !== parseFloat(item.suggested_quantity.toFixed(2)) && (
-                          <span className="ml-2 text-blue-600 dark:text-blue-400 font-medium text-sm block md:inline-block">(Ajustado de {item.suggested_quantity.toFixed(2)})</span>
-                        )}
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </div>
-          )}
-          {deduction_items.filter(item => item.quantity_to_deduct > 0).length === 0 && (
-            <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-400">
-              <p>No hay insumos con cantidad a deducir mayor a cero.</p>
-            </div>
-          )}
-
-          {hasErrors && (
-            <div className="p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg text-red-700 dark:text-red-300 flex items-center">
-              <AlertTriangle className="h-5 w-5 mr-2" />
-              <p className="text-base font-medium">
-                Por favor, corrige los errores en las cantidades antes de confirmar.
-              </p>
-            </div>
-          )}
-
-          <FormField
-            control={form.control}
-            name="confirm_deduction"
-            render={({ field }) => (
-              <FormItem className="flex flex-row items-start space-x-3 space-y-0 rounded-md border p-4 shadow">
-                <FormControl>
-                  <Checkbox
-                    checked={field.value}
-                    onCheckedChange={field.onChange}
-                    disabled={isDeductingStock}
-                  />
-                </FormControl>
-                <div className="space-y-1 leading-none">
-                  <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
-                    Confirmo que la deducción real de productos ha sido realizada.
-                  </FormLabel>
-                  <FormDescription className="text-sm text-gray-600 dark:text-gray-400">
-                    Esta acción actualizará el stock en el sistema.
-                  </FormDescription>
-                </div>
-                <FormMessage />
-              </FormItem>
-            )}
-          />
-
-          <div className="flex justify-end space-x-4 pt-4">
-            <Button
-              type="button"
-              variant="outline"
-              onClick={onClose}
-              className="px-6 py-3 text-lg"
-              disabled={isDeductingStock}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              className="px-6 py-3 text-lg bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
-              disabled={isDeductingStock || hasErrors || !isConfirmChecked}
-            >
-              {isDeductingStock && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
-              Confirmar Deducción
-            </Button>
-          </div>
-        </form>
-      </Form>
+        <div className="mt-4">
+          <h3 className="text-lg font-semibold mb-2">Insumos a Deducir:</h3>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead className="w-[200px]">Insumo</TableHead>
+                <TableHead className="text-right">Stock Actual</TableHead>
+                <TableHead className="text-right">Necesidad Total</TableHead>
+                <TableHead className="text-right">Cantidad a Deducir</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {insumosToProcess.map((insumo) => (
+                <TableRow key={insumo.insumo_id}>
+                  <TableCell className="font-medium">{insumo.insumo_nombre}</TableCell>
+                  <TableCell className="text-right">{insumo.current_stock_quantity.toFixed(2)} {insumo.purchase_unit}</TableCell>
+                  <TableCell className="text-right">{insumo.total_needed.toFixed(2)} {insumo.purchase_unit}</TableCell>
+                  <TableCell className="text-right">
+                    <Input
+                      type="number"
+                      value={insumo.quantity_to_deduct}
+                      onChange={(e) => handleQuantityChange(insumo.insumo_id, e.target.value)}
+                      className="w-28 text-right"
+                      min="0"
+                      max={insumo.current_stock_quantity}
+                      step="0.01"
+                    />
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      </div>
+      <DialogFooter>
+        <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
+          Cancelar
+        </Button>
+        <Button onClick={handleDeduct} disabled={isSubmitting}>
+          {isSubmitting ? "Deduciendo..." : "Confirmar Deducción"}
+        </Button>
+      </DialogFooter>
     </DialogContent>
   );
 };

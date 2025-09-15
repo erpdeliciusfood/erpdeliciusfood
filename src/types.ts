@@ -283,6 +283,7 @@ export interface QuebradoReportData {
 }
 
 export interface StockMovementFormValues {
+  user_id: string; // Added user_id
   insumo_id: string;
   movement_type: 'purchase_in' | 'adjustment_in' | 'adjustment_out' | 'daily_prep_out' | 'reception_in';
   quantity_change: number; // Made mandatory

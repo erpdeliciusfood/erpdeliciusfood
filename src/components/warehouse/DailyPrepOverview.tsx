@@ -4,8 +4,8 @@ import React, { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Package, CheckCircle2, AlertTriangle, MinusCircle, Utensils, PackageX, Info, ShoppingBag } from "lucide-react";
-import { AggregatedInsumoNeed, GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations, MenuWithRelations, InsumoDeductionItem } from "@/types"; // NEW: Import InsumoDeductionItem
+import { Package, CheckCircle2, AlertTriangle, MinusCircle, Utensils, PackageX, Info, ShoppingBag, ChefHat } from "lucide-react"; // NEW: Import ChefHat
+import { AggregatedInsumoNeed, GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations, MenuWithRelations, InsumoDeductionItem } from "@/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -26,12 +26,17 @@ interface DailyPrepOverviewProps {
 
 const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, menus }) => {
   const [stockFilter, setStockFilter] = useState<'all' | 'sufficient' | 'insufficient'>('all');
-  const [selectedDeductionItemIds, setSelectedDeductionItemIds] = useState<Set<string>>(new Set()); // MODIFIED: Use selectedDeductionItemIds
+  const [selectedDeductionItemIds, setSelectedDeductionItemIds] = useState<Set<string>>(new Set());
   const [isDeductQuantitiesDialogOpen, setIsDeductQuantitiesDialogOpen] = useState(false);
   const [isUrgentPurchaseRequestDialogOpen, setIsUrgentPurchaseRequestDialogOpen] = useState(false);
   const [selectedInsumoForUrgentRequest, setSelectedInsumoForUrgentRequest] = useState<AggregatedInsumoNeed | null>(null);
 
-  const allDeductionItems: InsumoDeductionItem[] = useMemo(() => { // NEW: Generate a flat list of granular deduction items
+  // NEW: State for single item deduction (from "Enviar a Cocina" button)
+  const [insumosForSingleDeduction, setInsumosForSingleDeduction] = useState<InsumoDeductionItem[]>([]);
+  const [isSingleDeductionDialogOpen, setIsSingleDeductionDialogOpen] = useState(false);
+
+
+  const allDeductionItems: InsumoDeductionItem[] = useMemo(() => {
     const items: InsumoDeductionItem[] = [];
 
     menus.forEach((menu: MenuWithRelations) => {
@@ -178,7 +183,6 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   };
 
   const handleOpenUrgentPurchaseRequestDialog = (insumoNeed: AggregatedInsumoNeed) => {
-    // For urgent requests, we still use the aggregated view for simplicity
     setSelectedInsumoForUrgentRequest(insumoNeed);
     setIsUrgentPurchaseRequestDialogOpen(true);
   };
@@ -187,6 +191,35 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     setIsUrgentPurchaseRequestDialogOpen(false);
     setSelectedInsumoForUrgentRequest(null);
   };
+
+  // NEW: Function to handle "Enviar a Cocina" button click
+  const handleSendToKitchen = (insumoNeed: AggregatedInsumoNeed) => {
+    const itemsToDeduct = allDeductionItems.filter(
+      (item: InsumoDeductionItem) =>
+        item.insumo_id === insumoNeed.insumo_id &&
+        item.meal_service_id === insumoNeed.meal_service_id
+    );
+
+    if (itemsToDeduct.length === 0) {
+      showError("No se encontraron ítems de insumo para deducir.");
+      return;
+    }
+
+    if (insumoNeed.current_stock_quantity < insumoNeed.total_needed_purchase_unit) {
+      showError(`Stock insuficiente para ${insumoNeed.insumo_nombre}. No se puede enviar a cocina.`);
+      return;
+    }
+
+    setInsumosForSingleDeduction(itemsToDeduct);
+    setIsSingleDeductionDialogOpen(true);
+  };
+
+  // NEW: Function to close the single deduction dialog
+  const handleCloseSingleDeductionDialog = () => {
+    setIsSingleDeductionDialogOpen(false);
+    setInsumosForSingleDeduction([]); // Clear the items
+  };
+
 
   const insufficientStockCount = allDeductionItems.filter(
     (item: InsumoDeductionItem) => item.current_stock_quantity < item.total_needed_purchase_unit_for_item
@@ -198,7 +231,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     selectedDeductionItemIds.size === 0 ||
     allDeductionItems.filter((item: InsumoDeductionItem) => selectedDeductionItemIds.has(item.unique_id) && item.current_stock_quantity < item.total_needed_purchase_unit_for_item).length > 0;
 
-  const selectedInsumosForDialog = allDeductionItems.filter((item: InsumoDeductionItem) => selectedDeductionItemIds.has(item.unique_id)); // MODIFIED: Pass InsumoDeductionItem[]
+  const selectedInsumosForDialog = allDeductionItems.filter((item: InsumoDeductionItem) => selectedDeductionItemIds.has(item.unique_id));
 
   return (
     <div className="space-y-8">
@@ -419,6 +452,17 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                                 )}
                               </TableCell>
                               <TableCell className="text-center py-3 px-6 min-w-[150px]">
+                                {isSufficient && need.total_needed_purchase_unit > 0 && (
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => handleSendToKitchen(need)}
+                                    className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200 ease-in-out mr-2"
+                                  >
+                                    <ChefHat className="mr-1 h-4 w-4" />
+                                    Enviar a Cocina
+                                  </Button>
+                                )}
                                 {!isSufficient && need.missing_quantity > 0 && (
                                   <Button
                                     variant="outline"
@@ -460,10 +504,18 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
       <Dialog open={isDeductQuantitiesDialogOpen} onOpenChange={setIsDeductQuantitiesDialogOpen}>
         <DeductQuantitiesDialog
-          selectedDeductionItems={selectedInsumosForDialog} // MODIFIED: Pass InsumoDeductionItem[]
+          selectedDeductionItems={selectedInsumosForDialog}
           selectedDate={selectedDate}
-          menuId={menus[0]?.id || null}
           onClose={handleCloseDeductQuantitiesDialog}
+        />
+      </Dialog>
+
+      {/* NEW: Dialog for single item deduction */}
+      <Dialog open={isSingleDeductionDialogOpen} onOpenChange={setIsSingleDeductionDialogOpen}>
+        <DeductQuantitiesDialog
+          selectedDeductionItems={insumosForSingleDeduction}
+          selectedDate={selectedDate}
+          onClose={handleCloseSingleDeductionDialog}
         />
       </Dialog>
 
