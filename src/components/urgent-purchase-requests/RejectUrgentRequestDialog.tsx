@@ -20,7 +20,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Loader2, XCircle } from "lucide-react";
-import { UrgentPurchaseRequest } from "@/types";
+import { UrgentPurchaseRequestWithRelations } from "@/types"; // Updated import
 import { useUpdateUrgentPurchaseRequest } from "@/hooks/useUrgentPurchaseRequests";
 import { showSuccess, showError } from "@/utils/toast";
 
@@ -29,7 +29,7 @@ const formSchema = z.object({
 });
 
 interface RejectUrgentRequestDialogProps {
-  urgentRequest: UrgentPurchaseRequest;
+  urgentRequest: UrgentPurchaseRequestWithRelations; // Updated type
   onClose: () => void;
 }
 

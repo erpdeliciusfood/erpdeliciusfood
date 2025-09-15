@@ -1,4 +1,4 @@
-import { Database } from "./types/supabase";
+import { Database } from "./supabase"; // Corrected import path
 
 // Base types from Supabase auto-generated file
 export type Profile = Database['public']['Tables']['profiles']['Row'];

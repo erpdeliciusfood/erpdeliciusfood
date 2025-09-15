@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Package, CheckCircle2, AlertTriangle, MinusCircle, Utensils, PackageX, Info, ShoppingBag } from "lucide-react";
-import { Menu, AggregatedInsumoNeed, GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations } from "@/types"; // Imported GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations
+import { Menu, AggregatedInsumoNeed, GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations, MenuWithRelations } from "@/types"; // Imported GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations, MenuWithRelations
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +21,7 @@ import UrgentPurchaseRequestDialog from "./UrgentPurchaseRequestDialog";
 
 interface DailyPrepOverviewProps {
   selectedDate: Date;
-  menus: Menu[];
+  menus: MenuWithRelations[]; // Updated type
 }
 
 const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, menus }) => {
@@ -35,7 +35,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   const groupedInsumoNeeds: GroupedInsumoNeeds[] = useMemo(() => {
     const serviceGroupsMap = new Map<string, GroupedInsumoNeeds>();
 
-    menus.forEach((menu: Menu) => {
+    menus.forEach((menu: MenuWithRelations) => { // Cast menu to MenuWithRelations
       menu.menu_platos?.forEach((menuPlato: MenuPlatoWithRelations) => {
         const mealServiceId = menuPlato.meal_service_id;
         const mealServiceName = menuPlato.meal_services?.name || "Sin Servicio";

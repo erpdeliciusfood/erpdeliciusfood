@@ -125,7 +125,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         supplier_address_at_purchase: initialData.supplier_address_at_purchase || "",
         from_registered_supplier: initialData.from_registered_supplier,
         notes: initialData.notes || "",
-        status: initialData.status,
+        status: initialData.status as PurchaseRecordFormValues['status'], // Cast to specific union type
         received_date: initialData.received_date || null,
       });
     } else {

@@ -6,7 +6,7 @@ import { useUrgentPurchaseRequests } from "@/hooks/useUrgentPurchaseRequests";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { UrgentPurchaseRequest } from "@/types"; // Import UrgentPurchaseRequest type
+import { UrgentPurchaseRequestWithRelations } from "@/types"; // Import UrgentPurchaseRequestWithRelations type
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -14,8 +14,8 @@ const UrgentPurchaseAlert: React.FC = () => {
   const { data: requests, isLoading, isError, error } = useUrgentPurchaseRequests();
 
   const pendingRequests = requests?.filter(
-    (request: UrgentPurchaseRequest) => request.status === 'pending'
-  ).sort((a: UrgentPurchaseRequest, b: UrgentPurchaseRequest) => new Date(a.request_date).getTime() - new Date(b.request_date).getTime()); // Sort by oldest first
+    (request: UrgentPurchaseRequestWithRelations) => request.status === 'pending'
+  ).sort((a: UrgentPurchaseRequestWithRelations, b: UrgentPurchaseRequestWithRelations) => new Date(a.request_date).getTime() - new Date(b.request_date).getTime()); // Sort by oldest first
 
   if (isLoading) {
     return (
@@ -99,15 +99,15 @@ const UrgentPurchaseAlert: React.FC = () => {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pendingRequests.slice(0, 3).map((request: UrgentPurchaseRequest) => ( // Show top 3
+              {pendingRequests.slice(0, 3).map((request: UrgentPurchaseRequestWithRelations) => ( // Show top 3
                 <TableRow key={request.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{request.insumos?.nombre || "Insumo Desconocido"}</TableCell>
                   <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">{request.quantity_requested.toFixed(2)} {request.insumos?.purchase_unit || "unidad"}</TableCell>
                   <TableCell className="text-base text-gray-700 dark:text-gray-300">{format(new Date(request.request_date), "PPP", { locale: es })}</TableCell>
                   <TableCell className="text-center text-base text-gray-700 dark:text-gray-300"> {/* NEW: Display insistence_count */}
-                    {request.insistence_count > 1 ? (
+                    {(request.insistence_count ?? 0) > 1 ? (
                       <Badge variant="destructive" className="text-base px-2 py-1 flex items-center justify-center mx-auto w-fit">
-                        <Repeat2 className="h-4 w-4 mr-1" /> {request.insistence_count}
+                        <Repeat2 className="h-4 w-4 mr-1" /> {(request.insistence_count ?? 0)}
                       </Badge>
                     ) : (
                       <Badge variant="secondary" className="text-base px-2 py-1 flex items-center justify-center mx-auto w-fit">

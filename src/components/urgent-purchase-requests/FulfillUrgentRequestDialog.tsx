@@ -6,14 +6,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { UrgentPurchaseRequest, PurchaseRecord } from "@/types"; // NEW: Import PurchaseRecord
+import { UrgentPurchaseRequest, PurchaseRecord, UrgentPurchaseRequestWithRelations } from "@/types"; // NEW: Import PurchaseRecord, UrgentPurchaseRequestWithRelations
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
 import { useUpdateUrgentPurchaseRequest } from "@/hooks/useUrgentPurchaseRequests";
 import { showSuccess, showError } from "@/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface FulfillUrgentRequestDialogProps {
-  urgentRequest: UrgentPurchaseRequest;
+  urgentRequest: UrgentPurchaseRequestWithRelations; // Updated type
   onClose: () => void;
 }
 

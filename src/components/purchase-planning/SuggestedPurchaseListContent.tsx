@@ -7,7 +7,7 @@ import PurchaseRecordForm from "./PurchaseRecordForm";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"; // NEW: Import DialogTrigger
 import { useAddPurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";

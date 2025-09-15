@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
 } from "@/components/ui/form";
-import { Menu, MenuFormValues, MenuPlatoWithRelations } from "@/types"; // Changed MenuPlato to MenuPlatoWithRelations
+import { Menu, MenuFormValues, MenuPlatoWithRelations, MenuWithRelations } from "@/types"; // Changed MenuPlato to MenuPlatoWithRelations, added MenuWithRelations
 import { useAddMenu, useUpdateMenu } from "@/hooks/useMenus";
 import { useMealServices } from "@/hooks/useMealServices";
 import { useEventTypes } from "@/hooks/useEventTypes";
@@ -73,7 +73,7 @@ const formSchema = z.object({
 });
 
 interface MenuFormProps {
-  initialData?: Menu | null;
+  initialData?: MenuWithRelations | null; // Updated type to MenuWithRelations
   onSuccess: () => void;
   onCancel: () => void;
   preselectedDate?: Date;
@@ -104,10 +104,10 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       form.reset({
         title: initialData.title,
         description: initialData.description || "",
-        menu_type: initialData.menu_type, // NEW: Set initial menu_type
+        menu_type: initialData.menu_type as MenuFormValues['menu_type'], // Cast to specific union type
         menu_date: initialData.menu_date || null,
         event_type_id: initialData.event_type_id || null,
-        platos_por_servicio: initialData.menu_platos?.map((mp: MenuPlatoWithRelations) => ({
+        platos_por_servicio: initialData.menu_platos?.map((mp: MenuPlatoWithRelations) => ({ // initialData is now MenuWithRelations
           meal_service_id: mp.meal_service_id,
           plato_id: mp.plato_id,
           dish_category: mp.dish_category,

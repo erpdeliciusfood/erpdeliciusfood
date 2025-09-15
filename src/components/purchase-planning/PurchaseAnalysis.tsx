@@ -4,7 +4,7 @@ import { useInsumos } from "@/hooks/useInsumos";
 import { Loader2, ShoppingBag } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Insumo, MenuPlatoWithRelations, PlatoInsumoWithRelations, InsumoNeeded as InsumoNeededType } from "@/types"; // Renamed InsumoNeeded to InsumoNeededType
+import { Insumo, MenuPlatoWithRelations, PlatoInsumoWithRelations, InsumoNeeded as InsumoNeededType, MenuWithRelations } from "@/types"; // Renamed InsumoNeeded to InsumoNeededType, added MenuWithRelations
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import InsumoSupplierDetailsDialog from "@/components/insumos/InsumoSupplierDetailsDialog";
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
@@ -49,7 +49,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
 
     const insumoNeedsMap = new Map<string, number>();
 
-    menus.forEach(menu => {
+    (menus as MenuWithRelations[]).forEach(menu => { // Cast menus to MenuWithRelations[]
       if (menu.menu_date && isWithinInterval(parseISO(menu.menu_date), { start: startDate, end: endDate })) {
         menu.menu_platos?.forEach((menuPlato: MenuPlatoWithRelations) => {
           const plato = menuPlato.platos;

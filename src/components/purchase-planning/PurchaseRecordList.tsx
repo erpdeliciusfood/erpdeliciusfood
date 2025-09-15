@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, ShoppingBag, CheckCircle2, XCircle, Truck, Warehouse, Loader2, Trash2 } from "lucide-react";
-import { PurchaseRecord } from "@/types";
+import { PurchaseRecordWithRelations } from "@/types"; // Updated import
 import { useDeletePurchaseRecord, useUpdatePurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
@@ -20,8 +20,8 @@ import { Dialog } from "@/components/ui/dialog";
 import PartialReceptionDialog from "./PartialReceptionDialog";
 
 interface PurchaseRecordListProps {
-  purchaseRecords: PurchaseRecord[];
-  onEdit: (record: PurchaseRecord) => void;
+  purchaseRecords: PurchaseRecordWithRelations[]; // Updated type
+  onEdit: (record: PurchaseRecordWithRelations) => void;
 }
 
 const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords, onEdit }) => {
@@ -29,14 +29,14 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
   const updateMutation = useUpdatePurchaseRecord();
 
   const [isPartialReceptionDialogOpen, setIsPartialReceptionDialogOpen] = useState(false);
-  const [selectedRecordForReception, setSelectedRecordForReception] = useState<PurchaseRecord | null>(null);
+  const [selectedRecordForReception, setSelectedRecordForReception] = useState<PurchaseRecordWithRelations | null>(null);
   const [targetStatusForReception, setTargetStatusForReception] = useState<'received_by_company' | 'received_by_warehouse' | null>(null);
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
   };
 
-  const handleOpenPartialReceptionDialog = (record: PurchaseRecord, targetStatus: 'received_by_company' | 'received_by_warehouse') => {
+  const handleOpenPartialReceptionDialog = (record: PurchaseRecordWithRelations, targetStatus: 'received_by_company' | 'received_by_warehouse') => {
     setSelectedRecordForReception(record);
     setTargetStatusForReception(targetStatus);
     setIsPartialReceptionDialogOpen(true);
@@ -48,7 +48,7 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
     setTargetStatusForReception(null);
   };
 
-  const handleCancelStatusChange = async (record: PurchaseRecord) => {
+  const handleCancelStatusChange = async (record: PurchaseRecordWithRelations) => {
     try {
       await updateMutation.mutateAsync({
         id: record.id,
@@ -64,7 +64,7 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
     }
   };
 
-  const getStatusBadge = (status: PurchaseRecord['status']) => {
+  const getStatusBadge = (status: PurchaseRecordWithRelations['status']) => {
     switch (status) {
       case 'ordered':
         return <Badge variant="outline" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">Ordenado</Badge>;
@@ -153,9 +153,6 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
                       </Badge>
                     )}
                   </div>
-                </TableCell>
-                <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[150px]">
-                  {getStatusBadge(record.status)}
                 </TableCell>
                 <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[150px]">
                   {record.received_date ? format(new Date(record.received_date), "PPP", { locale: es }) : "N/A"}

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, ShoppingBag, CheckCircle2, XCircle, Loader2, Repeat2 } from "lucide-react";
-import { UrgentPurchaseRequest } from "@/types";
+import { UrgentPurchaseRequestWithRelations } from "@/types"; // Updated import
 import { useDeleteUrgentPurchaseRequest, useUpdateUrgentPurchaseRequest } from "@/hooks/useUrgentPurchaseRequests";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
@@ -21,8 +21,8 @@ import FulfillUrgentRequestDialog from "./FulfillUrgentRequestDialog";
 import RejectUrgentRequestDialog from "./RejectUrgentRequestDialog";
 
 interface UrgentPurchaseRequestListProps {
-  requests: UrgentPurchaseRequest[];
-  onEdit: (request: UrgentPurchaseRequest) => void;
+  requests: UrgentPurchaseRequestWithRelations[]; // Updated type
+  onEdit: (request: UrgentPurchaseRequestWithRelations) => void;
 }
 
 const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ requests, onEdit }) => {
@@ -30,16 +30,16 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
   const updateMutation = useUpdateUrgentPurchaseRequest();
 
   const [isFulfillDialogOpen, setIsFulfillDialogOpen] = useState(false);
-  const [requestToFulfill, setRequestToFulfill] = useState<UrgentPurchaseRequest | null>(null);
+  const [requestToFulfill, setRequestToFulfill] = useState<UrgentPurchaseRequestWithRelations | null>(null);
 
   const [isRejectDialogOpen, setIsRejectDialogOpen] = useState(false);
-  const [requestToReject, setRequestToReject] = useState<UrgentPurchaseRequest | null>(null);
+  const [requestToReject, setRequestToReject] = useState<UrgentPurchaseRequestWithRelations | null>(null);
 
   const handleDelete = (id: string) => {
     deleteMutation.mutate(id);
   };
 
-  const handleApproveRequest = async (request: UrgentPurchaseRequest) => {
+  const handleApproveRequest = async (request: UrgentPurchaseRequestWithRelations) => {
     try {
       await updateMutation.mutateAsync({
         id: request.id,
@@ -51,7 +51,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
     }
   };
 
-  const handleOpenRejectDialog = (request: UrgentPurchaseRequest) => {
+  const handleOpenRejectDialog = (request: UrgentPurchaseRequestWithRelations) => {
     setRequestToReject(request);
     setIsRejectDialogOpen(true);
   };
@@ -61,7 +61,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
     setRequestToReject(null);
   };
 
-  const handleOpenFulfillDialog = (insumo: UrgentPurchaseRequest) => {
+  const handleOpenFulfillDialog = (insumo: UrgentPurchaseRequestWithRelations) => {
     setRequestToFulfill(insumo);
     setIsFulfillDialogOpen(true);
   };
@@ -71,7 +71,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
     setRequestToFulfill(null);
   };
 
-  const getStatusBadge = (status: UrgentPurchaseRequest['status']) => {
+  const getStatusBadge = (status: UrgentPurchaseRequestWithRelations['status']) => {
     switch (status) {
       case 'pending':
         return <Badge variant="outline" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">Pendiente</Badge>;
@@ -86,7 +86,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
     }
   };
 
-  const getPriorityBadge = (priority: UrgentPurchaseRequest['priority']) => {
+  const getPriorityBadge = (priority: UrgentPurchaseRequestWithRelations['priority']) => {
     switch (priority) {
       case 'urgent':
         return <Badge variant="destructive" className="bg-red-500 hover:bg-red-600 text-white">Urgente</Badge>;
@@ -144,9 +144,9 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                 {getStatusBadge(request.status)}
               </TableCell>
               <TableCell className="text-center text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[100px]">
-                {request.insistence_count > 1 ? (
+                {(request.insistence_count ?? 0) > 1 ? (
                   <Badge variant="destructive" className="text-base px-2 py-1 flex items-center justify-center mx-auto w-fit">
-                    <Repeat2 className="h-4 w-4 mr-1" /> {request.insistence_count}
+                    <Repeat2 className="h-4 w-4 mr-1" /> {(request.insistence_count ?? 0)}
                   </Badge>
                 ) : (
                   <Badge variant="secondary" className="text-base px-2 py-1 flex items-center justify-center mx-auto w-fit">
@@ -170,6 +170,7 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                         <Button
                           variant="outline"
                           size="icon"
+                          onClick={() => handleApproveRequest(request)}
                           className="h-10 w-10 rounded-full hover:bg-green-100 dark:hover:bg-green-900 transition-colors duration-150 ease-in-out"
                           title="Aprobar Solicitud"
                           disabled={updateMutation.isPending}

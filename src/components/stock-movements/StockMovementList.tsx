@@ -8,13 +8,13 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Package, ArrowDown, ArrowUp } from "lucide-react";
-import { StockMovement } from "@/types";
+import { StockMovementWithRelations } from "@/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 
 interface StockMovementListProps {
-  stockMovements: StockMovement[];
+  stockMovements: StockMovementWithRelations[];
 }
 
 const StockMovementList: React.FC<StockMovementListProps> = ({ stockMovements }) => {
@@ -27,7 +27,7 @@ const StockMovementList: React.FC<StockMovementListProps> = ({ stockMovements })
     );
   }
 
-  const getMovementTypeBadge = (type: StockMovement['movement_type']) => {
+  const getMovementTypeBadge = (type: StockMovementWithRelations['movement_type']) => {
     switch (type) {
       case 'purchase_in':
         return <Badge className="bg-green-500 hover:bg-green-600 text-white">Entrada por Compra</Badge>;
@@ -46,7 +46,7 @@ const StockMovementList: React.FC<StockMovementListProps> = ({ stockMovements })
     }
   };
 
-  const getQuantityDisplay = (movement: StockMovement) => {
+  const getQuantityDisplay = (movement: StockMovementWithRelations) => {
     const quantity = movement.quantity_change;
     const unit = movement.insumos?.purchase_unit || "unidad";
     const isPositive = movement.movement_type === 'purchase_in' || movement.movement_type === 'adjustment_in' || movement.movement_type === 'reception_in'; // NEW: Include reception_in
@@ -76,7 +76,7 @@ const StockMovementList: React.FC<StockMovementListProps> = ({ stockMovements })
           {stockMovements.map((movement) => (
             <TableRow key={movement.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
               <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[180px]">
-                {format(new Date(movement.created_at), "PPP HH:mm", { locale: es })}
+                {format(new Date(movement.created_at || new Date()), "PPP HH:mm", { locale: es })}
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[180px]">
                 {movement.insumos?.nombre || "Insumo Desconocido"}
