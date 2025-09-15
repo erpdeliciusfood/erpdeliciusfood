@@ -19,7 +19,7 @@ import {
   Home,
   ArrowLeft,
   ReceiptText,
-  Building2, // NEW: Import Building2 icon for Suppliers
+  Building2,
 } from "lucide-react";
 import { signOut } from "@/integrations/supabase/profiles";
 import { showError, showSuccess } from "@/utils/toast";
@@ -30,11 +30,9 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
-  SheetTrigger,
 } from "@/components/ui/sheet";
 import NavLinkButton from "./NavLinkButton";
 import MobileNavLinkButton from "./MobileNavLinkButton";
-// import { cn } from '@/lib/utils'; // Eliminada la importación no utilizada
 
 const Header: React.FC = () => {
   const { session } = useSession();
@@ -62,7 +60,7 @@ const Header: React.FC = () => {
     { to: "/event-types", icon: CalendarDays, label: "Tipos Evento" },
     { to: "/menus", icon: BookText, label: "Menús" },
     { to: "/service-reports", icon: FileText, label: "Reportes Servicio" },
-    { to: "/suppliers", icon: Building2, label: "Proveedores" }, // NEW: Suppliers link
+    { to: "/suppliers", icon: Building2, label: "Proveedores" },
     { to: "/purchase-planning", icon: ShoppingBag, label: "Planificación Compras" },
     { to: "/purchase-records", icon: ReceiptText, label: "Registros Compra" },
     { to: "/urgent-purchase-requests", icon: AlertCircle, label: "Solicitudes Urgentes" },
@@ -80,7 +78,7 @@ const Header: React.FC = () => {
       <div className="container mx-auto flex justify-between items-center">
         {/* Logo and Home Button */}
         <Link to="/" className="flex items-center group">
-          <img src="/logo-erp.png" alt="App Logo" className="h-12 w-auto mr-3 transition-transform duration-200 group-hover:scale-105" />
+          <img src="/logo-erp.png" alt="App Logo" className="h-10 sm:h-12 w-auto mr-3 transition-transform duration-200 group-hover:scale-105" />
         </Link>
 
         {/* Desktop Navigation */}
