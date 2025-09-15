@@ -6,7 +6,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { UrgentPurchaseRequest, PurchaseRecord, UrgentPurchaseRequestWithRelations } from "@/types";
+import { PurchaseRecord, UrgentPurchaseRequestWithRelations } from "@/types";
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
 import { useUpdateUrgentPurchaseRequest } from "@/hooks/useUrgentPurchaseRequests";
 import { showSuccess, showError } from "@/utils/toast";

@@ -69,7 +69,9 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
   const updateUrgentPurchaseRequestMutation = useUpdateUrgentPurchaseRequest();
   const { data: availableInsumosData, isLoading: isLoadingInsumos } = useInsumos(undefined, undefined, 1, 9999);
 
-  const form = useForm<z.infer<typeof formSchema>>({
+  type FormSchemaType = z.infer<typeof formSchema>;
+
+  const form = useForm<FormSchemaType>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       insumo_id: initialData?.insumo_id || "",
@@ -88,8 +90,8 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
         insumo_id: initialData.insumo_id,
         quantity_requested: initialData.quantity_requested,
         notes: initialData.notes || "",
-        priority: initialData.priority,
-        status: initialData.status,
+        priority: initialData.priority, // This is already typed as the union type from UrgentPurchaseRequest
+        status: initialData.status,     // This is already typed as the union type from UrgentPurchaseRequest
         rejection_reason: initialData.rejection_reason || "",
         fulfilled_purchase_record_id: initialData.fulfilled_purchase_record_id || "",
       });
@@ -106,7 +108,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
     }
   }, [initialData, form]);
 
-  const onSubmit = async (values: z.infer<typeof formSchema>) => {
+  const onSubmit = async (values: FormSchemaType) => {
     const requestData: Partial<UrgentPurchaseRequestFormValues & { status: UrgentPurchaseRequest['status']; fulfilled_purchase_record_id?: string | null; rejection_reason?: string | null }> = {
       insumo_id: values.insumo_id,
       quantity_requested: values.quantity_requested,

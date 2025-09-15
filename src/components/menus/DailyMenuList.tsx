@@ -1,4 +1,3 @@
-import React from "react";
 import {
   Table,
   TableBody,
@@ -15,7 +14,7 @@ import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, 
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useMealServices } from "@/hooks/useMealServices";
 import { Badge } from "@/components/ui/badge";
-import { parseISO } from "date-fns";
+// Removed unused import: import { parseISO } from "date-fns";
 
 interface DailyMenuListProps {
   menus: MenuWithRelations[];

@@ -96,9 +96,9 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
       supplier_phone_at_purchase: prefilledSupplierPhone || "",
       supplier_address_at_purchase: prefilledSupplierAddress || "",
       from_registered_supplier: true,
-      notes: "",
       status: prefilledInsumoId ? 'received_by_warehouse' : 'ordered',
       received_date: prefilledInsumoId ? format(new Date(), "yyyy-MM-dd") : null,
+      notes: "", // Ensure notes has a default value
     },
   });
 
@@ -124,7 +124,7 @@ const PurchaseRecordForm: React.FC<PurchaseRecordFormProps> = ({
         supplier_address_at_purchase: initialData.supplier_address_at_purchase || "",
         from_registered_supplier: initialData.from_registered_supplier,
         notes: initialData.notes || "",
-        status: initialData.status,
+        status: initialData.status, // This is already typed as the union type from PurchaseRecord
         received_date: initialData.received_date || null,
       });
     } else {

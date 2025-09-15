@@ -64,20 +64,7 @@ const PurchaseRecordList: React.FC<PurchaseRecordListProps> = ({ purchaseRecords
     }
   };
 
-  const getStatusBadge = (status: PurchaseRecordWithRelations['status']) => {
-    switch (status) {
-      case 'ordered':
-        return <Badge variant="outline" className="bg-blue-100 text-blue-700 dark:bg-blue-900 dark:text-blue-300">Ordenado</Badge>;
-      case 'received_by_company':
-        return <Badge variant="outline" className="bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">Recibido por Empresa</Badge>;
-      case 'received_by_warehouse':
-        return <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white">Recibido en Almacén</Badge>;
-      case 'cancelled':
-        return <Badge variant="destructive">Cancelado</Badge>;
-      default:
-        return <Badge variant="secondary">Desconocido</Badge>;
-    }
-  };
+  // Removed unused function: getStatusBadge
 
   if (purchaseRecords.length === 0) {
     return (
