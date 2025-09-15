@@ -12,6 +12,7 @@ import { useSession } from "@/contexts/SessionContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
+import { Textarea } from "@/components/ui/textarea"; // NEW: Import Textarea
 
 interface DeductQuantitiesDialogProps {
   selectedDeductionItems: InsumoDeductionItem[];
@@ -26,6 +27,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
 }) => {
   const { user } = useSession();
   const [deductorName, setDeductorName] = useState("");
+  const [deductionReason, setDeductionReason] = useState(""); // NEW: State for deduction reason
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [quantitiesToDeduct, setQuantitiesToDeduct] = useState<Record<string, number>>({});
 
@@ -64,6 +66,14 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
     }));
   }, [selectedDeductionItems, quantitiesToDeduct]);
 
+  // NEW: Determine if any quantity has been modified from its default
+  const isAnyQuantityModified = useMemo(() => {
+    return insumosToProcess.some(insumo =>
+      quantitiesToDeduct[insumo.insumo_id] !== undefined &&
+      quantitiesToDeduct[insumo.insumo_id] !== insumo.total_needed
+    );
+  }, [insumosToProcess, quantitiesToDeduct]);
+
   const handleQuantityChange = (insumoId: string, value: string) => {
     const numValue = parseFloat(value);
     setQuantitiesToDeduct(prev => ({
@@ -79,6 +89,11 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
     }
     if (!deductorName.trim()) {
       toast.error("Por favor, ingresa el nombre de la persona que realiza la deducción.");
+      return;
+    }
+    // NEW: Conditional validation for deduction reason
+    if (isAnyQuantityModified && !deductionReason.trim()) {
+      toast.error("Por favor, ingresa un motivo para el cambio en la cantidad a deducir.");
       return;
     }
 
@@ -101,7 +116,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
           insumo_id: insumo.insumo_id,
           movement_type: 'daily_prep_out',
           quantity_change: insumo.quantity_to_deduct,
-          notes: `Deducción para preparación diaria por ${deductorName}. Detalles: ${detailedNotes}`,
+          notes: `Deducción para preparación diaria por ${deductorName}. ${deductionReason.trim() ? `Motivo de cambio: ${deductionReason}. ` : ''}Detalles: ${detailedNotes}`, // NEW: Include deduction reason
           menu_id: null,
         });
         return { success: true, message: `Deducido ${insumo.quantity_to_deduct} ${insumo.purchase_unit} de ${insumo.insumo_nombre}.` };
@@ -183,6 +198,21 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
             </TableBody>
           </Table>
         </div>
+
+        {isAnyQuantityModified && ( // NEW: Conditionally render deduction reason field
+          <div className="grid grid-cols-4 items-start gap-4 mt-4">
+            <Label htmlFor="deductionReason" className="text-right pt-2">
+              Motivo de cambio en la deducción
+            </Label>
+            <Textarea
+              id="deductionReason"
+              value={deductionReason}
+              onChange={(e) => setDeductionReason(e.target.value)}
+              className="col-span-3 min-h-[80px]"
+              placeholder="Ej. Ajuste por porciones reales, error en receta, etc."
+            />
+          </div>
+        )}
       </div>
       <DialogFooter>
         <Button variant="outline" onClick={onClose} disabled={isSubmitting}>
