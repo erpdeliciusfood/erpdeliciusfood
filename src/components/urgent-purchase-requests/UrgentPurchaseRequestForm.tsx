@@ -28,7 +28,6 @@ import { useAddUrgentPurchaseRequest, useUpdateUrgentPurchaseRequest } from "@/h
 import { useInsumos } from "@/hooks/useInsumos";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Control } from "react-hook-form"; // Import Control
 
 const formSchema = z.object({
   insumo_id: z.string().min(1, { message: "Debe seleccionar un insumo." }),
@@ -56,7 +55,7 @@ const formSchema = z.object({
 });
 
 interface UrgentPurchaseRequestFormProps {
-  initialData?: UrgentPurchaseRequestWithRelations | null; // Updated type
+  initialData?: UrgentPurchaseRequestWithRelations | null;
   onSuccess: () => void;
   onCancel: () => void;
 }
@@ -76,8 +75,8 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
       insumo_id: initialData?.insumo_id || "",
       quantity_requested: initialData?.quantity_requested || 1,
       notes: initialData?.notes || "",
-      priority: initialData?.priority as UrgentPurchaseRequestFormValues['priority'] || 'urgent', // Cast to specific union type
-      status: initialData?.status as UrgentPurchaseRequestFormValues['status'] || 'pending', // Cast to specific union type
+      priority: initialData?.priority || 'urgent',
+      status: initialData?.status || 'pending',
       rejection_reason: initialData?.rejection_reason || "",
       fulfilled_purchase_record_id: initialData?.fulfilled_purchase_record_id || "",
     },
@@ -89,8 +88,8 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
         insumo_id: initialData.insumo_id,
         quantity_requested: initialData.quantity_requested,
         notes: initialData.notes || "",
-        priority: initialData.priority as UrgentPurchaseRequestFormValues['priority'], // Cast to specific union type
-        status: initialData.status as UrgentPurchaseRequestFormValues['status'], // Cast to specific union type
+        priority: initialData.priority,
+        status: initialData.status,
         rejection_reason: initialData.rejection_reason || "",
         fulfilled_purchase_record_id: initialData.fulfilled_purchase_record_id || "",
       });
@@ -121,7 +120,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
     if (initialData?.id) {
       await updateUrgentPurchaseRequestMutation.mutateAsync({ id: initialData.id, request: requestData });
     } else {
-      await addUrgentPurchaseRequestMutation.mutateAsync(requestData as UrgentPurchaseRequestFormValues); // Cast for creation
+      await addUrgentPurchaseRequestMutation.mutateAsync(requestData as UrgentPurchaseRequestFormValues);
     }
     onSuccess();
   };
@@ -145,14 +144,14 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
               />
             ) : (
               <FormField
-                control={form.control as Control<z.infer<typeof formSchema>>} // Explicitly cast control
+                control={form.control}
                 name="insumo_id"
                 render={({ field }) => (
                   <FormItem>
                     <Select
                       onValueChange={field.onChange}
                       defaultValue={field.value}
-                      disabled={isLoading || !availableInsumosData?.data || availableInsumosData.data.length === 0 || !!initialData} // Disable if initialData exists
+                      disabled={isLoading || !availableInsumosData?.data || availableInsumosData.data.length === 0 || !!initialData}
                     >
                       <FormControl>
                         <SelectTrigger className="h-12 text-base">
@@ -184,7 +183,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
         </div>
 
         <FormField
-          control={form.control as Control<z.infer<typeof formSchema>>} // Explicitly cast control
+          control={form.control}
           name="quantity_requested"
           render={({ field }) => (
             <FormItem>
@@ -206,7 +205,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
         />
 
         <FormField
-          control={form.control as Control<z.infer<typeof formSchema>>} // Explicitly cast control
+          control={form.control}
           name="priority"
           render={({ field }) => (
             <FormItem>
@@ -234,7 +233,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
         />
 
         <FormField
-          control={form.control as Control<z.infer<typeof formSchema>>} // Explicitly cast control
+          control={form.control}
           name="status"
           render={({ field }) => (
             <FormItem>
@@ -242,7 +241,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
               <Select
                 onValueChange={field.onChange}
                 defaultValue={field.value}
-                disabled={isLoading || !initialData} // Only allow editing status for existing requests
+                disabled={isLoading || !initialData}
               >
                 <FormControl>
                   <SelectTrigger className="h-12 text-base">
@@ -265,7 +264,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
           <div>
             <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">Veces Solicitado (Insistencia)</FormLabel>
             <Input
-              value={(initialData.insistence_count ?? 0).toString()}
+              value={(initialData.insistence_count || 0).toString()}
               readOnly
               className="h-10 text-base mt-1 bg-gray-100 dark:bg-gray-700"
             />
@@ -274,7 +273,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
 
         {currentStatus === 'rejected' && (
           <FormField
-            control={form.control as Control<z.infer<typeof formSchema>>} // Explicitly cast control
+            control={form.control}
             name="rejection_reason"
             render={({ field }) => (
               <FormItem>
@@ -296,7 +295,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
 
         {currentStatus === 'fulfilled' && (
           <FormField
-            control={form.control as Control<z.infer<typeof formSchema>>} // Explicitly cast control
+            control={form.control}
             name="fulfilled_purchase_record_id"
             render={({ field }) => (
               <FormItem>
@@ -317,7 +316,7 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
         )}
 
         <FormField
-          control={form.control as Control<z.infer<typeof formSchema>>} // Explicitly cast control
+          control={form.control}
           name="notes"
           render={({ field }) => (
             <FormItem>

@@ -4,14 +4,14 @@ import { useInsumos } from "@/hooks/useInsumos";
 import { Loader2, ShoppingBag } from "lucide-react";
 import { format, isWithinInterval, parseISO } from "date-fns";
 import { es } from "date-fns/locale";
-import { Insumo, MenuPlatoWithRelations, PlatoInsumoWithRelations, InsumoNeeded as InsumoNeededType, MenuWithRelations } from "@/types"; // Renamed InsumoNeeded to InsumoNeededType, added MenuWithRelations
+import { Insumo, MenuPlatoWithRelations, PlatoInsumoWithRelations, InsumoNeeded as InsumoNeededType, MenuWithRelations } from "@/types";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import InsumoSupplierDetailsDialog from "@/components/insumos/InsumoSupplierDetailsDialog";
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
 import PurchaseCostSummary from "./PurchaseCostSummary";
 import PurchaseTableActions from "./PurchaseTableActions";
 import InsumoPurchaseTable from "./InsumoPurchaseTable";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"; // NEW: Import Card components
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 
 interface PurchaseAnalysisProps {
   startDate: Date;
@@ -19,7 +19,7 @@ interface PurchaseAnalysisProps {
   selectedReasonFilter: 'all' | InsumoNeededType['reason_for_purchase_suggestion'];
 }
 
-interface InsumoNeeded extends InsumoNeededType {} // Use the renamed type
+interface InsumoNeeded extends InsumoNeededType {}
 
 const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate, selectedReasonFilter }) => {
   const { data: menus, isLoading: isLoadingMenus, isError: isErrorMenus, error: errorMenus } = useMenus(
@@ -49,7 +49,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
 
     const insumoNeedsMap = new Map<string, number>();
 
-    (menus as MenuWithRelations[]).forEach(menu => { // Cast menus to MenuWithRelations[]
+    menus.forEach((menu: MenuWithRelations) => {
       if (menu.menu_date && isWithinInterval(parseISO(menu.menu_date), { start: startDate, end: endDate })) {
         menu.menu_platos?.forEach((menuPlato: MenuPlatoWithRelations) => {
           const plato = menuPlato.platos;
@@ -207,7 +207,7 @@ const PurchaseAnalysis: React.FC<PurchaseAnalysisProps> = ({ startDate, endDate,
 
   return (
     <div className="space-y-8">
-      <PurchaseCostSummary totalEstimatedPurchaseCost={totalEstimatedPurchaseCost} isLoading={isLoading} /> {/* Pass isLoading */}
+      <PurchaseCostSummary totalEstimatedPurchaseCost={totalEstimatedPurchaseCost} isLoading={isLoading} />
 
       <Card className="w-full shadow-lg dark:bg-gray-800">
         <CardHeader className="flex flex-col sm:flex-row items-start sm:items-center justify-between space-y-2 sm:space-y-0 pb-2">

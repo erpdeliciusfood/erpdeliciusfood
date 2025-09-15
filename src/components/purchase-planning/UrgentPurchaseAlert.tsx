@@ -1,12 +1,12 @@
 import React from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { AlertCircle, ShoppingBag, Loader2, Repeat2 } from "lucide-react"; // NEW: Repeat2 icon
+import { AlertCircle, ShoppingBag, Loader2, Repeat2 } from "lucide-react";
 import { useUrgentPurchaseRequests } from "@/hooks/useUrgentPurchaseRequests";
 import { Badge } from "@/components/ui/badge";
 import { Link } from "react-router-dom";
 import { Button } from "@/components/ui/button";
-import { UrgentPurchaseRequestWithRelations } from "@/types"; // Import UrgentPurchaseRequestWithRelations type
+import { UrgentPurchaseRequestWithRelations } from "@/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -15,7 +15,7 @@ const UrgentPurchaseAlert: React.FC = () => {
 
   const pendingRequests = requests?.filter(
     (request: UrgentPurchaseRequestWithRelations) => request.status === 'pending'
-  ).sort((a: UrgentPurchaseRequestWithRelations, b: UrgentPurchaseRequestWithRelations) => new Date(a.request_date).getTime() - new Date(b.request_date).getTime()); // Sort by oldest first
+  ).sort((a: UrgentPurchaseRequestWithRelations, b: UrgentPurchaseRequestWithRelations) => new Date(a.request_date).getTime() - new Date(b.request_date).getTime());
 
   if (isLoading) {
     return (
@@ -52,7 +52,7 @@ const UrgentPurchaseAlert: React.FC = () => {
   }
 
   if (!pendingRequests || pendingRequests.length === 0) {
-    return ( // Render a placeholder card if no pending requests
+    return (
       <Card className="w-full shadow-lg dark:bg-gray-800 border-l-4 border-gray-300 dark:border-gray-700">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
           <CardTitle className="text-2xl font-bold text-gray-900 dark:text-gray-100 flex items-center">
@@ -95,19 +95,19 @@ const UrgentPurchaseAlert: React.FC = () => {
                 <TableHead className="text-left text-base font-semibold text-gray-700 dark:text-gray-200">Insumo</TableHead>
                 <TableHead className="text-right text-base font-semibold text-gray-700 dark:text-gray-200">Cantidad</TableHead>
                 <TableHead className="text-left text-base font-semibold text-gray-700 dark:text-gray-200">Fecha Solicitud</TableHead>
-                <TableHead className="text-center text-base font-semibold text-gray-700 dark:text-gray-200">Insistencia</TableHead> {/* NEW: Insistence column */}
+                <TableHead className="text-center text-base font-semibold text-gray-700 dark:text-gray-200">Insistencia</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {pendingRequests.slice(0, 3).map((request: UrgentPurchaseRequestWithRelations) => ( // Show top 3
+              {pendingRequests.slice(0, 3).map((request: UrgentPurchaseRequestWithRelations) => (
                 <TableRow key={request.id} className="hover:bg-gray-50 dark:hover:bg-gray-700">
                   <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200">{request.insumos?.nombre || "Insumo Desconocido"}</TableCell>
                   <TableCell className="text-right text-base text-gray-700 dark:text-gray-300">{request.quantity_requested.toFixed(2)} {request.insumos?.purchase_unit || "unidad"}</TableCell>
                   <TableCell className="text-base text-gray-700 dark:text-gray-300">{format(new Date(request.request_date), "PPP", { locale: es })}</TableCell>
-                  <TableCell className="text-center text-base text-gray-700 dark:text-gray-300"> {/* NEW: Display insistence_count */}
-                    {(request.insistence_count ?? 0) > 1 ? (
+                  <TableCell className="text-center text-base text-gray-700 dark:text-gray-300">
+                    {(request.insistence_count || 0) > 1 ? (
                       <Badge variant="destructive" className="text-base px-2 py-1 flex items-center justify-center mx-auto w-fit">
-                        <Repeat2 className="h-4 w-4 mr-1" /> {(request.insistence_count ?? 0)}
+                        <Repeat2 className="h-4 w-4 mr-1" /> {request.insistence_count}
                       </Badge>
                     ) : (
                       <Badge variant="secondary" className="text-base px-2 py-1 flex items-center justify-center mx-auto w-fit">

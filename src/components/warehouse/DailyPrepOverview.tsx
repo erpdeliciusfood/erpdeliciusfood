@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Package, CheckCircle2, AlertTriangle, MinusCircle, Utensils, PackageX, Info, ShoppingBag } from "lucide-react";
-import { Menu, AggregatedInsumoNeed, GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations, MenuWithRelations } from "@/types"; // Imported GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations, MenuWithRelations
+import { Menu, AggregatedInsumoNeed, GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations, MenuWithRelations } from "@/types";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -21,7 +21,7 @@ import UrgentPurchaseRequestDialog from "./UrgentPurchaseRequestDialog";
 
 interface DailyPrepOverviewProps {
   selectedDate: Date;
-  menus: MenuWithRelations[]; // Updated type
+  menus: MenuWithRelations[];
 }
 
 const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, menus }) => {
@@ -30,12 +30,11 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   const [isDeductQuantitiesDialogOpen, setIsDeductQuantitiesDialogOpen] = useState(false);
   const [isUrgentPurchaseRequestDialogOpen, setIsUrgentPurchaseRequestDialogOpen] = useState(false);
   const [selectedInsumoForUrgentRequest, setSelectedInsumoForUrgentRequest] = useState<AggregatedInsumoNeed | null>(null);
-  // const [isSelectAllChecked, setIsSelectAllChecked] = useState(false); // REMOVED: Unused state
 
   const groupedInsumoNeeds: GroupedInsumoNeeds[] = useMemo(() => {
     const serviceGroupsMap = new Map<string, GroupedInsumoNeeds>();
 
-    menus.forEach((menu: MenuWithRelations) => { // Cast menu to MenuWithRelations
+    menus.forEach((menu: MenuWithRelations) => {
       menu.menu_platos?.forEach((menuPlato: MenuPlatoWithRelations) => {
         const mealServiceId = menuPlato.meal_service_id;
         const mealServiceName = menuPlato.meal_services?.name || "Sin Servicio";
@@ -64,7 +63,6 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
           const insumo = platoInsumo.insumos;
           if (!insumo) return;
 
-          // Calculate total insumo needed for this recipe * for this service's diner count
           const totalNeededBaseUnit = platoInsumo.cantidad_necesaria * menuPlato.quantity_needed;
           const totalNeededPurchaseUnit = totalNeededBaseUnit / insumo.conversion_factor;
 
@@ -78,8 +76,8 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
             total_needed_base_unit: 0,
             total_needed_purchase_unit: 0,
             missing_quantity: 0,
-            meal_service_id: mealServiceId, // Now correctly part of AggregatedInsumoNeed
-            meal_service_name: mealServiceName, // Now correctly part of AggregatedInsumoNeed
+            meal_service_id: mealServiceId,
+            meal_service_name: mealServiceName,
           };
 
           currentEntry.total_needed_base_unit += totalNeededBaseUnit;
@@ -116,17 +114,9 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     return filteredGroupedNeeds;
   }, [menus, stockFilter]);
 
-  // Flatten the grouped needs for overall calculations and dialogs
   const allAggregatedInsumoNeeds = useMemo(() => {
     return groupedInsumoNeeds.flatMap((group: GroupedInsumoNeeds) => group.insumos);
   }, [groupedInsumoNeeds]);
-
-  // REMOVED: useEffect for isSelectAllChecked as it's no longer used.
-  // useEffect(() => {
-  //   const allDeductibleIds = allAggregatedInsumoNeeds.filter((need: AggregatedInsumoNeed) => need.total_needed_purchase_unit > 0).map((need: AggregatedInsumoNeed) => need.insumo_id);
-  //   // Update isSelectAllChecked based on whether all deductible items are currently selected
-  //   setIsSelectAllChecked(allDeductibleIds.length > 0 && selectedInsumoIds.size === allDeductibleIds.length);
-  // }, [allAggregatedInsumoNeeds, selectedInsumoIds]);
 
   const handleCheckboxChange = (insumoId: string, checked: boolean) => {
     setSelectedInsumoIds((prev: Set<string>) => {
@@ -139,10 +129,6 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
       return newSet;
     });
   };
-
-  // Removed handleSelectAllChange as it's no longer directly used.
-  // The logic for selecting all items within a group is handled directly in the group's checkbox.
-  // The overall isSelectAllChecked state is managed by the useEffect above.
 
   const handleOpenDeductQuantitiesDialog = () => {
     const selectedInsumosWithSufficientStock = allAggregatedInsumoNeeds.filter(
@@ -159,7 +145,6 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   const handleCloseDeductQuantitiesDialog = () => {
     setIsDeductQuantitiesDialogOpen(false);
     setSelectedInsumoIds(new Set());
-    // No need to reset isSelectAllChecked here, as the useEffect will handle it based on selectedInsumoIds
   };
 
   const handleOpenUrgentPurchaseRequestDialog = (insumoNeed: AggregatedInsumoNeed) => {

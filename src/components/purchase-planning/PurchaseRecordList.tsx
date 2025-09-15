@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, ShoppingBag, CheckCircle2, XCircle, Truck, Warehouse, Loader2, Trash2 } from "lucide-react";
-import { PurchaseRecordWithRelations } from "@/types"; // Updated import
+import { PurchaseRecordWithRelations } from "@/types";
 import { useDeletePurchaseRecord, useUpdatePurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
@@ -20,7 +20,7 @@ import { Dialog } from "@/components/ui/dialog";
 import PartialReceptionDialog from "./PartialReceptionDialog";
 
 interface PurchaseRecordListProps {
-  purchaseRecords: PurchaseRecordWithRelations[]; // Updated type
+  purchaseRecords: PurchaseRecordWithRelations[];
   onEdit: (record: PurchaseRecordWithRelations) => void;
 }
 

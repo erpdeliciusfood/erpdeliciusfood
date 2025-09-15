@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import {
   Form,
 } from "@/components/ui/form";
-import { Menu, MenuFormValues, MenuPlatoWithRelations, MenuWithRelations } from "@/types"; // Changed MenuPlato to MenuPlatoWithRelations, added MenuWithRelations
+import { Menu, MenuFormValues, MenuPlatoWithRelations, MenuWithRelations } from "@/types";
 import { useAddMenu, useUpdateMenu } from "@/hooks/useMenus";
 import { useMealServices } from "@/hooks/useMealServices";
 import { useEventTypes } from "@/hooks/useEventTypes";
@@ -25,7 +25,7 @@ const formSchema = z.object({
   description: z.string().max(500, {
     message: "La descripción no debe exceder los 500 caracteres.",
   }).nullable(),
-  menu_type: z.enum(["daily", "event"], { // NEW: menu_type field
+  menu_type: z.enum(["daily", "event"], {
     required_error: "Debe seleccionar un tipo de menú.",
   }),
   menu_date: z.string().nullable(),
@@ -73,7 +73,7 @@ const formSchema = z.object({
 });
 
 interface MenuFormProps {
-  initialData?: MenuWithRelations | null; // Updated type to MenuWithRelations
+  initialData?: MenuWithRelations | null;
   onSuccess: () => void;
   onCancel: () => void;
   preselectedDate?: Date;
@@ -87,12 +87,12 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
   const { data: availableMealServices, isLoading: isLoadingMealServices } = useMealServices();
   const { data: availableEventTypes, isLoading: isLoadingEventTypes } = useEventTypes();
 
-  const form = useForm<MenuFormValues>({ // Changed type to MenuFormValues
+  const form = useForm<MenuFormValues>({
     resolver: zodResolver(formSchema),
     defaultValues: {
       title: "",
       description: "",
-      menu_type: preselectedDate ? "daily" : "event", // NEW: Set default menu_type
+      menu_type: preselectedDate ? "daily" : "event",
       menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null,
       event_type_id: null,
       platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
@@ -104,10 +104,10 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       form.reset({
         title: initialData.title,
         description: initialData.description || "",
-        menu_type: initialData.menu_type as MenuFormValues['menu_type'], // Cast to specific union type
+        menu_type: initialData.menu_type,
         menu_date: initialData.menu_date || null,
         event_type_id: initialData.event_type_id || null,
-        platos_por_servicio: initialData.menu_platos?.map((mp: MenuPlatoWithRelations) => ({ // initialData is now MenuWithRelations
+        platos_por_servicio: initialData.menu_platos?.map((mp: MenuPlatoWithRelations) => ({
           meal_service_id: mp.meal_service_id,
           plato_id: mp.plato_id,
           dish_category: mp.dish_category,
@@ -118,7 +118,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       form.reset({
         title: "",
         description: "",
-        menu_type: preselectedDate ? "daily" : "event", // NEW: Set default menu_type
+        menu_type: preselectedDate ? "daily" : "event",
         menu_date: preselectedDate ? format(preselectedDate, "yyyy-MM-dd") : null,
         event_type_id: null,
         platos_por_servicio: [{ meal_service_id: "", plato_id: "", dish_category: "", quantity_needed: 1 }],
@@ -126,12 +126,12 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
     }
   }, [initialData, form, preselectedDate]);
 
-  const onSubmit = async (values: MenuFormValues) => { // Changed type to MenuFormValues
+  const onSubmit = async (values: MenuFormValues) => {
     const submitValues: MenuFormValues = {
       title: values.title,
       description: values.description,
       platos_por_servicio: values.platos_por_servicio,
-      menu_type: values.menu_type, // NEW: Include menu_type
+      menu_type: values.menu_type,
       menu_date: values.menu_type === "daily" ? values.menu_date : null,
       event_type_id: values.menu_type === "event" ? values.event_type_id : null,
     };

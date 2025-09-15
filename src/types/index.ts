@@ -1,17 +1,17 @@
-import { Database } from "./supabase"; // Corrected import path
+import { Database } from "./types/supabase";
 
 // Base types from Supabase auto-generated file
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type Insumo = Database['public']['Tables']['insumos']['Row'];
 export type Plato = Database['public']['Tables']['platos']['Row'];
 export type PlatoInsumo = Database['public']['Tables']['plato_insumos']['Row'];
-export type Menu = Database['public']['Tables']['menus']['Row'];
+export type Menu = Database['public']['Tables']['menus']['Row'] & { menu_type: 'daily' | 'event' }; // Explicitly define menu_type
 export type MenuPlato = Database['public']['Tables']['menu_platos']['Row'];
 export type EventType = Database['public']['Tables']['event_types']['Row'];
 export type MealService = Database['public']['Tables']['meal_services']['Row'];
-export type PurchaseRecord = Database['public']['Tables']['purchase_records']['Row'];
+export type PurchaseRecord = Database['public']['Tables']['purchase_records']['Row'] & { status: 'ordered' | 'received_by_company' | 'received_by_warehouse' | 'cancelled' }; // Explicitly define status
 export type StockMovement = Database['public']['Tables']['stock_movements']['Row'];
-export type UrgentPurchaseRequest = Database['public']['Tables']['urgent_purchase_requests']['Row'];
+export type UrgentPurchaseRequest = Database['public']['Tables']['urgent_purchase_requests']['Row'] & { priority: 'urgent' | 'high' | 'medium' | 'low'; status: 'pending' | 'approved' | 'rejected' | 'fulfilled' }; // Explicitly define priority and status
 export type InsumoPriceHistory = Database['public']['Tables']['insumo_price_history']['Row'];
 export type InsumoSupplierHistory = Database['public']['Tables']['insumo_supplier_history']['Row'];
 export type Supplier = Database['public']['Tables']['proveedores']['Row'];

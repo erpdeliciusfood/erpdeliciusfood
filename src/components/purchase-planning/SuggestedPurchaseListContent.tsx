@@ -2,32 +2,31 @@ import React, { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader } from "@/components/ui/card";
 import { ShoppingBag, PlusCircle, Info, Loader2 } from "lucide-react";
-import { InsumoNeeded as InsumoNeededType } from "@/types"; // Renamed InsumoNeeded to InsumoNeededType
+import { InsumoNeeded as InsumoNeededType } from "@/types";
 import PurchaseRecordForm from "./PurchaseRecordForm";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"; // NEW: Import DialogTrigger
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { useAddPurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
-import ReasonBadge from "@/components/shared/ReasonBadge"; // NEW: Import ReasonBadge
+import ReasonBadge from "@/components/shared/ReasonBadge";
 
 interface SuggestedPurchaseListContentProps {
-  suggestedPurchases: InsumoNeededType[]; // Use InsumoNeededType directly
+  suggestedPurchases: InsumoNeededType[];
   onClose: () => void;
-  initialSelectedInsumoIds?: Set<string>; // NEW: Prop for initial selection
+  initialSelectedInsumoIds?: Set<string>;
 }
 
 const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> = ({
   suggestedPurchases,
   onClose,
-  initialSelectedInsumoIds, // NEW
+  initialSelectedInsumoIds,
 }) => {
   const queryClient = useQueryClient();
   const addPurchaseRecordMutation = useAddPurchaseRecord();
 
-  // NEW: Initialize selectedInsumoIds with initialSelectedInsumoIds if provided
   const [selectedInsumoIds, setSelectedInsumoIds] = useState<Set<string>>(
     initialSelectedInsumoIds ? new Set(initialSelectedInsumoIds) : new Set()
   );
@@ -45,7 +44,6 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
     setIsSelectAllChecked(allPurchasableIds.length > 0 && selectedInsumoIds.size === allPurchasableIds.length);
   }, [purchasableInsumos, selectedInsumoIds]);
 
-  // NEW: Effect to update internal selectedInsumoIds if initialSelectedInsumoIds changes
   useEffect(() => {
     if (initialSelectedInsumoIds) {
       setSelectedInsumoIds(new Set(initialSelectedInsumoIds));
@@ -109,7 +107,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
           insumo_id: insumo.id,
           purchase_date: new Date().toISOString().split('T')[0],
           quantity_purchased: insumo.purchase_suggestion_rounded,
-          quantity_received: insumo.purchase_suggestion_rounded, // NEW: Set quantity_received to full amount for batch
+          quantity_received: insumo.purchase_suggestion_rounded,
           unit_cost_at_purchase: insumo.costo_unitario,
           total_amount: insumo.estimated_purchase_cost,
           supplier_name_at_purchase: insumo.supplier_name || null,
@@ -117,8 +115,8 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
           supplier_address_at_purchase: insumo.supplier_address || null,
           from_registered_supplier: true,
           notes: `Compra sugerida por análisis para el período.`,
-          status: 'received_by_warehouse', // NEW: Set status to received by warehouse for batch
-          received_date: new Date().toISOString().split('T')[0], // NEW: Set received date for batch
+          status: 'received_by_warehouse',
+          received_date: new Date().toISOString().split('T')[0],
         });
         successfulRegistrations++;
       } catch (error: any) {
@@ -234,7 +232,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
             </CardHeader>
             <CardContent className="text-gray-700 dark:text-gray-300">
               <p className="mb-1">
-                <span className="font-semibold">Motivo de Sugerencia:</span> <ReasonBadge reason={insumo.reason_for_purchase_suggestion} /> {/* NEW: Use ReasonBadge */}
+                <span className="font-semibold">Motivo de Sugerencia:</span> <ReasonBadge reason={insumo.reason_for_purchase_suggestion} />
               </p>
               <p className="mb-1">
                 <span className="font-semibold">Unidad de Compra:</span> {insumo.purchase_unit}
@@ -274,7 +272,7 @@ const SuggestedPurchaseListContent: React.FC<SuggestedPurchaseListContentProps> 
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Badge variant="default" className="bg-green-500 hover:bg-green-600 text-white text-lg px-3 py-1 inline-flex items-center">
-                        <span className="whitespace-nowrap"> {/* NEW: Added whitespace-nowrap */}
+                        <span className="whitespace-nowrap">
                           {insumo.purchase_suggestion_rounded} {insumo.purchase_unit}
                         </span>
                         {insumo.purchase_suggestion_rounded_up && (

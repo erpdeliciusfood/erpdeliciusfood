@@ -1,3 +1,4 @@
+import React from "react";
 import {
   Table,
   TableBody,
@@ -8,17 +9,17 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, UtensilsCrossed, CalendarDays, ChevronDown, CheckCircle2 } from "lucide-react";
-import { MenuWithRelations, MEAL_SERVICES_ORDER, MenuPlatoWithRelations } from "@/types"; // Changed Menu to MenuWithRelations, removed MenuPlato
+import { MenuWithRelations, MEAL_SERVICES_ORDER, MenuPlatoWithRelations } from "@/types";
 import { useDeleteMenu } from "@/hooks/useMenus";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import { useMealServices } from "@/hooks/useMealServices";
 import { Badge } from "@/components/ui/badge";
-import { parseISO } from "date-fns"; // Import parseISO
+import { parseISO } from "date-fns";
 
 interface DailyMenuListProps {
-  menus: MenuWithRelations[]; // Updated type
-  onEdit: (menu: MenuWithRelations) => void; // Updated type
+  menus: MenuWithRelations[];
+  onEdit: (menu: MenuWithRelations) => void;
 }
 
 const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
@@ -136,7 +137,7 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                         <AlertDialogHeader>
                           <AlertDialogTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">¿Estás absolutamente seguro?</AlertDialogTitle>
                           <AlertDialogDescription className="text-base text-gray-700 dark:text-gray-300">
-                            Esta acción no se puede deshacer. Esto eliminará permanentemente el menú <span className="font-semibold">{menu.title}</span> y sus recetas asociadas de nuestros servidores. {/* Changed text */}
+                            Esta acción no se puede deshacer. Esto eliminará permanentemente el menú <span className="font-semibold">{menu.title}</span> y sus recetas asociadas de nuestros servidores.
                           </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter className="flex flex-col sm:flex-row sm:justify-end sm:space-x-2 pt-4">
@@ -158,11 +159,11 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                       <Accordion type="single" collapsible className="w-full">
                         <AccordionItem value={`item-${menu.id}`} className="border-none">
                           <AccordionTrigger className="flex items-center justify-between w-full px-6 py-3 text-base font-medium text-gray-700 dark:text-gray-300 hover:no-underline hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors duration-150 ease-in-out">
-                            Ver Recetas del Menú {/* Changed text */}
+                            Ver Recetas del Menú
                             <ChevronDown className="h-4 w-4 shrink-0 transition-transform duration-200" />
                           </AccordionTrigger>
                           <AccordionContent className="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700">
-                            <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Detalles de Recetas:</h4> {/* Changed text */}
+                            <h4 className="text-lg font-semibold mb-3 text-gray-900 dark:text-gray-100">Detalles de Recetas:</h4>
                             {Object.entries(platosGroupedByServiceAndCategory as Record<string, Record<string, MenuPlatoWithRelations[]>> || {}).sort(([serviceA], [serviceB]) => {
                               // Sort services by predefined order
                               const indexA = MEAL_SERVICES_ORDER.indexOf(serviceA);
@@ -173,13 +174,13 @@ const DailyMenuList: React.FC<DailyMenuListProps> = ({ menus, onEdit }) => {
                             }).map(([serviceName, dishCategories]) => (
                               <div key={serviceName} className="mb-4 last:mb-0">
                                 <h5 className="text-md font-bold text-gray-800 dark:text-gray-200 mb-2 capitalize">{serviceName}</h5>
-                                {Object.entries(dishCategories as Record<string, MenuPlatoWithRelations[]>).map(([dishCategory, platos]: [string, MenuPlatoWithRelations[]]) => ( // Explicitly cast dishCategories
+                                {Object.entries(dishCategories as Record<string, MenuPlatoWithRelations[]>).map(([dishCategory, platos]: [string, MenuPlatoWithRelations[]]) => (
                                   <div key={dishCategory} className="ml-4 mb-2 last:mb-0">
                                     <h6 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-1 capitalize">{dishCategory}:</h6>
                                     <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
                                       {platos?.map((mp: MenuPlatoWithRelations, idx: number) => (
                                         <li key={idx} className="text-base">
-                                          <span className="font-medium text-gray-800 dark:text-gray-200">{mp.platos?.nombre || "Receta Desconocida"}</span> {/* Changed text */}
+                                          <span className="font-medium text-gray-800 dark:text-gray-200">{mp.platos?.nombre || "Receta Desconocida"}</span>
                                           {" "} (Cantidad: {mp.quantity_needed})
                                         </li>
                                       ))}

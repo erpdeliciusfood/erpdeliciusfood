@@ -15,7 +15,7 @@ import * as z from "zod";
 import { Loader2, Truck, Warehouse } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { PurchaseRecordWithRelations, PurchaseRecordFormValues } from "@/types"; // Updated import
+import { PurchaseRecordWithRelations } from "@/types";
 import { useUpdatePurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { showSuccess, showError } from "@/utils/toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -27,7 +27,7 @@ const formSchema = z.object({
 });
 
 interface PartialReceptionDialogProps {
-  purchaseRecord: PurchaseRecordWithRelations; // Updated type
+  purchaseRecord: PurchaseRecordWithRelations;
   onClose: () => void;
   targetStatus: 'received_by_company' | 'received_by_warehouse';
 }
@@ -71,11 +71,11 @@ const PartialReceptionDialog: React.FC<PartialReceptionDialogProps> = ({
         record: {
           ...purchaseRecord,
           quantity_received: purchaseRecord.quantity_received + quantityToReceive,
-          status: (quantityToReceive === quantityPending ? targetStatus : purchaseRecord.status) as PurchaseRecordFormValues['status'], // Cast to specific union type
-          received_date: purchaseRecord.received_date || format(new Date(), "yyyy-MM-dd", { locale: es }), // Set received date if not already set
+          status: quantityToReceive === quantityPending ? targetStatus : purchaseRecord.status,
+          received_date: purchaseRecord.received_date || format(new Date(), "yyyy-MM-dd", { locale: es }),
         },
-        partialReceptionQuantity: quantityToReceive, // Pass the partial quantity to the mutation
-        targetStatus: targetStatus, // Pass the target status for logic in the mutation
+        partialReceptionQuantity: quantityToReceive,
+        targetStatus: targetStatus,
       });
       showSuccess(`Se registraron ${quantityToReceive.toFixed(2)} ${purchaseRecord.insumos?.purchase_unit || 'unidades'} de ${purchaseRecord.insumos?.nombre || 'insumo desconocido'}.`);
       onClose();

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Edit, Trash2, ShoppingBag, CheckCircle2, XCircle, Loader2, Repeat2 } from "lucide-react";
-import { UrgentPurchaseRequestWithRelations } from "@/types"; // Updated import
+import { UrgentPurchaseRequestWithRelations } from "@/types";
 import { useDeleteUrgentPurchaseRequest, useUpdateUrgentPurchaseRequest } from "@/hooks/useUrgentPurchaseRequests";
 import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 import { format } from "date-fns";
@@ -21,7 +21,7 @@ import FulfillUrgentRequestDialog from "./FulfillUrgentRequestDialog";
 import RejectUrgentRequestDialog from "./RejectUrgentRequestDialog";
 
 interface UrgentPurchaseRequestListProps {
-  requests: UrgentPurchaseRequestWithRelations[]; // Updated type
+  requests: UrgentPurchaseRequestWithRelations[];
   onEdit: (request: UrgentPurchaseRequestWithRelations) => void;
 }
 
@@ -144,9 +144,9 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                 {getStatusBadge(request.status)}
               </TableCell>
               <TableCell className="text-center text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[100px]">
-                {(request.insistence_count ?? 0) > 1 ? (
+                {(request.insistence_count || 0) > 1 ? (
                   <Badge variant="destructive" className="text-base px-2 py-1 flex items-center justify-center mx-auto w-fit">
-                    <Repeat2 className="h-4 w-4 mr-1" /> {(request.insistence_count ?? 0)}
+                    <Repeat2 className="h-4 w-4 mr-1" /> {request.insistence_count}
                   </Badge>
                 ) : (
                   <Badge variant="secondary" className="text-base px-2 py-1 flex items-center justify-center mx-auto w-fit">
@@ -170,7 +170,6 @@ const UrgentPurchaseRequestList: React.FC<UrgentPurchaseRequestListProps> = ({ r
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => handleApproveRequest(request)}
                           className="h-10 w-10 rounded-full hover:bg-green-100 dark:hover:bg-green-900 transition-colors duration-150 ease-in-out"
                           title="Aprobar Solicitud"
                           disabled={updateMutation.isPending}

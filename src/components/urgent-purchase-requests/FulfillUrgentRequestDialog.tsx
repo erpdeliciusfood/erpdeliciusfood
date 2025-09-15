@@ -6,14 +6,14 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import { UrgentPurchaseRequest, PurchaseRecord, UrgentPurchaseRequestWithRelations } from "@/types"; // NEW: Import PurchaseRecord, UrgentPurchaseRequestWithRelations
+import { UrgentPurchaseRequest, PurchaseRecord, UrgentPurchaseRequestWithRelations } from "@/types";
 import PurchaseRecordForm from "@/components/purchase-planning/PurchaseRecordForm";
 import { useUpdateUrgentPurchaseRequest } from "@/hooks/useUrgentPurchaseRequests";
 import { showSuccess, showError } from "@/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
 
 interface FulfillUrgentRequestDialogProps {
-  urgentRequest: UrgentPurchaseRequestWithRelations; // Updated type
+  urgentRequest: UrgentPurchaseRequestWithRelations;
   onClose: () => void;
 }
 
@@ -24,7 +24,7 @@ const FulfillUrgentRequestDialog: React.FC<FulfillUrgentRequestDialogProps> = ({
   const queryClient = useQueryClient();
   const updateUrgentRequestMutation = useUpdateUrgentPurchaseRequest();
 
-  const handlePurchaseRecordSuccess = async (newPurchaseRecord?: PurchaseRecord) => { // NEW: Accept newPurchaseRecord
+  const handlePurchaseRecordSuccess = async (newPurchaseRecord?: PurchaseRecord) => {
     try {
       if (!newPurchaseRecord) {
         throw new Error("No se pudo obtener el registro de compra creado.");
@@ -34,12 +34,12 @@ const FulfillUrgentRequestDialog: React.FC<FulfillUrgentRequestDialogProps> = ({
         id: urgentRequest.id,
         request: {
           status: 'fulfilled',
-          fulfilled_purchase_record_id: newPurchaseRecord.id, // NEW: Link the new purchase record ID
+          fulfilled_purchase_record_id: newPurchaseRecord.id,
         },
       });
       showSuccess(`Solicitud urgente para ${urgentRequest.insumos?.nombre || "Insumo Desconocido"} marcada como cumplida y vinculada a la compra.`);
       queryClient.invalidateQueries({ queryKey: ["urgentPurchaseRequests"] });
-      queryClient.invalidateQueries({ queryKey: ["purchaseRecords"] }); // Invalidate purchase records to show the new one
+      queryClient.invalidateQueries({ queryKey: ["purchaseRecords"] });
       onClose();
     } catch (error: any) {
       showError(`Error al marcar la solicitud como cumplida: ${error.message}`);

@@ -37,9 +37,9 @@ const StockMovementList: React.FC<StockMovementListProps> = ({ stockMovements })
         return <Badge className="bg-blue-500 hover:bg-blue-600 text-white">Ajuste de Entrada</Badge>;
       case 'adjustment_out':
         return <Badge className="bg-orange-500 hover:bg-orange-600 text-white">Ajuste de Salida</Badge>;
-      case 'daily_prep_out': // NEW: Badge for daily_prep_out
+      case 'daily_prep_out':
         return <Badge className="bg-purple-500 hover:bg-purple-600 text-white">Salida por Prep. Diaria</Badge>;
-      case 'reception_in': // NEW: Badge for reception_in
+      case 'reception_in':
         return <Badge className="bg-indigo-500 hover:bg-indigo-600 text-white">Recepción por Empresa</Badge>;
       default:
         return <Badge variant="secondary">Desconocido</Badge>;
@@ -49,7 +49,7 @@ const StockMovementList: React.FC<StockMovementListProps> = ({ stockMovements })
   const getQuantityDisplay = (movement: StockMovementWithRelations) => {
     const quantity = movement.quantity_change;
     const unit = movement.insumos?.purchase_unit || "unidad";
-    const isPositive = movement.movement_type === 'purchase_in' || movement.movement_type === 'adjustment_in' || movement.movement_type === 'reception_in'; // NEW: Include reception_in
+    const isPositive = movement.movement_type === 'purchase_in' || movement.movement_type === 'adjustment_in' || movement.movement_type === 'reception_in';
 
     return (
       <span className={`flex items-center justify-end font-semibold ${isPositive ? 'text-green-600' : 'text-red-600'}`}>
@@ -76,7 +76,7 @@ const StockMovementList: React.FC<StockMovementListProps> = ({ stockMovements })
           {stockMovements.map((movement) => (
             <TableRow key={movement.id} className="border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out">
               <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[180px]">
-                {format(new Date(movement.created_at || new Date()), "PPP HH:mm", { locale: es })}
+                {movement.created_at ? format(new Date(movement.created_at), "PPP HH:mm", { locale: es }) : "N/A"}
               </TableCell>
               <TableCell className="text-base text-gray-700 dark:text-gray-300 py-3 px-6 text-left min-w-[180px]">
                 {movement.insumos?.nombre || "Insumo Desconocido"}
