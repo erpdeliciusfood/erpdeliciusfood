@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Insumo, InsumoFormValues, InsumoSupplierHistory, InsumoPriceHistory } from "@/types";
+import { Insumo, InsumoFormValues, InsumoSupplierHistory, InsumoPriceHistory } from "@/types/index";
 
 export const getInsumos = async (
   searchTerm?: string,

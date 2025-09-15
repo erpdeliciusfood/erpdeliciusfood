@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getPurchaseRecords, createPurchaseRecord, updatePurchaseRecord, deletePurchaseRecord } from "@/integrations/supabase/purchaseRecords";
-import { PurchaseRecord, PurchaseRecordFormValues } from "@/types";
+import { PurchaseRecord, PurchaseRecordFormValues } from "@/types/index";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
 export const usePurchaseRecords = () => {

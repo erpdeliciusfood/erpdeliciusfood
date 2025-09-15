@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { UrgentPurchaseRequest, UrgentPurchaseRequestFormValues } from "@/types";
+import { UrgentPurchaseRequest, UrgentPurchaseRequestFormValues } from "@/types/index";
 
 export const getUrgentPurchaseRequests = async (status?: UrgentPurchaseRequest['status']): Promise<UrgentPurchaseRequest[]> => {
   let query = supabase

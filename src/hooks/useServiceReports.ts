@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getServiceReports, createServiceReport, updateServiceReport, deleteServiceReport } from "@/integrations/supabase/serviceReports";
-import { ServiceReport, ServiceReportFormValues } from "@/types";
+import { ServiceReport, ServiceReportFormValues } from "@/types/index";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
 export const useServiceReports = () => {

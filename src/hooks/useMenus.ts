@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getMenus, getMenuById, createMenu, updateMenu, deleteMenu } from "@/integrations/supabase/menus";
-import { Menu, MenuFormValues } from "@/types";
+import { Menu, MenuFormValues } from "@/types/index";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
 export const useMenus = (startDate?: string, endDate?: string) => {

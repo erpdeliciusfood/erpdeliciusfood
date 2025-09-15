@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { PurchaseRecord, PurchaseRecordFormValues } from "@/types";
+import { PurchaseRecord, PurchaseRecordFormValues } from "@/types/index";
 import { createStockMovement } from "./stockMovements"; // Import the stock movement function
 
 export const getPurchaseRecords = async (): Promise<PurchaseRecord[]> => {

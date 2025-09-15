@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getSuppliers, createSupplier, updateSupplier, deleteSupplier } from "@/integrations/supabase/suppliers";
-import { Supplier, SupplierFormValues } from "@/types";
+import { Supplier, SupplierFormValues } from "@/types/index";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
 export const useSuppliers = () => {
@@ -53,6 +53,7 @@ export const useUpdateSupplier = () => {
       }
       showError(`Error al actualizar proveedor: ${error.message}`);
     },
+    
   });
 };
 

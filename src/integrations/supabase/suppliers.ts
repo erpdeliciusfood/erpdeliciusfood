@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Supplier, SupplierFormValues } from "@/types";
+import { Supplier, SupplierFormValues } from "@/types/index";
 
 export const getSuppliers = async (): Promise<Supplier[]> => {
   const { data, error } = await supabase

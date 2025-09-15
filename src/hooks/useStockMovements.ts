@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getStockMovements, createStockMovement } from "@/integrations/supabase/stockMovements";
-import { StockMovement, StockMovementFormValues } from "@/types";
+import { StockMovement, StockMovementFormValues } from "@/types/index";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext"; // NEW: Import useSession
 

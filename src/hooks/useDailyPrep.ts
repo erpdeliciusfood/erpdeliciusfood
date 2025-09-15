@@ -1,6 +1,6 @@
 import { useQuery } from "@tanstack/react-query";
 import { getMenus } from "@/integrations/supabase/menus";
-import { Menu } from "@/types";
+import { Menu } from "@/types/index";
 
 // This hook is a wrapper around useMenus, specifically for the daily prep context.
 // It can be extended in the future if more specific data fetching or mutations are needed for daily prep.

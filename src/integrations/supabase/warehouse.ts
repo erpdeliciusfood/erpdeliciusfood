@@ -1,4 +1,4 @@
-import { AggregatedInsumoNeed } from "@/types"; // Removed supabase and Menu imports
+import { AggregatedInsumoNeed } from "@/types/index"; // Removed supabase and Menu imports
 
 // This function is currently not used directly by the frontend,
 // as aggregation logic is handled in useMemo in DailyPrepOverview.tsx.

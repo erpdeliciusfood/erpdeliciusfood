@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { StockMovement, StockMovementFormValues } from "@/types";
+import { StockMovement, StockMovementFormValues } from "@/types/index";
 import { PostgrestError } from "@supabase/supabase-js"; // Import PostgrestError
 
 // Define a local type for the menu data fetched in this specific context

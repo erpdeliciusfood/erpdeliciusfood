@@ -1,6 +1,6 @@
 import { useMutation, useQueryClient, useQuery } from "@tanstack/react-query";
 import { createUrgentPurchaseRequest, getUrgentPurchaseRequests, updateUrgentPurchaseRequest, deleteUrgentPurchaseRequest } from "@/integrations/supabase/urgentPurchaseRequests";
-import { UrgentPurchaseRequest, UrgentPurchaseRequestFormValues } from "@/types";
+import { UrgentPurchaseRequest, UrgentPurchaseRequestFormValues } from "@/types/index";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext";
 

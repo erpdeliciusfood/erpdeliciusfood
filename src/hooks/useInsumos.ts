@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getInsumos, createInsumo, updateInsumo, deleteInsumo, getInsumoSupplierHistory, getInsumoPriceHistory } from "@/integrations/supabase/insumos";
-import { Insumo, InsumoFormValues, InsumoSupplierHistory, InsumoPriceHistory } from "@/types";
+import { Insumo, InsumoFormValues, InsumoSupplierHistory, InsumoPriceHistory } from "@/types/index";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
 export const useInsumos = (searchTerm?: string, category?: string, page: number = 1, pageSize: number = 10) => {

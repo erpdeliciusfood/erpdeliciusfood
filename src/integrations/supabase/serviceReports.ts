@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { ServiceReport, ServiceReportFormValues } from "@/types"; // Removed Receta
+import { ServiceReport, ServiceReportFormValues } from "@/types/index"; // Removed Receta
 
 export const getServiceReports = async (): Promise<ServiceReport[]> => {
   const { data, error } = await supabase

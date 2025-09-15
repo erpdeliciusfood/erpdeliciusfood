@@ -2,7 +2,7 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getProfile, updateProfile, getAllProfiles, updateUserRoleAdmin } from "@/integrations/supabase/profiles";
 import { useSession } from "@/contexts/SessionContext";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
-import { Profile } from "@/types"; // Import Profile from types
+import { Profile } from "@/types/index"; // Import Profile from types
 
 interface ProfileFormValues {
   first_name: string | null;

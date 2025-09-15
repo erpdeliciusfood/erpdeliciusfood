@@ -13,7 +13,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
-import { EventType } from "@/types";
+import { EventType } from "@/types/index";
 import { useAddEventType, useUpdateEventType } from "@/hooks/useEventTypes";
 import { Loader2 } from "lucide-react";
 

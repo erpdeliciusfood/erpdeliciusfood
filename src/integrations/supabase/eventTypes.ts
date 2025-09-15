@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { EventType } from "@/types";
+import { EventType } from "@/types/index";
 
 interface EventTypeFormValues {
   name: string;

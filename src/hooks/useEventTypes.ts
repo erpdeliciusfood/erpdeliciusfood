@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getEventTypes, createEventType, updateEventType, deleteEventType } from "@/integrations/supabase/eventTypes";
-import { EventType } from "@/types";
+import { EventType } from "@/types/index";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
 interface EventTypeFormValues {

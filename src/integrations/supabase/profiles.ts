@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Profile } from "@/types"; // Import Profile from types
+import { Profile } from "@/types/index"; // Import Profile from types
 
 interface ProfileFormValues {
   first_name: string | null;

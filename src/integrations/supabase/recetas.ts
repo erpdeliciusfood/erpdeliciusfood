@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Receta, RecetaFormValues } from "@/types"; // Changed type imports
+import { Receta, RecetaFormValues } from "@/types/index"; // Changed type imports
 
 // Helper function to calculate production cost
 const calculateRecetaCosts = async ( // Changed function name
@@ -95,7 +95,7 @@ export const createReceta = async (recetaData: RecetaFormValues): Promise<Receta
     .eq("id", newReceta.id) // Reference newReceta.id
     .single();
 
-  if (fetchError) throw new Error(`Failed to fetch complete receta: ${fetchError.message}`); // Changed text
+  if (fetchError) throw new Error(`Failed to fetch complete receta: ${fetchError.message}`);
 
   return completeReceta;
 };
@@ -149,7 +149,7 @@ export const updateReceta = async (id: string, recetaData: RecetaFormValues): Pr
     .eq("id", updatedReceta.id) // Reference updatedReceta.id
     .single();
 
-  if (fetchError) throw new Error(`Failed to fetch complete receta: ${fetchError.message}`); // Changed text
+  if (fetchError) throw new Error(`Failed to fetch complete receta: ${fetchError.message}`);
 
   return completeReceta;
 };

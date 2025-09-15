@@ -3,7 +3,7 @@ import { format, isWithinInterval, parseISO } from "date-fns";
 // Removed unused import: import type { DateRange } from "react-day-picker";
 import { useMenus } from "@/hooks/useMenus";
 import { useInsumos } from "@/hooks/useInsumos";
-import { Insumo, MenuPlatoWithRelations, PlatoInsumoWithRelations, InsumoNeeded, MenuWithRelations } from "@/types";
+import { Insumo, MenuPlatoWithRelations, PlatoInsumoWithRelations, InsumoNeeded, MenuWithRelations } from "@/types/index";
 
 interface UsePurchaseAnalysisDataProps {
   startDate: Date;

@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { getRecetas, getRecetaById, createReceta, updateReceta, deleteReceta } from "@/integrations/supabase/recetas"; // Changed imports
-import { Receta, RecetaFormValues } from "@/types"; // Changed type imports
+import { Receta, RecetaFormValues } from "@/types/index"; // Changed type imports
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
 export const useRecetas = () => { // Changed hook name

@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { Menu, MenuFormValues } from "@/types";
+import { Menu, MenuFormValues } from "@/types/index";
 
 export const getMenus = async (startDate?: string, endDate?: string): Promise<Menu[]> => {
   let query = supabase

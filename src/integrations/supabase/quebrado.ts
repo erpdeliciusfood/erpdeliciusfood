@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { QuebradoReportData } from "@/types"; // NUEVO: Importar QuebradoReportData
+import { QuebradoReportData } from "@/types/index"; // NUEVO: Importar QuebradoReportData
 
 export const generateQuebradoReport = async (
   startDate: string,
