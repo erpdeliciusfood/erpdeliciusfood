@@ -1,4 +1,4 @@
-import { Database } from "./supabase";
+import { Database } from "@/types/supabase";
 
 // Base types from Supabase auto-generated file
 export type Profile = Database['public']['Tables']['profiles']['Row'];
@@ -179,7 +179,27 @@ export interface AggregatedInsumoNeed {
   meal_service_name: string; // Added for grouping
 }
 
-// New type for grouped insumo needs
+// NEW: Type for a single, granular insumo deduction item
+export interface InsumoDeductionItem {
+  unique_id: string; // Composite key: insumo_id-plato_id-meal_service_id-menu_id
+  insumo_id: string;
+  insumo_nombre: string;
+  base_unit: string;
+  purchase_unit: string;
+  conversion_factor: number;
+  current_stock_quantity: number; // Current stock of the insumo
+  total_needed_base_unit_for_item: number; // Quantity needed for this specific recipe/service item (in base unit)
+  total_needed_purchase_unit_for_item: number; // Quantity needed for this specific recipe/service item (in purchase unit)
+  plato_id: string;
+  plato_nombre: string;
+  meal_service_id: string;
+  meal_service_name: string;
+  menu_id: string; // The menu this item belongs to
+  menu_title: string; // The title of the menu
+  menu_date: string | null; // The date of the menu
+}
+
+// New type for grouped insumo needs (for display in DailyPrepOverview)
 export interface GroupedInsumoNeeds {
   meal_service_id: string;
   meal_service_name: string;

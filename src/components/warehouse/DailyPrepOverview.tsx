@@ -151,17 +151,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   }, [allDeductionItems, stockFilter]);
 
 
-  const handleCheckboxChange = (uniqueId: string, checked: boolean) => { // MODIFIED: Use uniqueId
-    setSelectedDeductionItemIds((prev: Set<string>) => {
-      const newSet = new Set(prev);
-      if (checked) {
-        newSet.add(uniqueId);
-      } else {
-        newSet.delete(uniqueId);
-      }
-      return newSet;
-    });
-  };
+  // Removed unused function: handleCheckboxChange
 
   const handleOpenDeductQuantitiesDialog = () => {
     const selectedItems = allDeductionItems.filter(

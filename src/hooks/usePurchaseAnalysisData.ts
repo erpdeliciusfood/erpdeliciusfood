@@ -1,6 +1,6 @@
 import { useMemo } from "react";
 import { format, isWithinInterval, parseISO } from "date-fns";
-import { DateRange } from "react-day-picker";
+import type { DateRange } from "react-day-picker"; // <-- Fixed: Changed to type import
 import { useMenus } from "@/hooks/useMenus";
 import { useInsumos } from "@/hooks/useInsumos";
 import { Insumo, MenuPlatoWithRelations, PlatoInsumoWithRelations, InsumoNeeded, MenuWithRelations } from "@/types";
