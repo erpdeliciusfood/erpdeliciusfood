@@ -16,3 +16,7 @@ export const showLoading = (message: string): string => {
 export const dismissToast = (toastId: string) => {
   toast.dismiss(toastId);
 };
+
+export const showInfo = (message: string) => { // NEW: Export showInfo
+  toast.info(message);
+};

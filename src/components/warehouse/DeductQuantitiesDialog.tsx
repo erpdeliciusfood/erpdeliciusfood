@@ -12,12 +12,12 @@ import { Label } from "@/components/ui/label";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, AlertTriangle, Utensils, RotateCcw } from "lucide-react";
+import { Loader2, AlertTriangle, RotateCcw, Package } from "lucide-react"; // Removed Utensils
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { AggregatedInsumoNeed } from "@/types";
 import { useAddStockMovement } from "@/hooks/useStockMovements";
-import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
+import { showSuccess, showError, showLoading, dismissToast, showInfo } from "@/utils/toast"; // Corrected import
 import { useQueryClient } from "@tanstack/react-query";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -103,15 +103,23 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
     const deductToastId = showLoading("Deduciendo insumos para la preparación diaria...");
     let successfulDeductions = 0;
     let failedDeductions = 0;
+    let adjustedDeductionsCount = 0;
 
     for (const item of insumos_to_deduct) {
       if (item.quantity_to_deduct > 0) {
+        let notes = `Salida por preparación diaria para el menú del ${format(selectedDate, "PPP", { locale: es })}. Realizado por: ${deductor_name}`;
+        
+        if (item.quantity_to_deduct !== item.suggested_quantity) {
+          adjustedDeductionsCount++;
+          notes += `\n(Ajuste manual: Necesidad original ${item.suggested_quantity.toFixed(2)} ${item.purchase_unit}, Deducido: ${item.quantity_to_deduct.toFixed(2)} ${item.purchase_unit})`;
+        }
+
         try {
           await addStockMovementMutation.mutateAsync({
             insumo_id: item.insumo_id,
             movement_type: 'daily_prep_out',
             quantity_change: item.quantity_to_deduct,
-            notes: `Salida por preparación diaria para el menú del ${format(selectedDate, "PPP", { locale: es })}. Realizado por: ${deductor_name}`,
+            notes: notes,
             menu_id: menuId,
           });
           successfulDeductions++;
@@ -124,7 +132,12 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
 
     dismissToast(deductToastId);
     if (successfulDeductions > 0) {
-      showSuccess(`Se dedujeron ${successfulDeductions} insumos exitosamente para la preparación diaria.`);
+      let successMessage = `Se dedujeron ${successfulDeductions} insumos exitosamente para la preparación diaria.`;
+      if (adjustedDeductionsCount > 0) {
+        successMessage += ` Se realizaron ${adjustedDeductionsCount} ajustes manuales.`;
+        showInfo("Revisa el módulo de Movimientos de Stock para ver los detalles de los ajustes.");
+      }
+      showSuccess(successMessage);
     }
     if (failedDeductions > 0) {
       showError(`Fallaron ${failedDeductions} deducciones de insumos.`);
@@ -149,7 +162,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
       <Form {...form}>
         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6 p-2">
           <p className="text-base text-gray-700 dark:text-gray-300">
-            Revisa las cantidades sugeridas para la preparación diaria del {format(selectedDate, "PPP", { locale: es })}.
+            Revisa las cantidades sugeridas para la preparación diaria del <span className="font-semibold">{format(selectedDate, "PPP", { locale: es })}</span>.
             Puedes ajustar las cantidades si es necesario.
           </p>
 
@@ -176,17 +189,22 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
             {fields.map((item, index) => (
               <div key={item.id} className="flex flex-col md:flex-row gap-3 items-center border-b pb-3 last:border-b-0 last:pb-0">
                 <div className="flex-grow">
-                  <Label className="text-base font-semibold text-gray-800 dark:text-gray-200 flex items-center">
-                    <Utensils className="mr-2 h-5 w-5" />
+                  <Label className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center">
+                    <Package className="mr-2 h-6 w-6 text-primary dark:text-primary-foreground" /> {/* Changed icon to Package */}
                     {item.insumo_nombre}
                   </Label>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">Stock actual: {item.current_stock_quantity.toFixed(2)} {item.purchase_unit}</p>
+                  <p className="text-base text-gray-700 dark:text-gray-300 mt-1">
+                    Stock actual: <span className="font-semibold">{item.current_stock_quantity.toFixed(2)} {item.purchase_unit}</span>
+                  </p>
+                  <p className="text-base text-gray-700 dark:text-gray-300">
+                    Necesidad para receta: <span className="font-semibold text-blue-600 dark:text-blue-400">{item.suggested_quantity.toFixed(2)} {item.purchase_unit}</span>
+                  </p>
                 </div>
                 <FormField
                   control={form.control}
                   name={`insumos_to_deduct.${index}.quantity_to_deduct`}
                   render={({ field: quantityField }) => {
-                    const isAdjusted = quantityField.value !== item.suggested_quantity;
+                    const isAdjusted = parseFloat(quantityField.value.toFixed(2)) !== parseFloat(item.suggested_quantity.toFixed(2));
                     return (
                       <FormItem className="w-full md:w-1/3">
                         <FormLabel className="text-base font-semibold text-gray-800 dark:text-gray-200">
@@ -238,6 +256,9 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
                 {insumos_to_deduct.filter(item => item.quantity_to_deduct > 0).map(item => (
                   <li key={item.insumo_id}>
                     {item.insumo_nombre}: {item.quantity_to_deduct.toFixed(2)} {item.purchase_unit}
+                    {parseFloat(item.quantity_to_deduct.toFixed(2)) !== parseFloat(item.suggested_quantity.toFixed(2)) && (
+                      <span className="ml-2 text-blue-600 dark:text-blue-400 font-medium">(Ajustado de {item.suggested_quantity.toFixed(2)})</span>
+                    )}
                   </li>
                 ))}
               </ul>
