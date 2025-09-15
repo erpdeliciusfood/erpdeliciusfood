@@ -1,5 +1,13 @@
 import { supabase } from "@/integrations/supabase/client";
-import { StockMovement, StockMovementFormValues } from "@/types"; // Removed MenuWithRelations
+import { StockMovement, StockMovementFormValues } from "@/types";
+import { PostgrestError } from "@supabase/supabase-js"; // Import PostgrestError
+
+// Define a local type for the menu data fetched in this specific context
+type MenuDetailsForStockMovement = {
+  title: string;
+  menu_date: string | null;
+  event_types: { name: string } | null; // event_types is an object or null, not an array
+};
 
 export const getStockMovements = async (): Promise<StockMovement[]> => {
   const { data, error } = await supabase
@@ -57,16 +65,15 @@ export const createStockMovement = async (
       .from('menus')
       .select('title, menu_date, event_types(name)')
       .eq('id', menu_id)
-      .single();
+      .single() as { data: MenuDetailsForStockMovement | null, error: PostgrestError | null }; // Cast the result to the local type
 
     if (menuError) {
       console.warn(`Could not fetch menu details for menu_id ${menu_id}: ${menuError.message}`);
     } else if (menuData) {
       const menuTitle = menuData.title;
       const menuDate = menuData.menu_date;
-      // Access `name` directly if `event_types` exists.
-      // If `event_types` is an array (due to complex join or type inference), take the first element.
-      const eventTypeName = Array.isArray(menuData.event_types) ? menuData.event_types[0]?.name : menuData.event_types?.name;
+      // Access `name` directly from event_types object, which is now correctly typed
+      const eventTypeName = menuData.event_types?.name;
 
       let menuIdentifier = '';
       if (menuDate) {
