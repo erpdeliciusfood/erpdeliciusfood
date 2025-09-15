@@ -1,17 +1,17 @@
-import { Database } from "./types/supabase";
+import { Database } from "./supabase";
 
 // Base types from Supabase auto-generated file
 export type Profile = Database['public']['Tables']['profiles']['Row'];
 export type Insumo = Database['public']['Tables']['insumos']['Row'];
 export type Plato = Database['public']['Tables']['platos']['Row'];
 export type PlatoInsumo = Database['public']['Tables']['plato_insumos']['Row'];
-export type Menu = Database['public']['Tables']['menus']['Row'];
+export type Menu = Database['public']['Tables']['menus']['Row'] & { menu_type: 'daily' | 'event' }; // Explicitly define menu_type
 export type MenuPlato = Database['public']['Tables']['menu_platos']['Row'];
 export type EventType = Database['public']['Tables']['event_types']['Row'];
 export type MealService = Database['public']['Tables']['meal_services']['Row'];
-export type PurchaseRecord = Database['public']['Tables']['purchase_records']['Row'];
+export type PurchaseRecord = Database['public']['Tables']['purchase_records']['Row'] & { status: 'ordered' | 'received_by_company' | 'received_by_warehouse' | 'cancelled' }; // Explicitly define status
 export type StockMovement = Database['public']['Tables']['stock_movements']['Row'];
-export type UrgentPurchaseRequest = Database['public']['Tables']['urgent_purchase_requests']['Row'];
+export type UrgentPurchaseRequest = Database['public']['Tables']['urgent_purchase_requests']['Row'] & { priority: 'urgent' | 'high' | 'medium' | 'low'; status: 'pending' | 'approved' | 'rejected' | 'fulfilled' }; // Explicitly define priority and status
 export type InsumoPriceHistory = Database['public']['Tables']['insumo_price_history']['Row'];
 export type InsumoSupplierHistory = Database['public']['Tables']['insumo_supplier_history']['Row'];
 export type Supplier = Database['public']['Tables']['proveedores']['Row'];
@@ -146,6 +146,7 @@ export interface UrgentPurchaseRequestFormValues {
   fulfilled_purchase_record_id?: string | null;
   insistence_count?: number;
   rejection_reason?: string | null;
+  status?: 'pending' | 'approved' | 'rejected' | 'fulfilled'; // NEW: Added status field
 }
 
 export interface SupplierFormValues {
@@ -178,7 +179,27 @@ export interface AggregatedInsumoNeed {
   meal_service_name: string; // Added for grouping
 }
 
-// New type for grouped insumo needs
+// NEW: Type for a single, granular insumo deduction item
+export interface InsumoDeductionItem {
+  unique_id: string; // Composite key: insumo_id-plato_id-meal_service_id-menu_id
+  insumo_id: string;
+  insumo_nombre: string;
+  base_unit: string;
+  purchase_unit: string;
+  conversion_factor: number;
+  current_stock_quantity: number; // Current stock of the insumo
+  total_needed_base_unit_for_item: number; // Quantity needed for this specific recipe/service item (in base unit)
+  total_needed_purchase_unit_for_item: number; // Quantity needed for this specific recipe/service item (in purchase unit)
+  plato_id: string;
+  plato_nombre: string;
+  meal_service_id: string;
+  meal_service_name: string;
+  menu_id: string; // The menu this item belongs to
+  menu_title: string; // The title of the menu
+  menu_date: string | null; // The date of the menu
+}
+
+// New type for grouped insumo needs (for display in DailyPrepOverview)
 export interface GroupedInsumoNeeds {
   meal_service_id: string;
   meal_service_name: string;

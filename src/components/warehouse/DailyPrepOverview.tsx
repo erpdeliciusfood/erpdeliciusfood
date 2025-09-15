@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Package, CheckCircle2, AlertTriangle, MinusCircle, Utensils, PackageX, Info, ShoppingBag } from "lucide-react";
-import { AggregatedInsumoNeed, GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations, MenuWithRelations } from "@/types";
+import { AggregatedInsumoNeed, GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations, MenuWithRelations, InsumoDeductionItem } from "@/types"; // NEW: Import InsumoDeductionItem
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -26,75 +26,111 @@ interface DailyPrepOverviewProps {
 
 const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, menus }) => {
   const [stockFilter, setStockFilter] = useState<'all' | 'sufficient' | 'insufficient'>('all');
-  const [selectedInsumoIds, setSelectedInsumoIds] = useState<Set<string>>(new Set());
+  const [selectedDeductionItemIds, setSelectedDeductionItemIds] = useState<Set<string>>(new Set()); // MODIFIED: Use selectedDeductionItemIds
   const [isDeductQuantitiesDialogOpen, setIsDeductQuantitiesDialogOpen] = useState(false);
   const [isUrgentPurchaseRequestDialogOpen, setIsUrgentPurchaseRequestDialogOpen] = useState(false);
   const [selectedInsumoForUrgentRequest, setSelectedInsumoForUrgentRequest] = useState<AggregatedInsumoNeed | null>(null);
 
-  const groupedInsumoNeeds: GroupedInsumoNeeds[] = useMemo(() => {
-    const serviceGroupsMap = new Map<string, GroupedInsumoNeeds>();
+  const allDeductionItems: InsumoDeductionItem[] = useMemo(() => { // NEW: Generate a flat list of granular deduction items
+    const items: InsumoDeductionItem[] = [];
 
     menus.forEach((menu: MenuWithRelations) => {
       menu.menu_platos?.forEach((menuPlato: MenuPlatoWithRelations) => {
         const mealServiceId = menuPlato.meal_service_id;
         const mealServiceName = menuPlato.meal_services?.name || "Sin Servicio";
+        const platoId = menuPlato.plato_id;
+        const platoNombre = menuPlato.platos?.nombre || "Receta Desconocida";
+        const menuTitle = menu.title;
+        const menuDate = menu.menu_date;
 
-        if (!mealServiceId) {
-          console.warn(`menuPlato with ID ${menuPlato.id} has no associated meal_service_id.`);
+        if (!mealServiceId || !platoId) {
+          console.warn(`menuPlato with ID ${menuPlato.id} is missing meal_service_id or plato_id.`);
           return;
         }
 
-        if (!serviceGroupsMap.has(mealServiceId)) {
-          serviceGroupsMap.set(mealServiceId, {
-            meal_service_id: mealServiceId,
-            meal_service_name: mealServiceName,
-            insumos: [],
-          });
-        }
-
-        const currentServiceGroup = serviceGroupsMap.get(mealServiceId)!;
-        const insumoNeedsMapForService = new Map<string, AggregatedInsumoNeed>();
-        currentServiceGroup.insumos.forEach((insumo: AggregatedInsumoNeed) => insumoNeedsMapForService.set(insumo.insumo_id, insumo));
-
-        const receta = menuPlato.platos;
-        if (!receta) return;
-
-        receta.plato_insumos?.forEach((platoInsumo: PlatoInsumoWithRelations) => {
+        menuPlato.platos?.plato_insumos?.forEach((platoInsumo: PlatoInsumoWithRelations) => {
           const insumo = platoInsumo.insumos;
           if (!insumo) return;
 
           const totalNeededBaseUnit = platoInsumo.cantidad_necesaria * menuPlato.quantity_needed;
           const totalNeededPurchaseUnit = totalNeededBaseUnit / insumo.conversion_factor;
 
-          const currentEntry: AggregatedInsumoNeed = insumoNeedsMapForService.get(insumo.id) || {
+          // Create a unique ID for each specific insumo-plato-service-menu combination
+          const unique_id = `${insumo.id}-${platoId}-${mealServiceId}-${menu.id}`;
+
+          items.push({
+            unique_id: unique_id,
             insumo_id: insumo.id,
             insumo_nombre: insumo.nombre,
             base_unit: insumo.base_unit,
             purchase_unit: insumo.purchase_unit,
             conversion_factor: insumo.conversion_factor,
             current_stock_quantity: insumo.stock_quantity,
-            total_needed_base_unit: 0,
-            total_needed_purchase_unit: 0,
-            missing_quantity: 0,
+            total_needed_base_unit_for_item: parseFloat(totalNeededBaseUnit.toFixed(2)),
+            total_needed_purchase_unit_for_item: parseFloat(totalNeededPurchaseUnit.toFixed(2)),
+            plato_id: platoId,
+            plato_nombre: platoNombre,
             meal_service_id: mealServiceId,
             meal_service_name: mealServiceName,
-          };
-
-          currentEntry.total_needed_base_unit += totalNeededBaseUnit;
-          currentEntry.total_needed_purchase_unit += totalNeededPurchaseUnit;
-          insumoNeedsMapForService.set(insumo.id, currentEntry);
+            menu_id: menu.id,
+            menu_title: menuTitle,
+            menu_date: menuDate,
+          });
         });
-
-        currentServiceGroup.insumos = Array.from(insumoNeedsMapForService.values()).map((entry: AggregatedInsumoNeed) => {
-          const missing = Math.max(0, entry.total_needed_purchase_unit - entry.current_stock_quantity);
-          return {
-            ...entry,
-            total_needed_base_unit: parseFloat(entry.total_needed_base_unit.toFixed(2)),
-            total_needed_purchase_unit: parseFloat(entry.total_needed_purchase_unit.toFixed(2)),
-            missing_quantity: parseFloat(missing.toFixed(2)),
-          };
-        }).sort((a: AggregatedInsumoNeed, b: AggregatedInsumoNeed) => a.insumo_nombre.localeCompare(b.insumo_nombre));
       });
+    });
+
+    return items.sort((a, b) => a.insumo_nombre.localeCompare(b.insumo_nombre));
+  }, [menus]);
+
+  // Group `InsumoDeductionItem`s for display in the table, but keep them granular for selection
+  const groupedForDisplay: GroupedInsumoNeeds[] = useMemo(() => {
+    const serviceGroupsMap = new Map<string, GroupedInsumoNeeds>();
+
+    allDeductionItems.forEach((item: InsumoDeductionItem) => {
+      const mealServiceId = item.meal_service_id;
+      const mealServiceName = item.meal_service_name;
+
+      if (!serviceGroupsMap.has(mealServiceId)) {
+        serviceGroupsMap.set(mealServiceId, {
+          meal_service_id: mealServiceId,
+          meal_service_name: mealServiceName,
+          insumos: [], // This will store AggregatedInsumoNeed for display purposes
+        });
+      }
+
+      const currentServiceGroup = serviceGroupsMap.get(mealServiceId)!;
+      const insumoNeedsMapForService = new Map<string, AggregatedInsumoNeed>();
+      currentServiceGroup.insumos.forEach((insumo: AggregatedInsumoNeed) => insumoNeedsMapForService.set(insumo.insumo_id, insumo));
+
+      // Aggregate quantities for display purposes (e.g., total need for an insumo across all recipes in a service)
+      const currentAggregatedEntry: AggregatedInsumoNeed = insumoNeedsMapForService.get(item.insumo_id) || {
+        insumo_id: item.insumo_id,
+        insumo_nombre: item.insumo_nombre,
+        base_unit: item.base_unit,
+        purchase_unit: item.purchase_unit,
+        conversion_factor: item.conversion_factor,
+        current_stock_quantity: item.current_stock_quantity,
+        total_needed_base_unit: 0,
+        total_needed_purchase_unit: 0,
+        missing_quantity: 0,
+        meal_service_id: item.meal_service_id,
+        meal_service_name: item.meal_service_name,
+      };
+
+      currentAggregatedEntry.total_needed_base_unit += item.total_needed_base_unit_for_item;
+      currentAggregatedEntry.total_needed_purchase_unit += item.total_needed_purchase_unit_for_item;
+      insumoNeedsMapForService.set(item.insumo_id, currentAggregatedEntry);
+
+      currentServiceGroup.insumos = Array.from(insumoNeedsMapForService.values()).map((entry: AggregatedInsumoNeed) => {
+        const missing = Math.max(0, entry.total_needed_purchase_unit - entry.current_stock_quantity);
+        return {
+          ...entry,
+          total_needed_base_unit: parseFloat(entry.total_needed_base_unit.toFixed(2)),
+          total_needed_purchase_unit: parseFloat(entry.total_needed_purchase_unit.toFixed(2)),
+          missing_quantity: parseFloat(missing.toFixed(2)),
+        };
+      }).sort((a: AggregatedInsumoNeed, b: AggregatedInsumoNeed) => a.insumo_nombre.localeCompare(b.insumo_nombre));
     });
 
     const allGroupedNeeds = Array.from(serviceGroupsMap.values()).sort((a: GroupedInsumoNeeds, b: GroupedInsumoNeeds) => a.meal_service_name.localeCompare(b.meal_service_name));
@@ -112,31 +148,37 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     })).filter((group: GroupedInsumoNeeds) => group.insumos.length > 0);
 
     return filteredGroupedNeeds;
-  }, [menus, stockFilter]);
+  }, [allDeductionItems, stockFilter]);
 
-  const allAggregatedInsumoNeeds = useMemo(() => {
-    return groupedInsumoNeeds.flatMap((group: GroupedInsumoNeeds) => group.insumos);
-  }, [groupedInsumoNeeds]);
 
-  const handleCheckboxChange = (insumoId: string, checked: boolean) => {
-    setSelectedInsumoIds((prev: Set<string>) => {
+  const handleCheckboxChange = (uniqueId: string, checked: boolean) => { // MODIFIED: Use uniqueId
+    setSelectedDeductionItemIds((prev: Set<string>) => {
       const newSet = new Set(prev);
       if (checked) {
-        newSet.add(insumoId);
+        newSet.add(uniqueId);
       } else {
-        newSet.delete(insumoId);
+        newSet.delete(uniqueId);
       }
       return newSet;
     });
   };
 
   const handleOpenDeductQuantitiesDialog = () => {
-    const selectedInsumosWithSufficientStock = allAggregatedInsumoNeeds.filter(
-      (need: AggregatedInsumoNeed) => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity >= need.total_needed_purchase_unit
+    const selectedItems = allDeductionItems.filter(
+      (item: InsumoDeductionItem) => selectedDeductionItemIds.has(item.unique_id)
     );
 
-    if (selectedInsumosWithSufficientStock.length === 0) {
-      showError("No se puede deducir el stock. Asegúrate de seleccionar insumos con stock suficiente.");
+    const itemsWithInsufficientStock = selectedItems.filter(
+      (item: InsumoDeductionItem) => item.current_stock_quantity < item.total_needed_purchase_unit_for_item
+    );
+
+    if (selectedItems.length === 0) {
+      showError("No se puede deducir el stock. Asegúrate de seleccionar al menos un insumo.");
+      return;
+    }
+
+    if (itemsWithInsufficientStock.length > 0) {
+      showError("No se puede deducir el stock. Hay insumos seleccionados con cantidades insuficientes.");
       return;
     }
     setIsDeductQuantitiesDialogOpen(true);
@@ -144,10 +186,11 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
   const handleCloseDeductQuantitiesDialog = () => {
     setIsDeductQuantitiesDialogOpen(false);
-    setSelectedInsumoIds(new Set());
+    setSelectedDeductionItemIds(new Set());
   };
 
   const handleOpenUrgentPurchaseRequestDialog = (insumoNeed: AggregatedInsumoNeed) => {
+    // For urgent requests, we still use the aggregated view for simplicity
     setSelectedInsumoForUrgentRequest(insumoNeed);
     setIsUrgentPurchaseRequestDialogOpen(true);
   };
@@ -157,17 +200,17 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     setSelectedInsumoForUrgentRequest(null);
   };
 
-  const insufficientStockCount = allAggregatedInsumoNeeds.filter(
-    (need: AggregatedInsumoNeed) => need.current_stock_quantity < need.total_needed_purchase_unit
+  const insufficientStockCount = allDeductionItems.filter(
+    (item: InsumoDeductionItem) => item.current_stock_quantity < item.total_needed_purchase_unit_for_item
   ).length;
 
   const formattedDate = format(selectedDate, "PPP", { locale: es });
 
   const isDeductButtonDisabled =
-    selectedInsumoIds.size === 0 ||
-    allAggregatedInsumoNeeds.filter((need: AggregatedInsumoNeed) => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0;
+    selectedDeductionItemIds.size === 0 ||
+    allDeductionItems.filter((item: InsumoDeductionItem) => selectedDeductionItemIds.has(item.unique_id) && item.current_stock_quantity < item.total_needed_purchase_unit_for_item).length > 0;
 
-  const selectedInsumosForDialog = allAggregatedInsumoNeeds.filter((need: AggregatedInsumoNeed) => selectedInsumoIds.has(need.insumo_id));
+  const selectedInsumosForDialog = allDeductionItems.filter((item: InsumoDeductionItem) => selectedDeductionItemIds.has(item.unique_id)); // MODIFIED: Pass InsumoDeductionItem[]
 
   return (
     <div className="space-y-8">
@@ -189,7 +232,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
             <Package className="h-5 w-5 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{allAggregatedInsumoNeeds.length}</div>
+            <div className="text-3xl font-bold text-gray-900 dark:text-gray-100">{allDeductionItems.length}</div>
             <p className="text-sm text-muted-foreground mt-1">Tipos de insumos requeridos</p>
           </CardContent>
         </Card>
@@ -236,12 +279,12 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                     Deducir Stock para Preparación
                   </Button>
                 </TooltipTrigger>
-                {isDeductButtonDisabled && selectedInsumoIds.size === 0 && (
+                {isDeductButtonDisabled && selectedDeductionItemIds.size === 0 && (
                   <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
                     <p>Selecciona al menos un insumo para deducir.</p>
                   </TooltipContent>
                 )}
-                {isDeductButtonDisabled && allAggregatedInsumoNeeds.filter((need: AggregatedInsumoNeed) => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0 && (
+                {isDeductButtonDisabled && allDeductionItems.filter((item: InsumoDeductionItem) => selectedDeductionItemIds.has(item.unique_id) && item.current_stock_quantity < item.total_needed_purchase_unit_for_item).length > 0 && (
                   <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
                     <p>No se puede deducir el stock porque hay insumos seleccionados con cantidades insuficientes.</p>
                   </TooltipContent>
@@ -251,9 +294,9 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
           </div>
         </CardHeader>
         <CardContent>
-          {groupedInsumoNeeds.length > 0 ? (
+          {groupedForDisplay.length > 0 ? (
             <div className="space-y-8">
-              {groupedInsumoNeeds.map((group: GroupedInsumoNeeds) => (
+              {groupedForDisplay.map((group: GroupedInsumoNeeds) => (
                 <div key={group.meal_service_id} className="border rounded-lg shadow-sm dark:border-gray-700">
                   <h3 className="text-xl font-semibold p-4 bg-gray-50 dark:bg-gray-700 border-b dark:border-gray-700 rounded-t-lg flex items-center">
                     <Utensils className="h-5 w-5 mr-2 text-gray-600 dark:text-gray-300" />
@@ -265,17 +308,23 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                         <TableRow>
                           <TableHead className="w-[50px] text-center py-4 px-6">
                             <Checkbox
-                              checked={group.insumos.every((need: AggregatedInsumoNeed) => selectedInsumoIds.has(need.insumo_id))}
+                              checked={group.insumos.every((need: AggregatedInsumoNeed) =>
+                                allDeductionItems.filter(item => item.insumo_id === need.insumo_id && item.meal_service_id === need.meal_service_id)
+                                  .every(item => selectedDeductionItemIds.has(item.unique_id))
+                              )}
                               onCheckedChange={(checked: boolean) => {
-                                if (checked) {
-                                  const newSelected = new Set(selectedInsumoIds);
-                                  group.insumos.forEach((need: AggregatedInsumoNeed) => newSelected.add(need.insumo_id));
-                                  setSelectedInsumoIds(newSelected);
-                                } else {
-                                  const newSelected = new Set(selectedInsumoIds);
-                                  group.insumos.forEach((need: AggregatedInsumoNeed) => newSelected.delete(need.insumo_id));
-                                  setSelectedInsumoIds(newSelected);
-                                }
+                                const newSelected = new Set(selectedDeductionItemIds);
+                                group.insumos.forEach((need: AggregatedInsumoNeed) => {
+                                  allDeductionItems.filter(item => item.insumo_id === need.insumo_id && item.meal_service_id === need.meal_service_id)
+                                    .forEach(item => {
+                                      if (checked) {
+                                        newSelected.add(item.unique_id);
+                                      } else {
+                                        newSelected.delete(item.unique_id);
+                                      }
+                                    });
+                                });
+                                setSelectedDeductionItemIds(newSelected);
                               }}
                               disabled={group.insumos.filter((need: AggregatedInsumoNeed) => need.total_needed_purchase_unit > 0).length === 0}
                             />
@@ -296,6 +345,11 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                             : 100;
                           const progressColor = isSufficient ? "bg-green-500" : "bg-red-500";
 
+                          // Check if all granular items for this aggregated need are selected
+                          const allGranularItemsForThisNeed = allDeductionItems.filter(item => item.insumo_id === need.insumo_id && item.meal_service_id === need.meal_service_id);
+                          const isAggregatedSelected = allGranularItemsForThisNeed.length > 0 && allGranularItemsForThisNeed.every(item => selectedDeductionItemIds.has(item.unique_id));
+
+
                           return (
                             <TableRow
                               key={need.insumo_id}
@@ -306,8 +360,18 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                             >
                               <TableCell className="text-center py-3 px-6">
                                 <Checkbox
-                                  checked={selectedInsumoIds.has(need.insumo_id)}
-                                  onCheckedChange={(checked: boolean) => handleCheckboxChange(need.insumo_id, checked)}
+                                  checked={isAggregatedSelected}
+                                  onCheckedChange={(checked: boolean) => {
+                                    const newSelected = new Set(selectedDeductionItemIds);
+                                    allGranularItemsForThisNeed.forEach(item => {
+                                      if (checked) {
+                                        newSelected.add(item.unique_id);
+                                      } else {
+                                        newSelected.delete(item.unique_id);
+                                      }
+                                    });
+                                    setSelectedDeductionItemIds(newSelected);
+                                  }}
                                   disabled={need.total_needed_purchase_unit === 0}
                                 />
                               </TableCell>
@@ -387,7 +451,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
                   </div>
                 </div>
               ))}
-              {allAggregatedInsumoNeeds.filter((need: AggregatedInsumoNeed) => selectedInsumoIds.has(need.insumo_id) && need.current_stock_quantity < need.total_needed_purchase_unit).length > 0 && (
+              {allDeductionItems.filter((item: InsumoDeductionItem) => selectedDeductionItemIds.has(item.unique_id) && item.current_stock_quantity < item.total_needed_purchase_unit_for_item).length > 0 && (
                 <div className="mt-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-700 rounded-lg text-red-700 dark:text-red-300 flex items-center">
                   <AlertTriangle className="h-5 w-5 mr-2" />
                   <p className="text-base font-medium">
@@ -408,7 +472,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
       <Dialog open={isDeductQuantitiesDialogOpen} onOpenChange={setIsDeductQuantitiesDialogOpen}>
         <DeductQuantitiesDialog
-          selectedInsumoNeeds={selectedInsumosForDialog}
+          selectedDeductionItems={selectedInsumosForDialog} // MODIFIED: Pass selectedDeductionItems
           selectedDate={selectedDate}
           menuId={menus[0]?.id || null}
           onClose={handleCloseDeductQuantitiesDialog}
