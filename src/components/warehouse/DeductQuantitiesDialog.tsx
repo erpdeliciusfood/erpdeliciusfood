@@ -12,16 +12,17 @@ import { Label } from "@/components/ui/label";
 import { useForm, useFieldArray } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, AlertTriangle, RotateCcw, Package } from "lucide-react"; // Removed Utensils
+import { Loader2, AlertTriangle, RotateCcw, Package } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { AggregatedInsumoNeed } from "@/types";
 import { useAddStockMovement } from "@/hooks/useStockMovements";
-import { showSuccess, showError, showLoading, dismissToast, showInfo } from "@/utils/toast"; // Corrected import
+import { showSuccess, showError, showLoading, dismissToast, showInfo } from "@/utils/toast";
 import { useQueryClient } from "@tanstack/react-query";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage, FormDescription } from "@/components/ui/form";
 import { Checkbox } from "@/components/ui/checkbox";
-import { cn } from "@/lib/utils"; // Import cn for conditional classnames
+import { cn } from "@/lib/utils";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"; // Import Table components
 
 const formSchema = z.object({
   deductor_name: z.string().min(1, { message: "El nombre de quien realiza la acción es requerido." }).max(100, { message: "El nombre no debe exceder los 100 caracteres." }),
@@ -31,7 +32,7 @@ const formSchema = z.object({
       insumo_nombre: z.string(),
       purchase_unit: z.string(),
       current_stock_quantity: z.number(),
-      suggested_quantity: z.number(), // The quantity initially suggested by the system
+      suggested_quantity: z.number(),
       quantity_to_deduct: z.coerce.number().min(0, { message: "La cantidad a deducir no puede ser negativa." }),
     })
   ).min(1, { message: "Debe haber al menos un insumo para deducir." }),
@@ -95,7 +96,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
   });
 
   const isDeductingStock = addStockMovementMutation.isPending;
-  const insumos_to_deduct = form.watch("insumos_to_deduct"); // Watch for changes in the array
+  const insumos_to_deduct = form.watch("insumos_to_deduct");
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     const { deductor_name, insumos_to_deduct } = values;
@@ -190,7 +191,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
               <div key={item.id} className="flex flex-col md:flex-row gap-3 items-center border-b pb-3 last:border-b-0 last:pb-0">
                 <div className="flex-grow">
                   <Label className="text-lg font-bold text-gray-900 dark:text-gray-100 flex items-center">
-                    <Package className="mr-2 h-6 w-6 text-primary dark:text-primary-foreground" /> {/* Changed icon to Package */}
+                    <Package className="mr-2 h-6 w-6 text-primary dark:text-primary-foreground" />
                     {item.insumo_nombre}
                   </Label>
                   <p className="text-base text-gray-700 dark:text-gray-300 mt-1">
@@ -251,17 +252,35 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
 
           {insumos_to_deduct.filter(item => item.quantity_to_deduct > 0).length > 0 && (
             <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-700 rounded-lg border border-gray-200 dark:border-gray-600">
-              <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">Resumen de Deducción:</h4>
-              <ul className="list-disc pl-5 space-y-1 text-gray-700 dark:text-gray-300">
-                {insumos_to_deduct.filter(item => item.quantity_to_deduct > 0).map(item => (
-                  <li key={item.insumo_id}>
-                    {item.insumo_nombre}: {item.quantity_to_deduct.toFixed(2)} {item.purchase_unit}
-                    {parseFloat(item.quantity_to_deduct.toFixed(2)) !== parseFloat(item.suggested_quantity.toFixed(2)) && (
-                      <span className="ml-2 text-blue-600 dark:text-blue-400 font-medium">(Ajustado de {item.suggested_quantity.toFixed(2)})</span>
-                    )}
-                  </li>
-                ))}
-              </ul>
+              <h4 className="text-lg font-bold text-gray-900 dark:text-gray-100 mb-2">
+                Resumen de Deducción para el {format(selectedDate, "PPP", { locale: es })}:
+              </h4>
+              <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                Nota: La columna "Receta" no está disponible en la información actual de los insumos agregados.
+              </p>
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead className="w-[40%]">Insumo</TableHead>
+                    <TableHead className="text-right">Cantidad Deducida</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {insumos_to_deduct.filter(item => item.quantity_to_deduct > 0).map(item => (
+                    <TableRow key={item.insumo_id}>
+                      <TableCell className="font-medium">
+                        {item.insumo_nombre}
+                      </TableCell>
+                      <TableCell className="text-right">
+                        {item.quantity_to_deduct.toFixed(2)} {item.purchase_unit}
+                        {parseFloat(item.quantity_to_deduct.toFixed(2)) !== parseFloat(item.suggested_quantity.toFixed(2)) && (
+                          <span className="ml-2 text-blue-600 dark:text-blue-400 font-medium text-sm block md:inline-block">(Ajustado de {item.suggested_quantity.toFixed(2)})</span>
+                        )}
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
             </div>
           )}
           {insumos_to_deduct.filter(item => item.quantity_to_deduct > 0).length === 0 && (
