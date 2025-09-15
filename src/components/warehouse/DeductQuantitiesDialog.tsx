@@ -12,7 +12,8 @@ import { useSession } from "@/contexts/SessionContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { Textarea } from "@/components/ui/textarea"; // NEW: Import Textarea
+import { Textarea } from "@/components/ui/textarea";
+import { useQueryClient } from "@tanstack/react-query"; // NEW: Import useQueryClient
 
 interface DeductQuantitiesDialogProps {
   selectedDeductionItems: InsumoDeductionItem[];
@@ -26,8 +27,9 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
   onClose,
 }) => {
   const { user } = useSession();
+  const queryClient = useQueryClient(); // NEW: Initialize queryClient
   const [deductorName, setDeductorName] = useState("");
-  const [deductionReason, setDeductionReason] = useState(""); // NEW: State for deduction reason
+  const [deductionReason, setDeductionReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [quantitiesToDeduct, setQuantitiesToDeduct] = useState<Record<string, number>>({});
 
@@ -66,7 +68,6 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
     }));
   }, [selectedDeductionItems, quantitiesToDeduct]);
 
-  // NEW: Determine if any quantity has been modified from its default
   const isAnyQuantityModified = useMemo(() => {
     return insumosToProcess.some(insumo =>
       quantitiesToDeduct[insumo.insumo_id] !== undefined &&
@@ -91,7 +92,6 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
       toast.error("Por favor, ingresa el nombre de la persona que realiza la deducción.");
       return;
     }
-    // NEW: Conditional validation for deduction reason
     if (isAnyQuantityModified && !deductionReason.trim()) {
       toast.error("Por favor, ingresa un motivo para el cambio en la cantidad a deducir.");
       return;
@@ -116,7 +116,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
           insumo_id: insumo.insumo_id,
           movement_type: 'daily_prep_out',
           quantity_change: insumo.quantity_to_deduct,
-          notes: `Deducción para preparación diaria por ${deductorName}. ${deductionReason.trim() ? `Motivo de cambio: ${deductionReason}. ` : ''}Detalles: ${detailedNotes}`, // NEW: Include deduction reason
+          notes: `Deducción para preparación diaria por ${deductorName}. ${deductionReason.trim() ? `Motivo de cambio: ${deductionReason}. ` : ''}Detalles: ${detailedNotes}`,
           menu_id: null,
         });
         return { success: true, message: `Deducido ${insumo.quantity_to_deduct} ${insumo.purchase_unit} de ${insumo.insumo_nombre}.` };
@@ -132,6 +132,9 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
 
     if (successfulDeductions.length > 0) {
       toast.success(`Se dedujeron ${successfulDeductions.length} insumos exitosamente.`);
+      queryClient.invalidateQueries({ queryKey: ["stockMovements"] }); // NEW: Invalidate stock movements
+      queryClient.invalidateQueries({ queryKey: ["insumos"] }); // NEW: Invalidate insumos
+      queryClient.invalidateQueries({ queryKey: ["dailyPrepMenus"] }); // NEW: Invalidate daily prep menus
     }
     if (failedDeductions.length > 0) {
       failedDeductions.forEach(f => toast.error(f.message));
@@ -199,7 +202,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
           </Table>
         </div>
 
-        {isAnyQuantityModified && ( // NEW: Conditionally render deduction reason field
+        {isAnyQuantityModified && (
           <div className="grid grid-cols-4 items-start gap-4 mt-4">
             <Label htmlFor="deductionReason" className="text-right pt-2">
               Motivo de cambio en la deducción
