@@ -90,8 +90,8 @@ const UrgentPurchaseRequestForm: React.FC<UrgentPurchaseRequestFormProps> = ({
         insumo_id: initialData.insumo_id,
         quantity_requested: initialData.quantity_requested,
         notes: initialData.notes || "",
-        priority: initialData.priority, // This is already typed as the union type from UrgentPurchaseRequest
-        status: initialData.status,     // This is already typed as the union type from UrgentPurchaseRequest
+        priority: initialData.priority as FormSchemaType['priority'], // Explicitly cast
+        status: initialData.status as FormSchemaType['status'],     // Explicitly cast
         rejection_reason: initialData.rejection_reason || "",
         fulfilled_purchase_record_id: initialData.fulfilled_purchase_record_id || "",
       });

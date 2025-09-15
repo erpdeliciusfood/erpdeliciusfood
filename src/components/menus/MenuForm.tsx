@@ -104,7 +104,7 @@ const MenuForm: React.FC<MenuFormProps> = ({ initialData, onSuccess, onCancel, p
       form.reset({
         title: initialData.title,
         description: initialData.description || "",
-        menu_type: initialData.menu_type, // This is already typed as 'daily' | 'event' from MenuWithRelations
+        menu_type: initialData.menu_type as 'daily' | 'event', // Explicitly cast
         menu_date: initialData.menu_date || null,
         event_type_id: initialData.event_type_id || null,
         platos_por_servicio: initialData.menu_platos?.map((mp: MenuPlatoWithRelations) => ({
