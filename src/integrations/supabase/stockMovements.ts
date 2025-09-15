@@ -50,9 +50,10 @@ export const createStockMovement = async (
     console.error("RPC Error in update_insumo_quantities for insumo_id:", insumo_id, updateInsumoError);
     throw new Error(`Error updating insumo quantities via RPC: ${updateInsumoError.message}`);
   }
-  if (!updatedInsumoArray || updatedInsumoArray.length === 0) {
-    console.error("RPC returned no data for insumo_id:", insumo_id, "Data received:", updatedInsumoArray);
-    throw new Error(`Failed to retrieve updated insumo data after RPC call for insumo_id: ${insumo_id}.`);
+  // Robust check: Ensure data is not null, empty, or contains a null/undefined element
+  if (!updatedInsumoArray || updatedInsumoArray.length === 0 || updatedInsumoArray[0] === null || updatedInsumoArray[0] === undefined) {
+    console.error("RPC returned no valid data for insumo_id:", insumo_id, "Data received:", updatedInsumoArray);
+    throw new Error(`Failed to retrieve updated insumo data after RPC call for insumo_id: ${insumo_id}. The insumo might not exist or the update failed.`);
   }
 
   const updatedInsumo = updatedInsumoArray[0]; // The RPC returns an array, take the first element
