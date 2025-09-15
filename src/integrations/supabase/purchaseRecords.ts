@@ -36,7 +36,7 @@ export const createPurchaseRecord = async (
   // Handle stock updates based on the initial status
   if (newRecord.status === 'ordered') {
     // For 'ordered', only update pending_delivery_quantity
-    const { data: updatedInsumoArray, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
+    const { data: updatedInsumo, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
       insumo_id_param: newRecord.insumo_id,
       pending_delivery_change: newRecord.quantity_purchased, // Add to pending_delivery_quantity
       pending_reception_change: 0,
@@ -44,18 +44,18 @@ export const createPurchaseRecord = async (
     });
 
     if (updateInsumoError) throw new Error(`Error updating insumo pending delivery quantity via RPC: ${updateInsumoError.message}`);
-    if (!updatedInsumoArray || updatedInsumoArray.length === 0) throw new Error(`Failed to update insumo pending delivery quantity via RPC: Insumo with ID ${newRecord.insumo_id} not found or update failed.`);
+    if (!updatedInsumo) throw new Error(`Failed to update insumo pending delivery quantity via RPC: Insumo with ID ${newRecord.insumo_id} not found or update failed.`);
 
   } else if (newRecord.status === 'received_by_company') {
     // For 'received_by_company', update pending_delivery_quantity and pending_reception_quantity
-    const { data: updatedInsumoArray, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
+    const { data: updatedInsumo, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
       insumo_id_param: newRecord.insumo_id,
       pending_delivery_change: -newRecord.quantity_purchased,
       pending_reception_change: newRecord.quantity_purchased,
       stock_change: 0,
     });
     if (updateInsumoError) throw new Error(`Error updating insumo quantities via RPC for reception_in: ${updateInsumoError.message}`);
-    if (!updatedInsumoArray || updatedInsumoArray.length === 0) throw new Error(`Failed to update insumo quantities via RPC for reception_in: Insumo with ID ${newRecord.insumo_id} not found or update failed.`);
+    if (!updatedInsumo) throw new Error(`Failed to update insumo quantities via RPC for reception_in: Insumo with ID ${newRecord.insumo_id} not found or update failed.`);
 
     await createStockMovement({
       insumo_id: newRecord.insumo_id,
@@ -65,14 +65,14 @@ export const createPurchaseRecord = async (
     }, user.id);
   } else if (newRecord.status === 'received_by_warehouse') {
     // For 'received_by_warehouse', update stock_quantity directly
-    const { data: updatedInsumoArray, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
+    const { data: updatedInsumo, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
       insumo_id_param: newRecord.insumo_id,
       pending_delivery_change: -newRecord.quantity_purchased, // Deduct from pending delivery
       pending_reception_change: 0, // No pending reception if directly to warehouse
       stock_change: newRecord.quantity_purchased, // Add to stock
     });
     if (updateInsumoError) throw new Error(`Error updating insumo quantities via RPC for purchase_in: ${updateInsumoError.message}`);
-    if (!updatedInsumoArray || updatedInsumoArray.length === 0) throw new Error(`Failed to update insumo quantities via RPC for purchase_in: Insumo with ID ${newRecord.insumo_id} not found or update failed.`);
+    if (!updatedInsumo) throw new Error(`Failed to update insumo quantities via RPC for purchase_in: Insumo with ID ${newRecord.insumo_id} not found or update failed.`);
 
     await createStockMovement({
       insumo_id: newRecord.insumo_id,
@@ -137,14 +137,14 @@ export const updatePurchaseRecord = async (
   // Scenario 1: Item is marked as 'received_by_company' for the first time or partially
   if (targetStatus === 'received_by_company' && quantityToMove! > 0) {
     // Deduct from pending_delivery_quantity and add to pending_reception_quantity
-    const { data: updatedInsumoArray, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
+    const { data: updatedInsumo, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
       insumo_id_param: updatedRecord.insumo_id,
       pending_delivery_change: -quantityToMove!,
       pending_reception_change: quantityToMove!,
       stock_change: 0,
     });
     if (updateInsumoError) throw new Error(`Error updating insumo quantities via RPC for reception_in: ${updateInsumoError.message}`);
-    if (!updatedInsumoArray || updatedInsumoArray.length === 0) throw new Error(`Failed to update insumo quantities via RPC for reception_in: Insumo with ID ${updatedRecord.insumo_id} not found or update failed.`);
+    if (!updatedInsumo) throw new Error(`Failed to update insumo quantities via RPC for reception_in: Insumo with ID ${updatedRecord.insumo_id} not found or update failed.`);
 
     await createStockMovement({
       insumo_id: updatedRecord.insumo_id,
@@ -157,14 +157,14 @@ export const updatePurchaseRecord = async (
   // Scenario 2: Item is marked as 'received_by_warehouse' for the first time or partially
   if (targetStatus === 'received_by_warehouse' && quantityToMove! > 0) {
     // Deduct from pending_reception_quantity and add to stock_quantity
-    const { data: updatedInsumoArray, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
+    const { data: updatedInsumo, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
       insumo_id_param: updatedRecord.insumo_id,
       pending_delivery_change: 0,
       pending_reception_change: -quantityToMove!,
       stock_change: quantityToMove!,
     });
     if (updateInsumoError) throw new Error(`Error updating insumo quantities via RPC for purchase_in: ${updateInsumoError.message}`);
-    if (!updatedInsumoArray || updatedInsumoArray.length === 0) throw new Error(`Failed to update insumo quantities via RPC for purchase_in: Insumo with ID ${updatedRecord.insumo_id} not found or update failed.`);
+    if (!updatedInsumo) throw new Error(`Failed to update insumo quantities via RPC for purchase_in: Insumo with ID ${updatedRecord.insumo_id} not found or update failed.`);
 
     await createStockMovement({
       insumo_id: updatedRecord.insumo_id,
@@ -178,34 +178,34 @@ export const updatePurchaseRecord = async (
   if (updatedRecord.status === 'cancelled' && oldRecord.status !== 'cancelled') {
     // Revert quantities based on previous status
     if (oldRecord.status === 'ordered') {
-      const { data: updatedInsumoArray, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
+      const { data: updatedInsumo, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
         insumo_id_param: updatedRecord.insumo_id,
         pending_delivery_change: -oldRecord.quantity_purchased, // Revert full ordered quantity
         pending_reception_change: 0,
         stock_change: 0,
       });
       if (updateInsumoError) throw new Error(`Error updating insumo quantities via RPC for cancellation (ordered): ${updateInsumoError.message}`);
-      if (!updatedInsumoArray || updatedInsumoArray.length === 0) throw new Error(`Failed to update insumo quantities via RPC for cancellation (ordered): Insumo with ID ${updatedRecord.insumo_id} not found or update failed.`);
+      if (!updatedInsumo) throw new Error(`Failed to update insumo quantities via RPC for cancellation (ordered): Insumo with ID ${updatedRecord.insumo_id} not found or update failed.`);
 
     } else if (oldRecord.status === 'received_by_company') {
-      const { data: updatedInsumoArray, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
+      const { data: updatedInsumo, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
         insumo_id_param: updatedRecord.insumo_id,
         pending_delivery_change: 0,
         pending_reception_change: -oldRecord.quantity_received, // Revert only what was received by company
         stock_change: 0,
       });
       if (updateInsumoError) throw new Error(`Error updating insumo quantities via RPC for cancellation (received_by_company): ${updateInsumoError.message}`);
-      if (!updatedInsumoArray || updatedInsumoArray.length === 0) throw new Error(`Failed to update insumo quantities via RPC for cancellation (received_by_company): Insumo with ID ${updatedRecord.insumo_id} not found or update failed.`);
+      if (!updatedInsumo) throw new Error(`Failed to update insumo quantities via RPC for cancellation (received_by_company): Insumo with ID ${updatedRecord.insumo_id} not found or update failed.`);
 
     } else if (oldRecord.status === 'received_by_warehouse') {
-      const { data: updatedInsumoArray, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
+      const { data: updatedInsumo, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
         insumo_id_param: updatedRecord.insumo_id,
         pending_delivery_change: 0,
         pending_reception_change: 0,
         stock_change: -oldRecord.quantity_received, // Revert only what was received by warehouse
       });
       if (updateInsumoError) throw new Error(`Error updating insumo quantities via RPC for cancellation (received_by_warehouse): ${updateInsumoError.message}`);
-      if (!updatedInsumoArray || updatedInsumoArray.length === 0) throw new Error(`Failed to update insumo quantities via RPC for cancellation (received_by_warehouse): Insumo with ID ${updatedRecord.insumo_id} not found or update failed.`);
+      if (!updatedInsumo) throw new Error(`Failed to update insumo quantities via RPC for cancellation (received_by_warehouse): Insumo with ID ${updatedRecord.insumo_id} not found or update failed.`);
     }
     await createStockMovement({
       insumo_id: updatedRecord.insumo_id,

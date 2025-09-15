@@ -47,7 +47,7 @@ export const createStockMovement = async (
     stockChange = -quantity_change;
   }
 
-  const { data: updatedInsumoArray, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
+  const { data: updatedInsumo, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
     insumo_id_param: insumo_id,
     pending_delivery_change: pendingDeliveryChange,
     pending_reception_change: pendingReceptionChange,
@@ -58,14 +58,8 @@ export const createStockMovement = async (
     console.error("RPC Error in update_insumo_quantities for insumo_id:", insumo_id, updateInsumoError);
     throw new Error(`Error updating insumo quantities via RPC: ${updateInsumoError.message}`);
   }
-  if (!updatedInsumoArray || updatedInsumoArray.length === 0) {
-    console.error("RPC returned empty or null array for insumo_id:", insumo_id, "Array received:", updatedInsumoArray);
-    throw new Error(`Failed to update insumo quantities via RPC: Insumo with ID ${insumo_id} not found or update failed.`);
-  }
-
-  const updatedInsumo = updatedInsumoArray[0];
-  if (!updatedInsumo) {
-    console.error("updatedInsumo is undefined after RPC call for insumo_id:", insumo_id, "Array received:", updatedInsumoArray);
+  if (!updatedInsumo) { // Check if updatedInsumo is null/undefined
+    console.error("RPC returned null or undefined for insumo_id:", insumo_id, "Data received:", updatedInsumo);
     throw new Error(`Failed to retrieve updated insumo data after RPC call for insumo_id: ${insumo_id}.`);
   }
 
