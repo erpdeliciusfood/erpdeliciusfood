@@ -15,7 +15,7 @@ import * as z from "zod";
 import { Loader2, Truck, Warehouse } from "lucide-react";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-import { PurchaseRecordWithRelations } from "@/types";
+import { PurchaseRecordWithRelations, PurchaseRecordFormValues } from "@/types";
 import { useUpdatePurchaseRecord } from "@/hooks/usePurchaseRecords";
 import { showSuccess, showError } from "@/utils/toast";
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
@@ -71,7 +71,7 @@ const PartialReceptionDialog: React.FC<PartialReceptionDialogProps> = ({
         record: {
           ...purchaseRecord,
           quantity_received: purchaseRecord.quantity_received + quantityToReceive,
-          status: quantityToReceive === quantityPending ? targetStatus : (purchaseRecord.status as 'ordered' | 'received_by_company' | 'received_by_warehouse' | 'cancelled'), // Explicitly cast
+          status: quantityToReceive === quantityPending ? targetStatus : (purchaseRecord.status as PurchaseRecordFormValues['status']), // Explicitly cast
           received_date: purchaseRecord.received_date || format(new Date(), "yyyy-MM-dd", { locale: es }),
         },
         partialReceptionQuantity: quantityToReceive,
