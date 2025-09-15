@@ -151,8 +151,6 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   }, [allDeductionItems, stockFilter]);
 
 
-  // Removed unused function: handleCheckboxChange
-
   const handleOpenDeductQuantitiesDialog = () => {
     const selectedItems = allDeductionItems.filter(
       (item: InsumoDeductionItem) => selectedDeductionItemIds.has(item.unique_id)
@@ -462,7 +460,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
       <Dialog open={isDeductQuantitiesDialogOpen} onOpenChange={setIsDeductQuantitiesDialogOpen}>
         <DeductQuantitiesDialog
-          selectedDeductionItems={selectedInsumosForDialog} // MODIFIED: Pass selectedDeductionItems
+          selectedDeductionItems={selectedInsumosForDialog} // MODIFIED: Pass InsumoDeductionItem[]
           selectedDate={selectedDate}
           menuId={menus[0]?.id || null}
           onClose={handleCloseDeductQuantitiesDialog}
