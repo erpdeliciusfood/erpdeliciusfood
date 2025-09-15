@@ -62,7 +62,8 @@ export const createPurchaseRecord = async (
       movement_type: 'reception_in',
       quantity_change: newRecord.quantity_purchased,
       notes: `Recepción de compra por empresa (inicial): ${newRecord.notes || 'N/A'}`,
-    }, user.id);
+      user_id: user.id, // Pass user_id here
+    });
   } else if (newRecord.status === 'received_by_warehouse') {
     // For 'received_by_warehouse', update stock_quantity directly
     const { data: updatedInsumo, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
@@ -79,7 +80,8 @@ export const createPurchaseRecord = async (
       movement_type: 'purchase_in', // This now means 'received by warehouse'
       quantity_change: newRecord.quantity_purchased,
       notes: `Ingreso a almacén de compra (inicial): ${newRecord.notes || 'N/A'}`,
-    }, user.id);
+      user_id: user.id, // Pass user_id here
+    });
   }
 
   // Fetch the complete record with insumo details for the return value
@@ -151,7 +153,8 @@ export const updatePurchaseRecord = async (
       movement_type: 'reception_in',
       quantity_change: quantityToMove!,
       notes: `Recepción de compra por empresa (parcial/total): ${updatedRecord.notes || 'N/A'}`,
-    }, user.id);
+      user_id: user.id, // Pass user_id here
+    });
   }
 
   // Scenario 2: Item is marked as 'received_by_warehouse' for the first time or partially
@@ -171,7 +174,8 @@ export const updatePurchaseRecord = async (
       movement_type: 'purchase_in', // This now means 'received by warehouse'
       quantity_change: quantityToMove!,
       notes: `Ingreso a almacén de compra (parcial/total): ${updatedRecord.notes || 'N/A'}`,
-    }, user.id);
+      user_id: user.id, // Pass user_id here
+    });
   }
 
   // Scenario 3: Item is marked as 'cancelled'
@@ -212,7 +216,8 @@ export const updatePurchaseRecord = async (
       movement_type: 'adjustment_out', // Use adjustment_out for cancellation
       quantity_change: oldRecord.quantity_received > 0 ? oldRecord.quantity_received : oldRecord.quantity_purchased, // Use received if any, else ordered
       notes: `Cancelación de compra: ${updatedRecord.notes || 'N/A'}`,
-    }, user.id);
+      user_id: user.id, // Pass user_id here
+    });
   }
 
   // Fetch the complete record with insumo details for the return value

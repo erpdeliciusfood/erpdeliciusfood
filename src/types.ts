@@ -283,12 +283,12 @@ export interface QuebradoReportData {
 }
 
 export interface StockMovementFormValues {
-  user_id: string; // Added user_id
   insumo_id: string;
   movement_type: 'purchase_in' | 'adjustment_in' | 'adjustment_out' | 'daily_prep_out' | 'reception_in';
   quantity_change: number; // Made mandatory
   notes: string | null;
   menu_id?: string | null;
+  user_id: string; // Added user_id
   // Removed total_purchase_amount and total_purchase_quantity as they are not directly part of the RPC
   // The logic for calculating unit cost will be handled within createStockMovement
 }

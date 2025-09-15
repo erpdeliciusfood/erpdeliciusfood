@@ -20,7 +20,7 @@ export const useAddStockMovement = () => {
       if (!user?.id) {
         throw new Error("User not authenticated.");
       }
-      return createStockMovement(movementData, user.id);
+      return createStockMovement({ ...movementData, user_id: user.id }); // Pass user_id within movementData
     },
     onMutate: () => {
       const toastId: string = showLoading("Registrando movimiento de stock...");

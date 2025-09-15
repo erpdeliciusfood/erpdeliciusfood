@@ -7,9 +7,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { InsumoDeductionItem } from "@/types"; // Removed InsumoToDeduct
-import { createStockMovement } from "@/lib/supabase/actions";
-import { useAuth } from "@/hooks/useAuth";
-import { toast } from "react-hot-toast";
+import { createStockMovement } from "@/integrations/supabase/stockMovements"; // Corrected import path
+import { useSession } from "@/contexts/SessionContext"; // Corrected import path from useAuth
+import { toast } from "sonner"; // Corrected import path from react-hot-toast
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 // Removed Textarea as it's not used
@@ -25,7 +25,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
   selectedDate,
   onClose,
 }) => {
-  const { user } = useAuth();
+  const { user } = useSession(); // Use useSession
   const [deductorName, setDeductorName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [quantitiesToDeduct, setQuantitiesToDeduct] = useState<Record<string, number>>({});
@@ -102,7 +102,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
         user_id: user.id,
         insumo_id: insumo.insumo_id,
         movement_type: 'daily_prep_out',
-        quantity_change: -insumo.quantity_to_deduct, // Negative for deduction
+        quantity_change: insumo.quantity_to_deduct, // Positive value, RPC handles negative for deduction
         notes: `Deducción para preparación diaria por ${deductorName}. Detalles: ${detailedNotes}`,
         menu_id: null, // Set to null as a single deduction might span multiple menus, and notes provide detail
       });

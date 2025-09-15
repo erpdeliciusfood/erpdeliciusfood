@@ -20,10 +20,9 @@ export const getStockMovements = async (): Promise<StockMovement[]> => {
 };
 
 export const createStockMovement = async (
-  movementData: StockMovementFormValues,
-  userId: string
+  movementData: StockMovementFormValues // Removed userId from here
 ): Promise<StockMovement> => {
-  const { insumo_id, movement_type, quantity_change, notes, menu_id } = movementData;
+  const { insumo_id, movement_type, quantity_change, notes, menu_id, user_id } = movementData; // Destructure user_id
 
   let pendingDeliveryChange = 0;
   let pendingReceptionChange = 0;
@@ -95,7 +94,7 @@ export const createStockMovement = async (
       new_stock_quantity: parseFloat(updatedInsumo.stock_quantity.toFixed(2)), // Use stock_quantity from RPC result
       notes: finalNotes,
       menu_id: menu_id || null,
-      user_id: userId,
+      user_id: user_id, // Use user_id from movementData
     })
     .select("*, insumos(id, nombre, purchase_unit, base_unit, conversion_factor)")
     .single();
