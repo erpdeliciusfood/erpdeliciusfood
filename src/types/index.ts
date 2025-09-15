@@ -199,7 +199,7 @@ export interface InsumoDeductionItem {
   menu_date: string | null; // The date of the menu
 }
 
-// New type for grouped insumo needs (for display in DailyPrepOverview)
+// New type for grouped insumo needs (for display in DailyPrep Overview)
 export interface GroupedInsumoNeeds {
   meal_service_id: string;
   meal_service_name: string;

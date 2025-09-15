@@ -1,5 +1,5 @@
 import { supabase } from "@/integrations/supabase/client";
-import { StockMovement, StockMovementFormValues, MenuWithRelations } from "@/types"; // Import MenuWithRelations
+import { StockMovement, StockMovementFormValues } from "@/types"; // Removed MenuWithRelations
 
 export const getStockMovements = async (): Promise<StockMovement[]> => {
   const { data, error } = await supabase
@@ -64,9 +64,9 @@ export const createStockMovement = async (
     } else if (menuData) {
       const menuTitle = menuData.title;
       const menuDate = menuData.menu_date;
-      // Explicitly cast event_types to the expected type to resolve TS2339
-      const eventType = menuData.event_types as { name: string } | null;
-      const eventTypeName = eventType?.name;
+      // The `event_types` relation is a single object, not an array.
+      // Access `name` directly if `event_types` exists.
+      const eventTypeName = menuData.event_types?.name;
 
       let menuIdentifier = '';
       if (menuDate) {
