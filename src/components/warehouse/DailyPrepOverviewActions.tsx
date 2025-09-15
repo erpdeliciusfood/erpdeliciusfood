@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MinusCircle } from "lucide-react";
-import { AggregatedInsumoNeed } from "@/types";
+// Removed unused import: import { AggregatedInsumoNeed } from "@/types";
 
 interface DailyPrepOverviewActionsProps {
   stockFilter: 'all' | 'sufficient' | 'insufficient';

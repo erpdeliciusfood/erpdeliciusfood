@@ -6,13 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { InsumoDeductionItem } from "@/types"; // Removed InsumoToDeduct
-import { createStockMovement } from "@/integrations/supabase/stockMovements"; // Corrected import path
-import { useSession } from "@/contexts/SessionContext"; // Corrected import path from useAuth
-import { toast } from "sonner"; // Corrected import path from react-hot-toast
+import { InsumoDeductionItem } from "@/types";
+import { createStockMovement } from "@/integrations/supabase/stockMovements";
+import { useSession } from "@/contexts/SessionContext";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
-// Removed Textarea as it's not used
 
 interface DeductQuantitiesDialogProps {
   selectedDeductionItems: InsumoDeductionItem[];
@@ -25,12 +24,11 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
   selectedDate,
   onClose,
 }) => {
-  const { user } = useSession(); // Use useSession
+  const { user } = useSession();
   const [deductorName, setDeductorName] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [quantitiesToDeduct, setQuantitiesToDeduct] = useState<Record<string, number>>({});
 
-  // Aggregate selectedDeductionItems by insumo_id for display and initial deduction quantities
   const insumosToProcess = useMemo(() => {
     const aggregated = new Map<string, {
       insumo_id: string;
@@ -38,7 +36,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
       purchase_unit: string;
       current_stock_quantity: number;
       total_needed: number;
-      items: InsumoDeductionItem[]; // Keep track of original granular items
+      items: InsumoDeductionItem[];
     }>();
 
     selectedDeductionItems.forEach(item => {
@@ -54,7 +52,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
       }
       const entry = aggregated.get(item.insumo_id)!;
       entry.total_needed += item.total_needed_purchase_unit_for_item;
-      entry.items.push(item); // Add the granular item
+      entry.items.push(item);
     });
 
     return Array.from(aggregated.values()).map(entry => ({
@@ -62,7 +60,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
       total_needed: parseFloat(entry.total_needed.toFixed(2)),
       quantity_to_deduct: quantitiesToDeduct[entry.insumo_id] !== undefined
         ? quantitiesToDeduct[entry.insumo_id]
-        : parseFloat(entry.total_needed.toFixed(2)), // Default to total needed
+        : parseFloat(entry.total_needed.toFixed(2)),
     }));
   }, [selectedDeductionItems, quantitiesToDeduct]);
 
@@ -93,24 +91,23 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
         return { success: false, message: `Stock insuficiente para deducir ${insumo.quantity_to_deduct} ${insumo.purchase_unit} de ${insumo.insumo_nombre}. Stock actual: ${insumo.current_stock_quantity} ${insumo.purchase_unit}.` };
       }
 
-      // Construct a detailed note including all granular items contributing to this deduction
       const detailedNotes = insumo.items.map(item =>
         `Menú: ${item.menu_title} (${format(new Date(item.menu_date || selectedDate), "PPP", { locale: es })}) - Servicio: ${item.meal_service_name} - Receta: ${item.plato_nombre} - Cantidad necesaria: ${item.total_needed_purchase_unit_for_item} ${item.purchase_unit}`
       ).join('; ');
 
-      const { error: stockMovementError } = await createStockMovement({
-        user_id: user.id,
-        insumo_id: insumo.insumo_id,
-        movement_type: 'daily_prep_out',
-        quantity_change: insumo.quantity_to_deduct, // Positive value, RPC handles negative for deduction
-        notes: `Deducción para preparación diaria por ${deductorName}. Detalles: ${detailedNotes}`,
-        menu_id: null, // Set to null as a single deduction might span multiple menus, and notes provide detail
-      });
-
-      if (stockMovementError) {
-        return { success: false, message: `Error al deducir ${insumo.insumo_nombre}: ${stockMovementError.message}` };
+      try {
+        await createStockMovement({
+          user_id: user.id,
+          insumo_id: insumo.insumo_id,
+          movement_type: 'daily_prep_out',
+          quantity_change: insumo.quantity_to_deduct,
+          notes: `Deducción para preparación diaria por ${deductorName}. Detalles: ${detailedNotes}`,
+          menu_id: null,
+        });
+        return { success: true, message: `Deducido ${insumo.quantity_to_deduct} ${insumo.purchase_unit} de ${insumo.insumo_nombre}.` };
+      } catch (error: any) {
+        return { success: false, message: `Error al deducir ${insumo.insumo_nombre}: ${error.message}` };
       }
-      return { success: true, message: `Deducido ${insumo.quantity_to_deduct} ${insumo.purchase_unit} de ${insumo.insumo_nombre}.` };
     });
 
     const results = await Promise.all(deductionPromises);
@@ -126,7 +123,7 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
     }
 
     setIsSubmitting(false);
-    onClose(); // Close the dialog after processing
+    onClose();
   };
 
   const formattedDate = format(selectedDate, "PPP", { locale: es });
