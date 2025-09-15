@@ -64,9 +64,9 @@ export const createStockMovement = async (
     } else if (menuData) {
       const menuTitle = menuData.title;
       const menuDate = menuData.menu_date;
-      // The `event_types` relation is a single object, not an array.
       // Access `name` directly if `event_types` exists.
-      const eventTypeName = menuData.event_types?.name;
+      // If `event_types` is an array (due to complex join or type inference), take the first element.
+      const eventTypeName = Array.isArray(menuData.event_types) ? menuData.event_types[0]?.name : menuData.event_types?.name;
 
       let menuIdentifier = '';
       if (menuDate) {
