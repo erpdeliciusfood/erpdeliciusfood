@@ -20,9 +20,9 @@ export const getStockMovements = async (): Promise<StockMovement[]> => {
 };
 
 export const createStockMovement = async (
-  movementData: StockMovementFormValues // Removed userId from here
+  movementData: StockMovementFormValues
 ): Promise<StockMovement> => {
-  const { insumo_id, movement_type, quantity_change, notes, menu_id, user_id } = movementData; // Destructure user_id
+  const { insumo_id, movement_type, quantity_change, notes, menu_id, user_id } = movementData;
 
   let pendingDeliveryChange = 0;
   let pendingReceptionChange = 0;
@@ -50,7 +50,8 @@ export const createStockMovement = async (
     console.error("RPC Error in update_insumo_quantities for insumo_id:", insumo_id, updateInsumoError);
     throw new Error(`Error updating insumo quantities via RPC: ${updateInsumoError.message}`);
   }
-  // Robust check: Ensure data is not null, empty, or contains a null/undefined element
+  
+  // Check if the RPC returned any data. If not, it means the insumo was not found or updated.
   if (!updatedInsumoArray || updatedInsumoArray.length === 0 || updatedInsumoArray[0] === null || updatedInsumoArray[0] === undefined) {
     console.error("RPC returned no valid data for insumo_id:", insumo_id, "Data received:", updatedInsumoArray);
     throw new Error(`Failed to retrieve updated insumo data after RPC call for insumo_id: ${insumo_id}. The insumo might not exist or the update failed.`);
@@ -65,14 +66,13 @@ export const createStockMovement = async (
       .from('menus')
       .select('title, menu_date, event_types(name)')
       .eq('id', menu_id)
-      .single() as { data: MenuDetailsForStockMovement | null, error: PostgrestError | null }; // Cast the result to the local type
+      .single() as { data: MenuDetailsForStockMovement | null, error: PostgrestError | null };
 
     if (menuError) {
       console.warn(`Could not fetch menu details for menu_id ${menu_id}: ${menuError.message}`);
     } else if (menuData) {
       const menuTitle = menuData.title;
       const menuDate = menuData.menu_date;
-      // Access `name` directly from event_types object, which is now correctly typed
       const eventTypeName = menuData.event_types?.name;
 
       let menuIdentifier = '';
@@ -92,10 +92,10 @@ export const createStockMovement = async (
       insumo_id,
       movement_type,
       quantity_change: parseFloat(quantity_change.toFixed(2)),
-      new_stock_quantity: parseFloat(updatedInsumo.stock_quantity.toFixed(2)), // Use stock_quantity from RPC result
+      new_stock_quantity: parseFloat(updatedInsumo.stock_quantity.toFixed(2)),
       notes: finalNotes,
       menu_id: menu_id || null,
-      user_id: user_id, // Use user_id from movementData
+      user_id: user_id,
     })
     .select("*, insumos(id, nombre, purchase_unit, base_unit, conversion_factor)")
     .single();
