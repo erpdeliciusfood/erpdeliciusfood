@@ -30,6 +30,7 @@ import {
   SheetContent,
   SheetHeader,
   SheetTitle,
+  SheetTrigger, // NEW: Import SheetTrigger
 } from "@/components/ui/sheet";
 import NavLinkButton from "./NavLinkButton";
 import MobileNavLinkButton from "./MobileNavLinkButton";
