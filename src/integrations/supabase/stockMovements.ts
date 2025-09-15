@@ -4,7 +4,7 @@ import { StockMovement, StockMovementFormValues } from "@/types";
 export const getStockMovements = async (): Promise<StockMovement[]> => {
   const { data, error } = await supabase
     .from("stock_movements")
-    .select("*, insumos(id, nombre, purchase_unit, base_unit, conversion_factor)") // Fetch related insumo data
+    .select("*, insumos(id, nombre, purchase_unit, base_unit, conversion_factor)")
     .order("created_at", { ascending: false });
 
   if (error) throw new Error(error.message);
@@ -18,34 +18,35 @@ export const createStockMovement = async (
   const { insumo_id, movement_type, quantity_change, notes, menu_id } = movementData;
 
   // First, get the current stock and cost of the insumo, including new stock fields
-  // This fetch is primarily for validation or initial data, the RPC handles the actual update.
   const { data: currentInsumo, error: fetchInsumoError } = await supabase
     .from("insumos")
     .select("stock_quantity, costo_unitario, pending_reception_quantity, pending_delivery_quantity")
     .eq("id", insumo_id)
     .single();
 
-  if (fetchInsumoError) throw new Error(`Error fetching insumo stock: ${fetchInsumoError.message}`);
-  if (!currentInsumo) throw new Error("Insumo not found.");
+  if (fetchInsumoError) {
+    console.error("Error fetching insumo stock before RPC:", fetchInsumoError);
+    throw new Error(`Error fetching insumo stock: ${fetchInsumoError.message}`);
+  }
+  if (!currentInsumo) {
+    console.error("Insumo not found for ID:", insumo_id);
+    throw new Error("Insumo not found.");
+  }
 
   let pendingDeliveryChange = 0;
   let pendingReceptionChange = 0;
   let stockChange = 0;
 
-  // Determine how stock quantities and cost change based on movement type
-  if (movement_type === "purchase_in") { // This now means 'received by warehouse'
+  if (movement_type === "purchase_in") {
     stockChange = quantity_change;
   } else if (movement_type === "reception_in") {
-    // For 'reception_in', pending_reception_quantity is updated.
     pendingReceptionChange = quantity_change;
   } else if (movement_type === "adjustment_in") {
     stockChange = quantity_change;
   } else if (movement_type === "adjustment_out" || movement_type === "daily_prep_out") {
     stockChange = -quantity_change;
   }
-  // 'consumption_out' is handled by the Edge Function, so it's not part of this client-side creation
 
-  // Call the RPC to update insumo quantities and get the updated insumo data
   const { data: updatedInsumoArray, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
     insumo_id_param: insumo_id,
     pending_delivery_change: pendingDeliveryChange,
@@ -54,23 +55,27 @@ export const createStockMovement = async (
   });
 
   if (updateInsumoError) {
+    console.error("RPC Error in update_insumo_quantities for insumo_id:", insumo_id, updateInsumoError);
     throw new Error(`Error updating insumo quantities via RPC: ${updateInsumoError.message}`);
   }
-  // IMPORTANT: Check if updatedInsumoArray is null or empty
   if (!updatedInsumoArray || updatedInsumoArray.length === 0) {
+    console.error("RPC returned empty or null array for insumo_id:", insumo_id, "Array received:", updatedInsumoArray);
     throw new Error(`Failed to update insumo quantities via RPC: Insumo with ID ${insumo_id} not found or update failed.`);
   }
 
-  const updatedInsumo = updatedInsumoArray[0]; // The RPC returns an array, take the first element
+  const updatedInsumo = updatedInsumoArray[0];
+  if (!updatedInsumo) {
+    console.error("updatedInsumo is undefined after RPC call for insumo_id:", insumo_id, "Array received:", updatedInsumoArray);
+    throw new Error(`Failed to retrieve updated insumo data after RPC call for insumo_id: ${insumo_id}.`);
+  }
 
-  // Insert the stock movement record
   const { data: newMovement, error: movementError } = await supabase
     .from("stock_movements")
     .insert({
       insumo_id,
       movement_type,
-      quantity_change: parseFloat(quantity_change.toFixed(2)), // Record the absolute change
-      new_stock_quantity: parseFloat(updatedInsumo.stock_quantity.toFixed(2)), // Use the final stock from RPC
+      quantity_change: parseFloat(quantity_change.toFixed(2)),
+      new_stock_quantity: parseFloat(updatedInsumo.stock_quantity.toFixed(2)),
       notes,
       menu_id: menu_id || null,
       user_id: userId,
