@@ -1,13 +1,13 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Loader2, PlusCircle, CalendarDays } from "lucide-react"; // Added CalendarDays icon
+import { Loader2, PlusCircle, CalendarDays } from "lucide-react";
 import { useEventTypes } from "@/hooks/useEventTypes";
 import EventTypeList from "@/components/event-types/EventTypeList";
 import EventTypeForm from "@/components/event-types/EventTypeForm";
 import { MadeWithDyad } from "@/components/made-with-dyad";
 import { EventType } from "@/types";
-import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
 
 const EventTypes = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
@@ -49,13 +49,13 @@ const EventTypes = () => {
   }
 
   return (
-    <div className="container mx-auto min-h-screen flex flex-col"> {/* Eliminado p-4 md:p-8 lg:p-12 */}
+    <div className="container mx-auto min-h-screen flex flex-col">
       <PageHeaderWithLogo
         title="Gestión de Tipos de Evento"
         description="Define y organiza los diferentes tipos de eventos."
         icon={CalendarDays}
       />
-      <div className="flex justify-end items-center mb-6"> {/* Adjusted layout for buttons */}
+      <div className="flex justify-end items-center mb-6">
         <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
           <DialogTrigger asChild>
             <Button
@@ -83,7 +83,7 @@ const EventTypes = () => {
 
       <div className="flex-grow">
         {eventTypes && eventTypes.length > 0 ? (
-          <EventTypeList eventTypes={eventTypes} onEdit={handleEditClick} onAddClick={handleAddClick} /> {/* NEW: Pass onAddClick */}
+          <EventTypeList eventTypes={eventTypes} onEdit={handleEditClick} onAddClick={handleAddClick} />
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">
             <CalendarDays className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
