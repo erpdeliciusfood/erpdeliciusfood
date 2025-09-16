@@ -50,7 +50,7 @@ const WarehousePage: React.FC = () => {
   const hasMenus = menusForSelectedDate && menusForSelectedDate.length > 0;
 
   return (
-    <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
+    <div className="container mx-auto min-h-screen flex flex-col"> {/* Eliminado p-4 md:p-8 lg:p-12 */}
       <PageHeaderWithLogo
         title="Gestión de Almacén (Preparación Diaria)"
         description="Selecciona una fecha para ver los menús planificados y gestionar la salida de insumos para la preparación diaria."

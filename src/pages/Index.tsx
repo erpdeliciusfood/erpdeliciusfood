@@ -36,7 +36,7 @@ const Index = () => {
   const totalStockMovements = stockMovements?.length || 0;
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900 p-4">
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-900"> {/* Eliminado p-4 */}
       <div className="text-center bg-white dark:bg-gray-800 p-8 rounded-lg shadow-lg max-w-4xl w-full">
         <PageHeaderWithLogo
           title={`¡Bienvenido, ${userName}!`}
@@ -58,7 +58,7 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               {isLoadingInsumos ? (
-                <Skeleton className="h-10 w-full" /> // Using Skeleton
+                <Skeleton className="h-10 w-full" /> {/* Using Skeleton */}
               ) : (
                 <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalInsumos}</div>
               )}
@@ -76,7 +76,7 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               {isLoadingRecetas ? (
-                <Skeleton className="h-10 w-full" /> // Using Skeleton
+                <Skeleton className="h-10 w-full" /> {/* Using Skeleton */}
               ) : (
                 <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalRecetas}</div>
               )}
@@ -94,7 +94,7 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               {isLoadingMenus ? (
-                <Skeleton className="h-10 w-full" /> // Using Skeleton
+                <Skeleton className="h-10 w-full" /> {/* Using Skeleton */}
               ) : (
                 <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalMenus}</div>
               )}
@@ -112,7 +112,7 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               {isLoadingEventTypes ? (
-                <Skeleton className="h-10 w-full" /> // Using Skeleton
+                <Skeleton className="h-10 w-full" /> {/* Using Skeleton */}
               ) : (
                 <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalEventTypes}</div>
               )}
@@ -130,7 +130,7 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               {isLoadingServiceReports ? (
-                <Skeleton className="h-10 w-full" /> // Using Skeleton
+                <Skeleton className="h-10 w-full" /> {/* Using Skeleton */}
               ) : (
                 <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalServiceReports}</div>
               )}
@@ -148,7 +148,7 @@ const Index = () => {
             </CardHeader>
             <CardContent>
               {isLoadingStockMovements ? (
-                <Skeleton className="h-10 w-full" /> // Using Skeleton
+                <Skeleton className="h-10 w-full" /> {/* Using Skeleton */}
               ) : (
                 <div className="text-5xl font-extrabold text-gray-900 dark:text-gray-100">{totalStockMovements}</div>
               )}

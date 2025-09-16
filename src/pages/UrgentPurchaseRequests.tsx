@@ -53,7 +53,7 @@ const UrgentPurchaseRequests = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
+    <div className="container mx-auto min-h-screen flex flex-col"> {/* Eliminado p-4 md:p-8 lg:p-12 */}
       <PageHeaderWithLogo
         title="Gestión de Solicitudes de Compra Urgente"
         description="Revisa y gestiona las solicitudes de insumos con stock bajo."

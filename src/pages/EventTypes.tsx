@@ -49,7 +49,7 @@ const EventTypes = () => {
   }
 
   return (
-    <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col">
+    <div className="container mx-auto min-h-screen flex flex-col"> {/* Eliminado p-4 md:p-8 lg:p-12 */}
       <PageHeaderWithLogo
         title="Gestión de Tipos de Evento"
         description="Define y organiza los diferentes tipos de eventos."
@@ -83,7 +83,7 @@ const EventTypes = () => {
 
       <div className="flex-grow">
         {eventTypes && eventTypes.length > 0 ? (
-          <EventTypeList eventTypes={eventTypes} onEdit={handleEditClick} onAddClick={handleAddClick} /> /* NEW: Pass onAddClick */
+          <EventTypeList eventTypes={eventTypes} onEdit={handleEditClick} onAddClick={handleAddClick} /> {/* NEW: Pass onAddClick */}
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">
             <CalendarDays className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />

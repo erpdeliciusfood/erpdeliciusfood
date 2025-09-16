@@ -20,7 +20,7 @@ const Profile = () => {
   };
 
   return (
-    <div className="container mx-auto p-4 md:p-8 lg:p-12 min-h-screen flex flex-col items-center">
+    <div className="container mx-auto min-h-screen flex flex-col items-center"> {/* Eliminado p-4 md:p-8 lg:p-12 */}
       <div className="w-full max-w-2xl bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 md:p-8">
         <div className="flex items-center justify-between mb-8">
           <PageHeaderWithLogo
