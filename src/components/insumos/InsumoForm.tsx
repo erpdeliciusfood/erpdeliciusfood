@@ -209,22 +209,22 @@ const InsumoForm: React.FC<InsumoFormProps> = ({ initialData, onSuccess, onCance
           />
           <InsumoStockAndCostFormSection isLoading={isLoading} />
 
-          <div className="flex justify-end space-x-4 pt-4">
+          <div className="flex justify-center space-x-4 pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={onCancel}
-              className="px-6 py-3 text-lg"
+              className="px-8 py-4 text-xl"
               disabled={isLoading}
             >
               Cancelar
             </Button>
             <Button
               type="submit"
-              className="px-6 py-3 text-lg bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
+              className="px-8 py-4 text-xl bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out"
               disabled={isLoading}
             >
-              {isLoading && <Loader2 className="mr-2 h-5 w-5 animate-spin" />}
+              {isLoading && <Loader2 className="mr-2 h-6 w-6 animate-spin" />}
               {initialData && (initialData as Insumo).id ? "Guardar Cambios" : "Añadir Insumo"}
             </Button>
           </div>
