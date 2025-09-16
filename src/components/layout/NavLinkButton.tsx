@@ -19,7 +19,7 @@ const NavLinkButton: React.FC<NavLinkButtonProps> = ({ to, icon: Icon, label, on
       <Button
         variant="ghost"
         className={cn(
-          "px-4 py-2 text-base h-10",
+          "px-5 py-2.5 text-lg h-11", // Increased size
           "text-primary-foreground dark:text-primary",
           "hover:bg-primary-foreground/20 dark:hover:bg-primary/20",
           isActive && "bg-primary-foreground/30 dark:bg-primary/30 font-semibold"

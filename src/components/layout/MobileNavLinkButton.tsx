@@ -19,7 +19,7 @@ const MobileNavLinkButton: React.FC<MobileNavLinkButtonProps> = ({ to, icon: Ico
       <Button
         variant="ghost"
         className={cn(
-          "justify-start text-lg px-4 py-3 h-auto w-full",
+          "justify-start text-lg px-5 py-3.5 h-auto w-full", // Increased padding
           "text-sidebar-foreground dark:text-sidebar-primary-foreground",
           "hover:bg-sidebar-accent dark:hover:bg-sidebar-accent-foreground",
           isActive && "bg-sidebar-accent/50 dark:bg-sidebar-accent-foreground/50 font-semibold"
