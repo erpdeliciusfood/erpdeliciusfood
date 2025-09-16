@@ -18,12 +18,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { MealService, MenuFormValues, Receta, MEAL_SERVICES_ORDER, MENU_DISH_SERVICE_CATEGORIES } from "@/types"; // Changed Plato to Receta, imported MENU_DISH_SERVICE_CATEGORIES
-import SearchableRecetaSelect from "./SearchableRecetaSelect"; // NEW: Import SearchableRecetaSelect
+import { MealService, MenuFormValues, Receta, MEAL_SERVICES_ORDER, MENU_DISH_SERVICE_CATEGORIES } from "@/types";
+import SearchableRecetaSelect from "./SearchableRecetaSelect";
 
 interface PlatosPorServicioFormSectionProps {
   isLoading: boolean;
-  availablePlatos: Receta[] | undefined; // Changed type
+  availablePlatos: Receta[] | undefined;
   availableMealServices: MealService[] | undefined;
 }
 
@@ -52,7 +52,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
   return (
     <Card className="mt-8">
       <CardHeader>
-        <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Recetas por Servicio</CardTitle> {/* Changed text */}
+        <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Recetas por Servicio</CardTitle>
       </CardHeader>
       <CardContent className="space-y-4">
         {fields.map((field, index) => (
@@ -61,7 +61,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
               control={form.control}
               name={`platos_por_servicio.${index}.meal_service_id`}
               render={({ field: serviceField }) => (
-                <FormItem className="flex-grow w-full md:w-1/3">
+                <FormItem className="flex-1 w-full">
                   <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Servicio</FormLabel>
                   <Select
                     onValueChange={serviceField.onChange}
@@ -93,9 +93,9 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
               control={form.control}
               name={`platos_por_servicio.${index}.plato_id`}
               render={({ field: platoField }) => (
-                <FormItem className="flex-grow w-full md:w-1/3">
-                  <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Receta</FormLabel> {/* Changed text */}
-                  <SearchableRecetaSelect // NEW: Use SearchableRecetaSelect
+                <FormItem className="flex-1 w-full">
+                  <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Receta</FormLabel>
+                  <SearchableRecetaSelect
                     value={platoField.value}
                     onChange={platoField.onChange}
                     disabled={isLoading || !availablePlatos || availablePlatos.length === 0}
@@ -109,8 +109,8 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
               control={form.control}
               name={`platos_por_servicio.${index}.dish_category`}
               render={({ field: categoryField }) => (
-                <FormItem className="flex-grow w-full md:w-1/3">
-                  <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Categoría de Receta</FormLabel> {/* Changed text */}
+                <FormItem className="flex-1 w-full">
+                  <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Categoría de Receta</FormLabel>
                   <Select
                     onValueChange={categoryField.onChange}
                     defaultValue={categoryField.value}
@@ -137,7 +137,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
               control={form.control}
               name={`platos_por_servicio.${index}.quantity_needed`}
               render={({ field: quantityField }) => (
-                <FormItem className="w-full md:w-1/4">
+                <FormItem className="w-full md:w-[120px]">
                   <FormLabel className={index === 0 ? "text-base font-semibold text-gray-800 dark:text-gray-200" : "sr-only"}>Cantidad (Raciones por Servicio)</FormLabel>
                   <FormControl>
                     <Input
@@ -159,7 +159,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
               variant="destructive"
               size="icon"
               onClick={() => remove(index)}
-              className="h-10 w-10 flex-shrink-0"
+              className="h-10 w-10 flex-shrink-0 mt-auto md:mt-0"
               disabled={isLoading || fields.length === 1}
             >
               <Trash2 className="h-5 w-5" />
@@ -174,7 +174,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
           disabled={isLoading || !availablePlatos || availablePlatos.length === 0 || !availableMealServices || availableMealServices.length === 0}
         >
           <PlusCircle className="mr-2 h-5 w-5" />
-          Añadir Receta a Servicio {/* Changed text */}
+          Añadir Receta a Servicio
         </Button>
       </CardContent>
     </Card>
