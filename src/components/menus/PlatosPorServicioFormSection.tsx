@@ -56,7 +56,7 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
       </CardHeader>
       <CardContent className="space-y-4">
         {fields.map((field, index) => (
-          <div key={field.id} className="flex flex-col md:flex-row gap-4 items-end border-b pb-4 last:border-b-0 last:pb-0">
+          <div key={field.id} className="flex flex-col md:flex-row md:flex-wrap gap-4 items-end border-b pb-4 last:border-b-0 last:pb-0">
             <FormField
               control={form.control}
               name={`platos_por_servicio.${index}.meal_service_id`}
