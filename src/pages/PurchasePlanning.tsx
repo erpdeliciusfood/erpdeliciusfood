@@ -77,7 +77,7 @@ const PurchasePlanning = () => {
             <DialogTrigger asChild>
               <Button
                 onClick={() => setIsRegisterPurchaseFormOpen(true)}
-                className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
+                className="px-6 py-3 text-lg bg-green-600 hover:bg-green-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
               >
                 <PlusCircle className="mr-3 h-6 w-6" />
                 Registrar Nueva Compra
@@ -101,7 +101,7 @@ const PurchasePlanning = () => {
             <DialogTrigger asChild>
               <Button
                 onClick={() => setIsGenerateQuebradoDialogOpen(true)}
-                className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
+                className="px-6 py-3 text-lg bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl w-full sm:w-auto"
               >
                 <ShoppingBag className="mr-3 h-6 w-6" />
                 Generar Quebrado

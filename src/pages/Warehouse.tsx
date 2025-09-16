@@ -66,7 +66,7 @@ const WarehousePage: React.FC = () => {
         <Dialog open={isUrgentRequestFormOpen} onOpenChange={setIsUrgentRequestFormOpen}>
           <DialogTrigger asChild>
             <Button
-              className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-xl w-full sm:w-auto"
+              className="px-6 py-3 text-lg bg-orange-500 hover:bg-orange-600 text-white shadow-lg hover:shadow-xl w-full sm:w-auto"
             >
               <PlusCircle className="mr-3 h-6 w-6" />
               Crear Solicitud Urgente

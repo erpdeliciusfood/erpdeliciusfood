@@ -51,7 +51,7 @@ const StockMovements = () => {
           <DialogTrigger asChild>
             <Button
               onClick={handleAddClick}
-              className="px-6 py-3 text-lg md:px-8 md:py-4 md:text-xl bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
+              className="px-6 py-3 text-lg bg-primary hover:bg-primary-foreground text-primary-foreground hover:text-primary transition-colors duration-200 ease-in-out shadow-lg hover:shadow-xl"
             >
               <PlusCircle className="mr-3 h-6 w-6" />
               Registrar Movimiento
