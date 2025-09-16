@@ -159,10 +159,10 @@ const PlatosPorServicioFormSection: React.FC<PlatosPorServicioFormSectionProps> 
               variant="destructive"
               size="icon"
               onClick={() => remove(index)}
-              className="h-10 w-10 flex-shrink-0 mt-auto md:mt-0"
+              className="h-12 w-12 flex-shrink-0 mt-auto md:mt-0"
               disabled={isLoading || fields.length === 1}
             >
-              <Trash2 className="h-5 w-5" />
+              <Trash2 className="h-6 w-6" />
             </Button>
           </div>
         ))}
