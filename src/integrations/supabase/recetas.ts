@@ -27,12 +27,18 @@ const calculateRecetaCosts = async ( // Changed function name
   };
 };
 
-export const getRecetas = async (): Promise<Receta[]> => { // Changed function name and type
-  const { data, error } = await supabase
+export const getRecetas = async (category?: string): Promise<Receta[]> => { // Changed function name and type, added category parameter
+  let query = supabase
     .from("platos") // Keep table name as 'platos' in DB
-    .select("*, plato_insumos(*, insumos(*))")
-    .order("created_at", { ascending: false });
+    .select("*, plato_insumos(*, insumos(*))");
 
+  if (category) {
+    query = query.eq("category", category);
+  }
+
+  query = query.order("created_at", { ascending: false });
+
+  const { data, error } = await query;
   if (error) throw new Error(error.message);
   return data;
 };

@@ -1,19 +1,28 @@
 import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger } from "@/components/ui/sheet";
-import { Loader2, PlusCircle, ChefHat } from "lucide-react";
+import { Loader2, PlusCircle, ChefHat, Search } from "lucide-react"; // NEW: Import Search icon
 import { useRecetas } from "@/hooks/useRecetas";
 import RecetaList from "@/components/recetas/RecetaList";
 import RecetaForm from "@/components/recetas/RecetaForm";
 import { MadeWithDyad } from "@/components/made-with-dyad";
-import { Receta } from "@/types";
-import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo"; // NEW: Import PageHeaderWithLogo
+import { Receta, RECETA_CATEGORIES } from "@/types"; // NEW: Import RECETA_CATEGORIES
+import PageHeaderWithLogo from "@/components/layout/PageHeaderWithLogo";
+import { Input } from "@/components/ui/input"; // NEW: Import Input
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"; // NEW: Import Select components
 
 const Recetas = () => {
   const [isFormOpen, setIsFormOpen] = useState(false);
   const [editingReceta, setEditingReceta] = useState<Receta | null>(null);
+  const [searchTerm, setSearchTerm] = useState(""); // NEW: State for search term
+  const [selectedCategory, setSelectedCategory] = useState("TODOS"); // NEW: State for category filter
 
-  const { data: recetas, isLoading, isError, error } = useRecetas();
+  const { data: allRecetas, isLoading, isError, error } = useRecetas(selectedCategory === "TODOS" ? undefined : selectedCategory); // Pass selectedCategory to hook
+
+  // Filter recipes by search term after fetching by category
+  const filteredRecetas = allRecetas?.filter(receta =>
+    receta.nombre.toLowerCase().includes(searchTerm.toLowerCase())
+  ) || [];
 
   const handleAddClick = () => {
     setEditingReceta(null);
@@ -49,13 +58,13 @@ const Recetas = () => {
   }
 
   return (
-    <div className="container mx-auto min-h-screen flex flex-col"> {/* Eliminado p-4 md:p-8 lg:p-12 */}
+    <div className="container mx-auto min-h-screen flex flex-col">
       <PageHeaderWithLogo
         title="Gestión de Recetas"
         description="Crea y administra tus recetas con los insumos disponibles."
         icon={ChefHat}
       />
-      <div className="flex justify-end items-center mb-6"> {/* Adjusted layout for buttons */}
+      <div className="flex justify-end items-center mb-6">
         <Sheet open={isFormOpen} onOpenChange={setIsFormOpen}>
           <SheetTrigger asChild>
             <Button
@@ -81,13 +90,45 @@ const Recetas = () => {
         </Sheet>
       </div>
 
+      {/* NEW: Search and Filter Bar */}
+      <div className="flex flex-col md:flex-row gap-4 mb-6 items-center">
+        <div className="relative flex-grow w-full md:w-auto">
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-500 dark:text-gray-400" />
+          <Input
+            type="text"
+            placeholder="Buscar receta por nombre..."
+            className="pl-10 pr-4 py-2 h-12 text-base w-full"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+        </div>
+        <Select onValueChange={(value) => setSelectedCategory(value)} value={selectedCategory}>
+          <SelectTrigger className="w-full md:w-[200px] h-12 text-base">
+            <SelectValue placeholder="Filtrar por categoría" />
+          </SelectTrigger>
+          <SelectContent>
+            <SelectItem value="TODOS">Todas las Categorías</SelectItem>
+            {RECETA_CATEGORIES.map((category) => (
+              <SelectItem key={category} value={category}>
+                {category}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       <div className="flex-grow">
-        {recetas && recetas.length > 0 ? (
-          <RecetaList recetas={recetas} onEdit={handleEditClick} />
+        {filteredRecetas && filteredRecetas.length > 0 ? (
+          <RecetaList recetas={filteredRecetas} onEdit={handleEditClick} />
         ) : (
           <div className="text-center py-10 text-gray-600 dark:text-gray-400">
             <ChefHat className="mx-auto h-16 w-16 mb-4 text-gray-400 dark:text-gray-600" />
-            <p className="text-xl mb-4">No hay recetas registradas. ¡Añade la primera!</p>
+            <p className="text-xl mb-4">
+              No hay recetas registradas
+              {searchTerm && ` que coincidan con "${searchTerm}"`}
+              {selectedCategory !== "TODOS" && ` en la categoría "${selectedCategory}"`}
+              . ¡Añade la primera!
+            </p>
             <Button
               onClick={handleAddClick}
               className="px-6 py-3 text-lg bg-secondary hover:bg-secondary-foreground text-secondary-foreground hover:text-secondary transition-colors duration-200 ease-in-out"

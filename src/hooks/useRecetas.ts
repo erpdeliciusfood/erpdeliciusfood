@@ -3,10 +3,10 @@ import { getRecetas, getRecetaById, createReceta, updateReceta, deleteReceta } f
 import { Receta, RecetaFormValues } from "@/types/index"; // Changed type imports
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 
-export const useRecetas = () => { // Changed hook name
+export const useRecetas = (category?: string) => { // Changed hook name, added category parameter
   return useQuery<Receta[], Error>({ // Changed type
-    queryKey: ["recetas"], // Changed query key
-    queryFn: getRecetas, // Changed function name
+    queryKey: ["recetas", category], // Changed query key to include category
+    queryFn: () => getRecetas(category), // Changed function name, pass category
   });
 };
 
