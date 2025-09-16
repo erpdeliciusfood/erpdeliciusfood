@@ -12,11 +12,11 @@ const PageHeaderWithLogo: React.FC<PageHeaderWithLogoProps> = ({ title, descript
   return (
     <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-8">
       {!hideLogo && ( // Conditionally render the logo
-        <div className="flex items-center mb-4 md:mb-0">
-          <img src="/logo-erp.png" alt="App Logo" className="h-10 sm:h-12 w-auto mr-3" />
+        <div className="flex items-center justify-center mb-4 md:mb-0 w-full md:w-auto">
+          <img src="/logo-erp.png" alt="App Logo" className="h-16 sm:h-20 w-auto" />
         </div>
       )}
-      <div className="flex flex-col md:items-end">
+      <div className="flex flex-col md:items-end w-full md:w-auto">
         <h1 className="text-3xl sm:text-4xl font-extrabold text-gray-900 dark:text-gray-100 flex items-center">
           {Icon && <Icon className="mr-2 sm:mr-4 h-8 w-8 sm:h-10 sm:w-10 text-primary dark:text-primary-foreground" />}
           {title}
