@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { Dialog } from "@/components/ui/dialog";
 import { AggregatedInsumoNeed, GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations, MenuWithRelations, InsumoDeductionItem } from "@/types";
 import { format } from "date-fns";
-// Removed unused import: import { es } from "date-fns/locale"; 
+import { es } from "date-fns/locale"; 
 import { showError } from "@/utils/toast";
 import DeductQuantitiesDialog from "./DeductQuantitiesDialog";
 import UrgentPurchaseRequestDialog from "./UrgentPurchaseRequestDialog";
@@ -115,7 +115,8 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
         missing_quantity: 0,
         meal_service_id: item.meal_service_id,
         meal_service_name: item.meal_service_name,
-        hasBeenDeducted: false, // Initialize
+        deducted_quantity_for_prep: 0, // Initialize
+        deduction_status: 'pending', // Initialize
       };
 
       currentAggregatedEntry.total_needed_base_unit += item.total_needed_base_unit_for_item;
@@ -125,18 +126,39 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
       currentServiceGroup.insumos = Array.from(insumoNeedsMapForService.values()).map((entry: AggregatedInsumoNeed) => {
         const missing = Math.max(0, entry.total_needed_purchase_unit - entry.current_stock_quantity);
         
-        // NEW: Determine if this aggregated insumo need has been deducted
-        const hasBeenDeducted = existingDeductions?.some(deduction =>
-          deduction.insumo_id === entry.insumo_id &&
-          item.menu_id === deduction.menu_id 
-        ) || false;
+        let totalDeductedForThisAggregatedNeed = 0;
+        // Get all unique menu IDs that contribute to this aggregated need (insumo_id + meal_service_id)
+        const uniqueMenuIdsForThisAggregatedNeed = new Set(
+          allDeductionItems
+            .filter(item => item.insumo_id === entry.insumo_id && item.meal_service_id === entry.meal_service_id)
+            .map(item => item.menu_id)
+        );
+
+        // Sum deductions for this insumo across all relevant menus
+        uniqueMenuIdsForThisAggregatedNeed.forEach(menuId => {
+          existingDeductions?.filter(d => 
+            d.insumo_id === entry.insumo_id && 
+            d.menu_id === menuId &&
+            d.movement_type === 'daily_prep_out'
+          ).forEach(deduction => {
+            totalDeductedForThisAggregatedNeed += Math.abs(deduction.quantity_change);
+          });
+        });
+
+        let deductionStatus: AggregatedInsumoNeed['deduction_status'] = 'pending';
+        if (totalDeductedForThisAggregatedNeed >= entry.total_needed_purchase_unit) {
+          deductionStatus = 'fulfilled';
+        } else if (totalDeductedForThisAggregatedNeed > 0) {
+          deductionStatus = 'partial';
+        }
 
         return {
           ...entry,
           total_needed_base_unit: parseFloat(entry.total_needed_base_unit.toFixed(2)),
           total_needed_purchase_unit: parseFloat(entry.total_needed_purchase_unit.toFixed(2)),
           missing_quantity: parseFloat(missing.toFixed(2)),
-          hasBeenDeducted: hasBeenDeducted, // Set the flag
+          deducted_quantity_for_prep: parseFloat(totalDeductedForThisAggregatedNeed.toFixed(2)),
+          deduction_status: deductionStatus,
         };
       }).sort((a: AggregatedInsumoNeed, b: AggregatedInsumoNeed) => a.insumo_nombre.localeCompare(b.insumo_nombre));
     });

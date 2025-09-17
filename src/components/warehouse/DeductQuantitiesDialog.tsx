@@ -31,55 +31,37 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
   const [deductorName, setDeductorName] = useState("");
   const [deductionReason, setDeductionReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [quantitiesToDeduct, setQuantitiesToDeduct] = useState<Record<string, number>>({});
-
-  const insumosToProcess = useMemo(() => {
-    const aggregated = new Map<string, {
-      insumo_id: string;
-      insumo_nombre: string;
-      purchase_unit: string;
-      current_stock_quantity: number;
-      total_needed: number;
-      items: InsumoDeductionItem[];
-    }>();
-
+  // quantitiesToDeduct will now be keyed by unique_id
+  const [quantitiesToDeduct, setQuantitiesToDeduct] = useState<Record<string, number>>(() => {
+    const initialQuantities: Record<string, number> = {};
     selectedDeductionItems.forEach(item => {
-      if (!aggregated.has(item.insumo_id)) {
-        aggregated.set(item.insumo_id, {
-          insumo_id: item.insumo_id,
-          insumo_nombre: item.insumo_nombre,
-          purchase_unit: item.purchase_unit,
-          current_stock_quantity: item.current_stock_quantity,
-          total_needed: 0,
-          items: [],
-        });
-      }
-      const entry = aggregated.get(item.insumo_id)!;
-      entry.total_needed += item.total_needed_purchase_unit_for_item;
-      entry.items.push(item);
+      initialQuantities[item.unique_id] = parseFloat(item.total_needed_purchase_unit_for_item.toFixed(2));
     });
+    return initialQuantities;
+  });
 
-    return Array.from(aggregated.values()).map(entry => ({
-      ...entry,
-      total_needed: parseFloat(entry.total_needed.toFixed(2)),
-      quantity_to_deduct: quantitiesToDeduct[entry.insumo_id] !== undefined
-        ? quantitiesToDeduct[entry.insumo_id]
-        : parseFloat(entry.total_needed.toFixed(2)),
+  // itemsToProcess is now just the selectedDeductionItems with added quantity_to_deduct
+  const itemsToProcess = useMemo(() => {
+    return selectedDeductionItems.map(item => ({
+      ...item,
+      quantity_to_deduct: quantitiesToDeduct[item.unique_id] !== undefined
+        ? quantitiesToDeduct[item.unique_id]
+        : parseFloat(item.total_needed_purchase_unit_for_item.toFixed(2)),
     }));
   }, [selectedDeductionItems, quantitiesToDeduct]);
 
   const isAnyQuantityModified = useMemo(() => {
-    return insumosToProcess.some(insumo =>
-      quantitiesToDeduct[insumo.insumo_id] !== undefined &&
-      quantitiesToDeduct[insumo.insumo_id] !== insumo.total_needed
+    return itemsToProcess.some(item =>
+      quantitiesToDeduct[item.unique_id] !== undefined &&
+      quantitiesToDeduct[item.unique_id] !== item.total_needed_purchase_unit_for_item
     );
-  }, [insumosToProcess, quantitiesToDeduct]);
+  }, [itemsToProcess, quantitiesToDeduct]);
 
-  const handleQuantityChange = (insumoId: string, value: string) => {
+  const handleQuantityChange = (uniqueId: string, value: string) => {
     const numValue = parseFloat(value);
     setQuantitiesToDeduct(prev => ({
       ...prev,
-      [insumoId]: isNaN(numValue) ? 0 : numValue,
+      [uniqueId]: isNaN(numValue) ? 0 : numValue,
     }));
   };
 
@@ -98,30 +80,28 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
     }
 
     setIsSubmitting(true);
-    const deductionPromises = insumosToProcess.map(async (insumo) => {
-      if (insumo.quantity_to_deduct <= 0) {
-        return { success: true, message: `Insumo ${insumo.insumo_nombre} no deducido (cantidad 0).` };
+    const deductionPromises = itemsToProcess.map(async (item) => {
+      if (item.quantity_to_deduct <= 0) {
+        return { success: true, message: `Insumo ${item.insumo_nombre} para ${item.plato_nombre} (${item.meal_service_name}) no deducido (cantidad 0).` };
       }
-      if (insumo.quantity_to_deduct > insumo.current_stock_quantity) {
-        return { success: false, message: `Stock insuficiente para deducir ${insumo.quantity_to_deduct} ${insumo.purchase_unit} de ${insumo.insumo_nombre}. Stock actual: ${insumo.current_stock_quantity} ${insumo.purchase_unit}.` };
+      if (item.quantity_to_deduct > item.current_stock_quantity) {
+        return { success: false, message: `Stock insuficiente para deducir ${item.quantity_to_deduct} ${item.purchase_unit} de ${item.insumo_nombre}. Stock actual: ${item.current_stock_quantity} ${item.purchase_unit}.` };
       }
 
-      const detailedNotes = insumo.items.map(item =>
-        `Menú: ${item.menu_title} (${format(new Date(item.menu_date || selectedDate), "PPP", { locale: es })}) - Servicio: ${item.meal_service_name} - Receta: ${item.plato_nombre} - Cantidad necesaria: ${item.total_needed_purchase_unit_for_item} ${item.purchase_unit}`
-      ).join('; ');
+      const detailedNotes = `Menú: ${item.menu_title} (${format(new Date(item.menu_date || selectedDate), "PPP", { locale: es })}) - Servicio: ${item.meal_service_name} - Receta: ${item.plato_nombre} - Cantidad necesaria: ${item.total_needed_purchase_unit_for_item} ${item.purchase_unit}`;
 
       try {
         await createStockMovement({
           user_id: user.id,
-          insumo_id: insumo.insumo_id,
+          insumo_id: item.insumo_id,
           movement_type: 'daily_prep_out',
-          quantity_change: insumo.quantity_to_deduct,
+          quantity_change: item.quantity_to_deduct,
           notes: `Deducción para preparación diaria por ${deductorName}. ${deductionReason.trim() ? `Motivo de cambio: ${deductionReason}. ` : ''}Detalles: ${detailedNotes}`,
-          menu_id: null,
+          menu_id: item.menu_id, // Pass the specific menu_id for this granular item
         });
-        return { success: true, message: `Deducido ${insumo.quantity_to_deduct} ${insumo.purchase_unit} de ${insumo.insumo_nombre}.` };
+        return { success: true, message: `Deducido ${item.quantity_to_deduct} ${item.purchase_unit} de ${item.insumo_nombre} para ${item.plato_nombre} (${item.meal_service_name}).` };
       } catch (error: any) {
-        return { success: false, message: `Error al deducir ${insumo.insumo_nombre}: ${error.message}` };
+        return { success: false, message: `Error al deducir ${item.insumo_nombre} para ${item.plato_nombre} (${item.meal_service_name}): ${error.message}` };
       }
     });
 
@@ -132,9 +112,10 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
 
     if (successfulDeductions.length > 0) {
       toast.success(`Se dedujeron ${successfulDeductions.length} insumos exitosamente.`);
-      queryClient.invalidateQueries({ queryKey: ["stockMovements"] }); // NEW: Invalidate stock movements
-      queryClient.invalidateQueries({ queryKey: ["insumos"] }); // NEW: Invalidate insumos
-      queryClient.invalidateQueries({ queryKey: ["dailyPrepMenus"] }); // NEW: Invalidate daily prep menus
+      queryClient.invalidateQueries({ queryKey: ["stockMovements"] });
+      queryClient.invalidateQueries({ queryKey: ["insumos"] });
+      queryClient.invalidateQueries({ queryKey: ["dailyPrepDeductions"] }); // Invalidate daily prep deductions
+      queryClient.invalidateQueries({ queryKey: ["dailyPrepMenus"] });
     }
     if (failedDeductions.length > 0) {
       failedDeductions.forEach(f => toast.error(f.message));
@@ -173,26 +154,28 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead className="w-[200px]">Insumo</TableHead>
+                <TableHead className="w-[200px]">Insumo (Receta / Servicio)</TableHead> {/* Updated header */}
                 <TableHead className="text-right">Stock Actual</TableHead>
-                <TableHead className="text-right">Necesidad Total</TableHead>
+                <TableHead className="text-right">Necesidad</TableHead>
                 <TableHead className="text-right">Cantidad a Deducir</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              {insumosToProcess.map((insumo) => (
-                <TableRow key={insumo.insumo_id}>
-                  <TableCell className="font-medium">{insumo.insumo_nombre}</TableCell>
-                  <TableCell className="text-right">{insumo.current_stock_quantity.toFixed(2)} {insumo.purchase_unit}</TableCell>
-                  <TableCell className="text-right">{insumo.total_needed.toFixed(2)} {insumo.purchase_unit}</TableCell>
+              {itemsToProcess.map((item) => ( // Iterate over itemsToProcess
+                <TableRow key={item.unique_id}>
+                  <TableCell className="font-medium">
+                    {item.insumo_nombre} ({item.plato_nombre} / {item.meal_service_name})
+                  </TableCell>
+                  <TableCell className="text-right">{item.current_stock_quantity.toFixed(2)} {item.purchase_unit}</TableCell>
+                  <TableCell className="text-right">{item.total_needed_purchase_unit_for_item.toFixed(2)} {item.purchase_unit}</TableCell>
                   <TableCell className="text-right">
                     <Input
                       type="number"
-                      value={insumo.quantity_to_deduct}
-                      onChange={(e) => handleQuantityChange(insumo.insumo_id, e.target.value)}
+                      value={item.quantity_to_deduct}
+                      onChange={(e) => handleQuantityChange(item.unique_id, e.target.value)}
                       className="w-28 text-right"
                       min="0"
-                      max={insumo.current_stock_quantity}
+                      max={item.current_stock_quantity}
                       step="0.01"
                     />
                   </TableCell>

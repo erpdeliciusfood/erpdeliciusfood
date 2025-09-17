@@ -32,8 +32,17 @@ const DailyPrepInsumoRow: React.FC<DailyPrepInsumoRowProps> = ({
     : 100;
   const progressColor = isSufficient ? "bg-green-500" : "bg-red-500";
 
-  const allGranularItemsForThisNeed = allDeductionItems.filter(item => item.insumo_id === need.insumo_id && item.meal_service_id === need.meal_service_id);
-  const isAggregatedSelected = allGranularItemsForThisNeed.length > 0 && allGranularItemsForThisNeed.every(item => selectedDeductionItemIds.has(item.unique_id));
+  // Determine if all granular items contributing to this aggregated need are selected
+  const allGranularItemsForThisAggregatedNeed = allDeductionItems.filter(item => 
+    item.insumo_id === need.insumo_id && 
+    item.meal_service_id === need.meal_service_id
+  );
+  const isAggregatedSelected = allGranularItemsForThisAggregatedNeed.length > 0 && 
+                              allGranularItemsForThisAggregatedNeed.every(item => selectedDeductionItemIds.has(item.unique_id));
+
+  const isFulfilled = need.deduction_status === 'fulfilled';
+  const isPartial = need.deduction_status === 'partial';
+  const isPending = need.deduction_status === 'pending';
 
   return (
     <TableRow
@@ -41,7 +50,8 @@ const DailyPrepInsumoRow: React.FC<DailyPrepInsumoRowProps> = ({
       className={cn(
         "border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out",
         !isSufficient && "bg-red-50/50 dark:bg-red-900/20",
-        need.hasBeenDeducted && "bg-green-50/50 dark:bg-green-900/20" // NEW: Highlight if already deducted
+        isFulfilled && "bg-green-50/50 dark:bg-green-900/20", // Highlight if fulfilled
+        isPartial && "bg-yellow-50/50 dark:bg-yellow-900/20" // Highlight if partial
       )}
     >
       <TableCell className="text-center py-3 px-6">
@@ -49,7 +59,7 @@ const DailyPrepInsumoRow: React.FC<DailyPrepInsumoRowProps> = ({
           checked={isAggregatedSelected}
           onCheckedChange={(checked: boolean) => {
             const newSelected = new Set(selectedDeductionItemIds);
-            allGranularItemsForThisNeed.forEach(item => {
+            allGranularItemsForThisAggregatedNeed.forEach(item => {
               if (checked) {
                 newSelected.add(item.unique_id);
               } else {
@@ -58,20 +68,32 @@ const DailyPrepInsumoRow: React.FC<DailyPrepInsumoRowProps> = ({
             });
             setSelectedDeductionItemIds(newSelected);
           }}
-          disabled={need.total_needed_purchase_unit === 0 || need.hasBeenDeducted} // NEW: Disable if already deducted
+          disabled={need.total_needed_purchase_unit === 0 || isFulfilled} // Disable if fulfilled
         />
       </TableCell>
       <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[180px]">
         <div className="flex items-center">
           {need.insumo_nombre}
-          {need.hasBeenDeducted && ( // NEW: Show checkmark if deducted
+          {isFulfilled && (
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
                   <CheckCircle2 className="ml-2 h-5 w-5 text-green-600" />
                 </TooltipTrigger>
                 <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                  <p>Este insumo ya fue deducido para este servicio.</p>
+                  <p>Deducido completamente.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+          {isPartial && (
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info className="ml-2 h-5 w-5 text-yellow-600" />
+                </TooltipTrigger>
+                <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
+                  <p>Deducido parcialmente. Cantidad deducida: {need.deducted_quantity_for_prep} {need.purchase_unit}</p>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -91,7 +113,7 @@ const DailyPrepInsumoRow: React.FC<DailyPrepInsumoRowProps> = ({
                 />
               </TooltipTrigger>
               <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
-                <p>{progressValue.toFixed(0)}% Cubierto</p>
+                  <p>{progressValue.toFixed(0)}% Cubierto</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -133,16 +155,28 @@ const DailyPrepInsumoRow: React.FC<DailyPrepInsumoRowProps> = ({
         )}
       </TableCell>
       <TableCell className="text-center py-3 px-6 min-w-[150px]">
-        {isSufficient && need.total_needed_purchase_unit > 0 && (
+        {isSufficient && isPending && need.total_needed_purchase_unit > 0 && ( // Only show if sufficient and pending
           <Button
             variant="default"
             size="sm"
             onClick={() => handleSendToKitchen(need)}
             className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200 ease-in-out mr-2"
-            disabled={need.hasBeenDeducted} // NEW: Disable if already deducted
+            disabled={isFulfilled} // Disable if fulfilled
           >
             <ChefHat className="mr-1 h-4 w-4" />
             Enviar a Cocina
+          </Button>
+        )}
+        {isSufficient && isPartial && need.total_needed_purchase_unit > need.deducted_quantity_for_prep && ( // If partial, still allow sending remaining
+          <Button
+            variant="default"
+            size="sm"
+            onClick={() => handleSendToKitchen(need)}
+            className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200 ease-in-out mr-2"
+            disabled={isFulfilled} // Disable if fulfilled
+          >
+            <ChefHat className="mr-1 h-4 w-4" />
+            Enviar Restante
           </Button>
         )}
         {!isSufficient && need.missing_quantity > 0 && (
@@ -151,7 +185,7 @@ const DailyPrepInsumoRow: React.FC<DailyPrepInsumoRowProps> = ({
             size="sm"
             onClick={() => handleOpenUrgentPurchaseRequestDialog(need)}
             className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white transition-colors duration-200 ease-in-out"
-            disabled={need.hasBeenDeducted} // NEW: Disable if already deducted
+            disabled={isFulfilled} // Disable if fulfilled
           >
             <ShoppingBag className="mr-1 h-4 w-4" />
             Solicitar Urgente
