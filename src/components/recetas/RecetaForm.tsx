@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { useForm, useFieldArray } from "react-hook-form";
+import { useForm, useFieldArray, FieldArrayWithId } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Button } from "@/components/ui/button";
@@ -232,7 +232,7 @@ const RecetaForm: React.FC<RecetaFormProps> = ({ initialData, onSuccess, onCance
               <CardTitle className="text-xl font-bold text-gray-900 dark:text-gray-100">Insumos de la Receta</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
-              {fields.map((field, index) => (
+              {fields.map((field: FieldArrayWithId<RecetaFormValues, "insumos", "id">, index: number) => (
                 <div key={field.id} className="flex flex-col md:flex-row gap-4 items-end border-b pb-4 last:border-b-0 last:pb-0">
                   <FormField
                     control={form.control}
