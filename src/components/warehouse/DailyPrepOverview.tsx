@@ -27,10 +27,9 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   const [insumosForSingleDeduction, setInsumosForSingleDeduction] = useState<InsumoDeductionItem[]>([]);
   const [isSingleDeductionDialogOpen, setIsSingleDeductionDialogOpen] = useState(false);
 
-  const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd");
+  const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd", { locale: es });
   const menuIdsForDate = useMemo(() => menus.map(menu => menu.id), [menus]);
 
-  // NEW: Fetch existing daily prep deductions for the selected date and menus
   const { data: existingDeductions } = useDailyPrepDeductions(formattedSelectedDate, menuIdsForDate);
 
   const allDeductionItems: InsumoDeductionItem[] = useMemo(() => {
