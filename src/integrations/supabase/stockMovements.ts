@@ -115,3 +115,15 @@ export const createStockMovement = async (
 
   return newMovement;
 };
+
+export const getDailyPrepDeductionsForDate = async (date: string, menuIds: string[]): Promise<StockMovement[]> => {
+  const { data, error } = await supabase
+    .from("stock_movements")
+    .select("id, insumo_id, menu_id, movement_type, quantity_change")
+    .eq("movement_type", "daily_prep_out")
+    .eq("created_at::date", date) // Filter by date part only
+    .in("menu_id", menuIds);
+
+  if (error) throw new Error(error.message);
+  return data;
+};

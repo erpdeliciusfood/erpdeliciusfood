@@ -1,5 +1,5 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
-import { getStockMovements, createStockMovement } from "@/integrations/supabase/stockMovements";
+import { getStockMovements, createStockMovement, getDailyPrepDeductionsForDate } from "@/integrations/supabase/stockMovements";
 import { StockMovement, StockMovementFormValues } from "@/types/index";
 import { showSuccess, showError, showLoading, dismissToast } from "@/utils/toast";
 import { useSession } from "@/contexts/SessionContext"; // NEW: Import useSession
@@ -8,6 +8,19 @@ export const useStockMovements = () => {
   return useQuery<StockMovement[], Error>({
     queryKey: ["stockMovements"],
     queryFn: getStockMovements,
+  });
+};
+
+export const useDailyPrepDeductions = (date: string | undefined, menuIds: string[] | undefined) => {
+  return useQuery<StockMovement[], Error>({
+    queryKey: ["dailyPrepDeductions", date, menuIds],
+    queryFn: () => {
+      if (!date || !menuIds || menuIds.length === 0) {
+        return Promise.resolve([]);
+      }
+      return getDailyPrepDeductionsForDate(date, menuIds);
+    },
+    enabled: !!date && !!menuIds && menuIds.length > 0,
   });
 };
 
@@ -30,6 +43,8 @@ export const useAddStockMovement = () => {
       dismissToast(context.toastId);
       queryClient.invalidateQueries({ queryKey: ["stockMovements"] });
       queryClient.invalidateQueries({ queryKey: ["insumos"] }); // Invalidate insumos to reflect stock changes
+      queryClient.invalidateQueries({ queryKey: ["dailyPrepDeductions"] }); // NEW: Invalidate daily prep deductions
+      queryClient.invalidateQueries({ queryKey: ["dailyPrepMenus"] }); // Invalidate daily prep menus
       showSuccess("Movimiento de stock registrado exitosamente.");
     },
     onError: (error, __, context) => {

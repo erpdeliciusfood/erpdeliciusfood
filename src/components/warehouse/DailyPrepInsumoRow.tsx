@@ -40,7 +40,8 @@ const DailyPrepInsumoRow: React.FC<DailyPrepInsumoRowProps> = ({
       key={need.insumo_id}
       className={cn(
         "border-b last:border-b-0 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-150 ease-in-out",
-        !isSufficient && "bg-red-50/50 dark:bg-red-900/20"
+        !isSufficient && "bg-red-50/50 dark:bg-red-900/20",
+        need.hasBeenDeducted && "bg-green-50/50 dark:bg-green-900/20" // NEW: Highlight if already deducted
       )}
     >
       <TableCell className="text-center py-3 px-6">
@@ -57,10 +58,26 @@ const DailyPrepInsumoRow: React.FC<DailyPrepInsumoRowProps> = ({
             });
             setSelectedDeductionItemIds(newSelected);
           }}
-          disabled={need.total_needed_purchase_unit === 0}
+          disabled={need.total_needed_purchase_unit === 0 || need.hasBeenDeducted} // NEW: Disable if already deducted
         />
       </TableCell>
-      <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[180px]">{need.insumo_nombre}</TableCell>
+      <TableCell className="font-medium text-base text-gray-800 dark:text-gray-200 py-3 px-6 text-left min-w-[180px]">
+        <div className="flex items-center">
+          {need.insumo_nombre}
+          {need.hasBeenDeducted && ( // NEW: Show checkmark if deducted
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <CheckCircle2 className="ml-2 h-5 w-5 text-green-600" />
+                </TooltipTrigger>
+                <TooltipContent className="text-base p-2 bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-md shadow-lg">
+                  <p>Este insumo ya fue deducido para este servicio.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          )}
+        </div>
+      </TableCell>
       <TableCell className="text-right text-base text-gray-700 dark:text-gray-300 py-3 px-6 min-w-[150px]">
         <div className="flex flex-col items-end">
           <span className="font-semibold">{need.current_stock_quantity.toFixed(2)} {need.purchase_unit}</span>
@@ -122,6 +139,7 @@ const DailyPrepInsumoRow: React.FC<DailyPrepInsumoRowProps> = ({
             size="sm"
             onClick={() => handleSendToKitchen(need)}
             className="px-3 py-1 text-sm bg-blue-600 hover:bg-blue-700 text-white transition-colors duration-200 ease-in-out mr-2"
+            disabled={need.hasBeenDeducted} // NEW: Disable if already deducted
           >
             <ChefHat className="mr-1 h-4 w-4" />
             Enviar a Cocina
@@ -133,6 +151,7 @@ const DailyPrepInsumoRow: React.FC<DailyPrepInsumoRowProps> = ({
             size="sm"
             onClick={() => handleOpenUrgentPurchaseRequestDialog(need)}
             className="px-3 py-1 text-sm bg-red-500 hover:bg-red-600 text-white transition-colors duration-200 ease-in-out"
+            disabled={need.hasBeenDeducted} // NEW: Disable if already deducted
           >
             <ShoppingBag className="mr-1 h-4 w-4" />
             Solicitar Urgente

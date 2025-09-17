@@ -177,6 +177,7 @@ export interface AggregatedInsumoNeed {
   missing_quantity: number;
   meal_service_id: string; // Added for grouping
   meal_service_name: string; // Added for grouping
+  hasBeenDeducted: boolean; // NEW: Flag to indicate if this insumo for this service has been deducted
 }
 
 // NEW: Type for a single, granular insumo deduction item

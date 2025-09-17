@@ -10,6 +10,7 @@ import DeductQuantitiesDialog from "./DeductQuantitiesDialog";
 import UrgentPurchaseRequestDialog from "./UrgentPurchaseRequestDialog";
 import DailyPrepOverviewCards from "./DailyPrepOverviewCards";
 import DailyPrepOverviewTable from "./DailyPrepOverviewTable";
+import { useDailyPrepDeductions } from "@/hooks/useStockMovements"; // NEW: Import useDailyPrepDeductions
 
 interface DailyPrepOverviewProps {
   selectedDate: Date;
@@ -26,6 +27,11 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   const [insumosForSingleDeduction, setInsumosForSingleDeduction] = useState<InsumoDeductionItem[]>([]);
   const [isSingleDeductionDialogOpen, setIsSingleDeductionDialogOpen] = useState(false);
 
+  const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd");
+  const menuIdsForDate = useMemo(() => menus.map(menu => menu.id), [menus]);
+
+  // NEW: Fetch existing daily prep deductions for the selected date and menus
+  const { data: existingDeductions, isLoading: isLoadingDeductions } = useDailyPrepDeductions(formattedSelectedDate, menuIdsForDate);
 
   const allDeductionItems: InsumoDeductionItem[] = useMemo(() => {
     const items: InsumoDeductionItem[] = [];
@@ -109,6 +115,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
         missing_quantity: 0,
         meal_service_id: item.meal_service_id,
         meal_service_name: item.meal_service_name,
+        hasBeenDeducted: false, // Initialize
       };
 
       currentAggregatedEntry.total_needed_base_unit += item.total_needed_base_unit_for_item;
@@ -117,11 +124,19 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
       currentServiceGroup.insumos = Array.from(insumoNeedsMapForService.values()).map((entry: AggregatedInsumoNeed) => {
         const missing = Math.max(0, entry.total_needed_purchase_unit - entry.current_stock_quantity);
+        
+        // NEW: Determine if this aggregated insumo need has been deducted
+        const hasBeenDeducted = existingDeductions?.some(deduction =>
+          deduction.insumo_id === entry.insumo_id &&
+          deduction.menu_id === menu.id // Check against the menu ID from the current iteration
+        ) || false;
+
         return {
           ...entry,
           total_needed_base_unit: parseFloat(entry.total_needed_base_unit.toFixed(2)),
           total_needed_purchase_unit: parseFloat(entry.total_needed_purchase_unit.toFixed(2)),
           missing_quantity: parseFloat(missing.toFixed(2)),
+          hasBeenDeducted: hasBeenDeducted, // Set the flag
         };
       }).sort((a: AggregatedInsumoNeed, b: AggregatedInsumoNeed) => a.insumo_nombre.localeCompare(b.insumo_nombre));
     });
@@ -141,7 +156,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     })).filter((group: GroupedInsumoNeeds) => group.insumos.length > 0);
 
     return filteredGroupedNeeds;
-  }, [allDeductionItems, stockFilter]);
+  }, [allDeductionItems, stockFilter, existingDeductions, menus]);
 
 
   const handleOpenDeductQuantitiesDialog = () => {
@@ -211,8 +226,6 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     (item: InsumoDeductionItem) => item.current_stock_quantity < item.total_needed_purchase_unit_for_item
   ).length;
 
-  const formattedDate = format(selectedDate, "PPP", { locale: es });
-
   const isDeductButtonDisabled =
     selectedDeductionItemIds.size === 0 ||
     allDeductionItems.filter((item: InsumoDeductionItem) => selectedDeductionItemIds.has(item.unique_id) && item.current_stock_quantity < item.total_needed_purchase_unit_for_item).length > 0;
@@ -228,7 +241,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
       />
 
       <DailyPrepOverviewTable
-        formattedDate={formattedDate}
+        formattedDate={formattedSelectedDate}
         groupedForDisplay={groupedForDisplay}
         allDeductionItems={allDeductionItems}
         selectedDeductionItemIds={selectedDeductionItemIds}
@@ -246,7 +259,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
         <DeductQuantitiesDialog
           selectedDeductionItems={selectedInsumosForDialog}
           selectedDate={selectedDate}
-          onClose={handleCloseDeductQuantitiesDialog}
+          onClose={handleCloseDeductionQuantitiesDialog}
         />
       </Dialog>
 
