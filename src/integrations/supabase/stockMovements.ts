@@ -1,6 +1,6 @@
 import { supabase } from "@/integrations/supabase/client";
 import { StockMovement, StockMovementFormValues } from "@/types/index";
-import { PostgrestError } from "@supabase/supabase-js"; // Import PostgrestError
+import { PostgrestError } from "@supabase/supabase-js";
 
 // Define a local type for the menu data fetched in this specific context
 type MenuDetailsForStockMovement = {
@@ -20,12 +20,17 @@ export const getStockMovements = async (): Promise<StockMovement[]> => {
 };
 
 export const getDailyPrepDeductionsForDate = async (date: string, menuIds: string[]): Promise<StockMovement[]> => {
+  // Assuming 'date' is in 'yyyy-MM-dd' format
+  const startOfDay = `${date}T00:00:00.000Z`;
+  const endOfDay = `${date}T23:59:59.999Z`;
+
   const { data, error } = await supabase
     .from("stock_movements")
     .select("*, insumos(id, nombre, purchase_unit, base_unit, conversion_factor)")
     .eq("movement_type", "daily_prep_out")
-    .eq("created_at", date) // Assuming 'created_at' stores the date of deduction
-    .in("menu_id", menuIds); // Filter by the specific menu IDs
+    .gte("created_at", startOfDay) // Filter from start of the day
+    .lte("created_at", endOfDay)   // Filter to end of the day
+    .in("menu_id", menuIds);
 
   if (error) throw new Error(error.message);
   return data;
@@ -51,7 +56,6 @@ export const createStockMovement = async (
   }
 
   // Call the RPC function to update insumo quantities
-  // Expect a single Insumo object or null, not an array
   const { data: updatedInsumo, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
     insumo_id_param: insumo_id,
     pending_delivery_change: pendingDeliveryChange,
@@ -63,16 +67,12 @@ export const createStockMovement = async (
     throw new Error(`Error updating insumo quantities via RPC: ${updateInsumoError.message}`);
   }
   
-  // Check if the RPC returned a valid insumo object
   if (!updatedInsumo) {
     throw new Error(`Failed to retrieve updated insumo data after RPC call for insumo_id: ${insumo_id}. The insumo might not exist or the update failed.`);
   }
 
-  // updatedInsumo is already the single object, no need for [0]
-
   let finalNotes = notes;
   if (movement_type === 'daily_prep_out' && menu_id) {
-    // Fetch menu details to include in notes for daily_prep_out
     const { data: menuData, error: menuError } = await supabase
       .from('menus')
       .select('title, menu_date, event_types(name)')
@@ -93,8 +93,6 @@ export const createStockMovement = async (
         menuIdentifier = `para el evento '${eventTypeName}'`;
       }
 
-      // Corrected: finalNotes should be constructed from the notes passed in movementData
-      // and additional details, not from non-existent local variables.
       finalNotes = `Salida por preparación diaria para el menú '${menuTitle}' ${menuIdentifier}. ${notes || ''}`;
     }
   }
