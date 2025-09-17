@@ -44,6 +44,8 @@ const DailyPrepInsumoRow: React.FC<DailyPrepInsumoRowProps> = ({
   const isPartial = need.deduction_status === 'partial';
   const isPending = need.deduction_status === 'pending';
 
+  console.log(`Insumo: ${need.insumo_nombre}, Service: ${need.meal_service_name}, Deduction Status: ${need.deduction_status}, Deducted Qty: ${need.deducted_quantity_for_prep}`);
+
   return (
     <TableRow
       key={need.insumo_id}

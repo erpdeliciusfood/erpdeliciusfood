@@ -30,8 +30,8 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd");
   const menuIdsForDate = useMemo(() => menus.map(menu => menu.id), [menus]);
 
-  // NEW: Fetch existing daily prep deductions for the selected date and menus
-  const { data: existingDeductions } = useDailyPrepDeductions(formattedSelectedDate, menuIdsForDate);
+  const { data: existingDeductions, isLoading: isLoadingDeductions } = useDailyPrepDeductions(formattedSelectedDate, menuIdsForDate);
+  console.log("DailyPrepOverview - existingDeductions:", existingDeductions);
 
   const allDeductionItems: InsumoDeductionItem[] = useMemo(() => {
     const items: InsumoDeductionItem[] = [];
@@ -83,6 +83,8 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
     return items.sort((a, b) => a.insumo_nombre.localeCompare(b.insumo_nombre));
   }, [menus]);
+  console.log("DailyPrepOverview - allDeductionItems:", allDeductionItems);
+
 
   const groupedForDisplay: GroupedInsumoNeeds[] = useMemo(() => {
     const serviceGroupsMap = new Map<string, GroupedInsumoNeeds>();
@@ -179,6 +181,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
 
     return filteredGroupedNeeds;
   }, [allDeductionItems, stockFilter, existingDeductions, menus]);
+  console.log("DailyPrepOverview - groupedForDisplay:", groupedForDisplay);
 
 
   const handleOpenDeductQuantitiesDialog = () => {
