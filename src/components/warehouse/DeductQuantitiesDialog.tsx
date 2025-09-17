@@ -1,44 +1,70 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo, useEffect } from "react"; // NEW: Import useEffect
 import { DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { InsumoDeductionItem } from "@/types";
+import { AggregatedInsumoNeed, InsumoDeductionItem } from "@/types"; // NEW: Import AggregatedInsumoNeed
 import { createStockMovement } from "@/integrations/supabase/stockMovements";
 import { useSession } from "@/contexts/SessionContext";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 import { Textarea } from "@/components/ui/textarea";
-import { useQueryClient } from "@tanstack/react-query"; // NEW: Import useQueryClient
+import { useQueryClient } from "@tanstack/react-query";
 
 interface DeductQuantitiesDialogProps {
   selectedDeductionItems: InsumoDeductionItem[];
   selectedDate: Date;
   onClose: () => void;
+  aggregatedNeed: AggregatedInsumoNeed | null; // NEW: Optional aggregated need
 }
 
 const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
   selectedDeductionItems,
   selectedDate,
   onClose,
+  aggregatedNeed, // NEW: Destructure aggregatedNeed
 }) => {
   const { user } = useSession();
-  const queryClient = useQueryClient(); // NEW: Initialize queryClient
+  const queryClient = useQueryClient();
   const [deductorName, setDeductorName] = useState("");
   const [deductionReason, setDeductionReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  // quantitiesToDeduct will now be keyed by unique_id
+  
   const [quantitiesToDeduct, setQuantitiesToDeduct] = useState<Record<string, number>>(() => {
     const initialQuantities: Record<string, number> = {};
     selectedDeductionItems.forEach(item => {
-      initialQuantities[item.unique_id] = parseFloat(item.total_needed_purchase_unit_for_item.toFixed(2));
+      // If it's a single aggregated need, pre-fill with remaining needed quantity
+      if (aggregatedNeed) {
+        const remainingNeeded = aggregatedNeed.total_needed_purchase_unit - aggregatedNeed.deducted_quantity_for_prep;
+        initialQuantities[item.unique_id] = parseFloat(Math.max(0, remainingNeeded).toFixed(2));
+      } else {
+        // For batch deduction, pre-fill with total needed for each item
+        initialQuantities[item.unique_id] = parseFloat(item.total_needed_purchase_unit_for_item.toFixed(2));
+      }
     });
     return initialQuantities;
   });
+
+  // Recalculate quantitiesToDeduct if selectedDeductionItems or aggregatedNeed changes
+  useEffect(() => {
+    setQuantitiesToDeduct(() => {
+      const newQuantities: Record<string, number> = {};
+      selectedDeductionItems.forEach(item => {
+        if (aggregatedNeed) {
+          const remainingNeeded = aggregatedNeed.total_needed_purchase_unit - aggregatedNeed.deducted_quantity_for_prep;
+          newQuantities[item.unique_id] = parseFloat(Math.max(0, remainingNeeded).toFixed(2));
+        } else {
+          newQuantities[item.unique_id] = parseFloat(item.total_needed_purchase_unit_for_item.toFixed(2));
+        }
+      });
+      return newQuantities;
+    });
+  }, [selectedDeductionItems, aggregatedNeed]);
+
 
   // itemsToProcess is now just the selectedDeductionItems with added quantity_to_deduct
   const itemsToProcess = useMemo(() => {
@@ -46,16 +72,18 @@ const DeductQuantitiesDialog: React.FC<DeductQuantitiesDialogProps> = ({
       ...item,
       quantity_to_deduct: quantitiesToDeduct[item.unique_id] !== undefined
         ? quantitiesToDeduct[item.unique_id]
-        : parseFloat(item.total_needed_purchase_unit_for_item.toFixed(2)),
+        : (aggregatedNeed ? parseFloat(Math.max(0, aggregatedNeed.total_needed_purchase_unit - aggregatedNeed.deducted_quantity_for_prep).toFixed(2)) : parseFloat(item.total_needed_purchase_unit_for_item.toFixed(2))),
     }));
-  }, [selectedDeductionItems, quantitiesToDeduct]);
+  }, [selectedDeductionItems, quantitiesToDeduct, aggregatedNeed]);
 
   const isAnyQuantityModified = useMemo(() => {
-    return itemsToProcess.some(item =>
-      quantitiesToDeduct[item.unique_id] !== undefined &&
-      quantitiesToDeduct[item.unique_id] !== item.total_needed_purchase_unit_for_item
-    );
-  }, [itemsToProcess, quantitiesToDeduct]);
+    return itemsToProcess.some(item => {
+      const initialValue = aggregatedNeed 
+        ? parseFloat(Math.max(0, aggregatedNeed.total_needed_purchase_unit - aggregatedNeed.deducted_quantity_for_prep).toFixed(2))
+        : parseFloat(item.total_needed_purchase_unit_for_item.toFixed(2));
+      return quantitiesToDeduct[item.unique_id] !== undefined && quantitiesToDeduct[item.unique_id] !== initialValue;
+    });
+  }, [itemsToProcess, quantitiesToDeduct, aggregatedNeed]);
 
   const handleQuantityChange = (uniqueId: string, value: string) => {
     const numValue = parseFloat(value);

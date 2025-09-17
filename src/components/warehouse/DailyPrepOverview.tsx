@@ -25,6 +25,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   const [selectedInsumoForUrgentRequest, setSelectedInsumoForUrgentRequest] = useState<AggregatedInsumoNeed | null>(null);
 
   const [insumosForSingleDeduction, setInsumosForSingleDeduction] = useState<InsumoDeductionItem[]>([]);
+  const [selectedAggregatedNeedForSingleDeduction, setSelectedAggregatedNeedForSingleDeduction] = useState<AggregatedInsumoNeed | null>(null); // NEW state
   const [isSingleDeductionDialogOpen, setIsSingleDeductionDialogOpen] = useState(false);
 
   const formattedSelectedDate = format(selectedDate, "yyyy-MM-dd", { locale: es });
@@ -217,6 +218,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   };
 
   const handleSendToKitchen = (insumoNeed: AggregatedInsumoNeed) => {
+    // Filter all granular items that belong to this aggregated need
     const itemsToDeduct = allDeductionItems.filter(
       (item: InsumoDeductionItem) =>
         item.insumo_id === insumoNeed.insumo_id &&
@@ -234,12 +236,14 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     }
 
     setInsumosForSingleDeduction(itemsToDeduct);
+    setSelectedAggregatedNeedForSingleDeduction(insumoNeed); // Set the aggregated need
     setIsSingleDeductionDialogOpen(true);
   };
 
   const handleCloseSingleDeductionDialog = () => {
     setIsSingleDeductionDialogOpen(false);
     setInsumosForSingleDeduction([]);
+    setSelectedAggregatedNeedForSingleDeduction(null); // Clear the aggregated need
   };
 
 
@@ -281,6 +285,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
           selectedDeductionItems={selectedInsumosForDialog}
           selectedDate={selectedDate}
           onClose={handleCloseDeductQuantitiesDialog}
+          aggregatedNeed={null} // No specific aggregated need for batch deduction
         />
       </Dialog>
 
@@ -289,6 +294,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
           selectedDeductionItems={insumosForSingleDeduction}
           selectedDate={selectedDate}
           onClose={handleCloseSingleDeductionDialog}
+          aggregatedNeed={selectedAggregatedNeedForSingleDeduction} // Pass the aggregated need
         />
       </Dialog>
 
