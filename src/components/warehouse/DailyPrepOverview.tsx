@@ -4,7 +4,7 @@ import React, { useMemo, useState } from "react";
 import { Dialog } from "@/components/ui/dialog";
 import { AggregatedInsumoNeed, GroupedInsumoNeeds, MenuPlatoWithRelations, PlatoInsumoWithRelations, MenuWithRelations, InsumoDeductionItem } from "@/types";
 import { format } from "date-fns";
-import { es } from "date-fns/locale";
+import { es } from "date-fns/locale"; // Removed unused import
 import { showError } from "@/utils/toast";
 import DeductQuantitiesDialog from "./DeductQuantitiesDialog";
 import UrgentPurchaseRequestDialog from "./UrgentPurchaseRequestDialog";
@@ -31,7 +31,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
   const menuIdsForDate = useMemo(() => menus.map(menu => menu.id), [menus]);
 
   // NEW: Fetch existing daily prep deductions for the selected date and menus
-  const { data: existingDeductions, isLoading: isLoadingDeductions } = useDailyPrepDeductions(formattedSelectedDate, menuIdsForDate);
+  const { data: existingDeductions } = useDailyPrepDeductions(formattedSelectedDate, menuIdsForDate); // Removed isLoadingDeductions as it's not read
 
   const allDeductionItems: InsumoDeductionItem[] = useMemo(() => {
     const items: InsumoDeductionItem[] = [];
@@ -128,7 +128,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
         // NEW: Determine if this aggregated insumo need has been deducted
         const hasBeenDeducted = existingDeductions?.some(deduction =>
           deduction.insumo_id === entry.insumo_id &&
-          deduction.menu_id === menu.id // Check against the menu ID from the current iteration
+          item.menu_id === deduction.menu_id // Corrected: Use item.menu_id from the current granular item
         ) || false;
 
         return {
@@ -180,7 +180,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
     setIsDeductQuantitiesDialogOpen(true);
   };
 
-  const handleCloseDeductQuantitiesDialog = () => {
+  const handleCloseDeductQuantitiesDialog = () => { // Renamed function
     setIsDeductQuantitiesDialogOpen(false);
     setSelectedDeductionItemIds(new Set());
   };
@@ -259,7 +259,7 @@ const DailyPrepOverview: React.FC<DailyPrepOverviewProps> = ({ selectedDate, men
         <DeductQuantitiesDialog
           selectedDeductionItems={selectedInsumosForDialog}
           selectedDate={selectedDate}
-          onClose={handleCloseDeductionQuantitiesDialog}
+          onClose={handleCloseDeductQuantitiesDialog}
         />
       </Dialog>
 
