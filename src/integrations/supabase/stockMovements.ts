@@ -46,7 +46,8 @@ export const createStockMovement = async (
   });
 
   // Call the RPC function to update insumo quantities
-  const { data: updatedInsumoArray, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
+  // Expect a single Insumo object or null, not an array
+  const { data: updatedInsumo, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
     insumo_id_param: insumo_id,
     pending_delivery_change: pendingDeliveryChange,
     pending_reception_change: pendingReceptionChange,
@@ -58,15 +59,15 @@ export const createStockMovement = async (
     throw new Error(`Error updating insumo quantities via RPC: ${updateInsumoError.message}`);
   }
   
-  console.log("RPC 'update_insumo_quantities' returned:", updatedInsumoArray);
+  console.log("RPC 'update_insumo_quantities' returned:", updatedInsumo);
 
-  // Check if the RPC returned any data. If not, it means the insumo was not found or updated.
-  if (!updatedInsumoArray || updatedInsumoArray.length === 0 || updatedInsumoArray[0] === null || updatedInsumoArray[0] === undefined) {
-    console.error("RPC returned no valid data for insumo_id:", insumo_id, "Data received:", updatedInsumoArray);
+  // Check if the RPC returned a valid insumo object
+  if (!updatedInsumo) {
+    console.error("RPC returned no valid data for insumo_id:", insumo_id, "Data received:", updatedInsumo);
     throw new Error(`Failed to retrieve updated insumo data after RPC call for insumo_id: ${insumo_id}. The insumo might not exist or the update failed.`);
   }
 
-  const updatedInsumo = updatedInsumoArray[0]; // The RPC returns an array, take the first element
+  // updatedInsumo is already the single object, no need for [0]
 
   let finalNotes = notes;
   if (movement_type === 'daily_prep_out' && menu_id) {
