@@ -54,8 +54,6 @@ serve(async (req: Request) => {
       });
     }
 
-    console.log(`Generating quebrado report for user ${user.id} from ${startDate} to ${endDate}.`);
-
     // Use supabaseAdmin to bypass RLS for fetching all necessary data
     const supabaseAdmin = createClient(
       Deno.env.get('SUPABASE_URL') ?? '',

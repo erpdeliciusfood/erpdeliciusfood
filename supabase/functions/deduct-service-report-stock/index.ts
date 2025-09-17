@@ -1,4 +1,7 @@
+/// <reference lib="deno.ns" />
+// @deno-types="https://deno.land/std@0.190.0/http/server.d.ts"
 import { serve } from "https://deno.land/std@0.190.0/http/server.ts";
+// @deno-types="npm:@supabase/supabase-js@2.45.0"
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.45.0';
 
 const corsHeaders = {
@@ -46,7 +49,6 @@ serve(async (req: Request) => {
       .eq('service_report_id', service_report_id);
 
     if (srpError) {
-      console.error('Error fetching service report platos:', srpError);
       return new Response(JSON.stringify({ error: srpError.message }), {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' },
         status: 500,
@@ -128,7 +130,6 @@ serve(async (req: Request) => {
         .upsert(updates, { onConflict: 'id' });
 
       if (updateError) {
-        console.error('Error updating insumo stock:', updateError);
         return new Response(JSON.stringify({ error: updateError.message }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 500,
@@ -142,7 +143,6 @@ serve(async (req: Request) => {
         .insert(stockMovements);
 
       if (stockMovementError) {
-        console.error('Error inserting stock movements:', stockMovementError);
         return new Response(JSON.stringify({ error: stockMovementError.message }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 500,
@@ -156,7 +156,6 @@ serve(async (req: Request) => {
         .insert(consumptionRecords);
 
       if (consumptionError) {
-        console.error('Error inserting consumption records:', consumptionError);
         return new Response(JSON.stringify({ error: consumptionError.message }), {
           headers: { ...corsHeaders, 'Content-Type': 'application/json' },
           status: 500,
@@ -170,8 +169,11 @@ serve(async (req: Request) => {
     });
 
   } catch (error: unknown) {
-    console.error('Error in deduct-service-report-stock function:', error);
-    return new Response(JSON.stringify({ error: (error as Error).message }), {
+    let errorMessage = 'An unknown error occurred';
+    if (error instanceof Error) {
+      errorMessage = error.message;
+    }
+    return new Response(JSON.stringify({ error: errorMessage }), {
       headers: { ...corsHeaders, 'Content-Type': 'application/json' },
       status: 500,
     });

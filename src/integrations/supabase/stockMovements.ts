@@ -38,13 +38,6 @@ export const createStockMovement = async (
     stockChange = -quantity_change;
   }
 
-  console.log("Calling RPC 'update_insumo_quantities' with:", {
-    insumo_id_param: insumo_id,
-    pending_delivery_change: pendingDeliveryChange,
-    pending_reception_change: pendingReceptionChange,
-    stock_change: stockChange,
-  });
-
   // Call the RPC function to update insumo quantities
   // Expect a single Insumo object or null, not an array
   const { data: updatedInsumo, error: updateInsumoError } = await supabase.rpc('update_insumo_quantities', {
@@ -55,15 +48,11 @@ export const createStockMovement = async (
   });
 
   if (updateInsumoError) {
-    console.error("RPC Error in update_insumo_quantities for insumo_id:", insumo_id, updateInsumoError);
     throw new Error(`Error updating insumo quantities via RPC: ${updateInsumoError.message}`);
   }
   
-  console.log("RPC 'update_insumo_quantities' returned:", updatedInsumo);
-
   // Check if the RPC returned a valid insumo object
   if (!updatedInsumo) {
-    console.error("RPC returned no valid data for insumo_id:", insumo_id, "Data received:", updatedInsumo);
     throw new Error(`Failed to retrieve updated insumo data after RPC call for insumo_id: ${insumo_id}. The insumo might not exist or the update failed.`);
   }
 
